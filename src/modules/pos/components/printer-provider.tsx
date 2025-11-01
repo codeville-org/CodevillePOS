@@ -189,9 +189,11 @@ export function PrinterProvider({}: Props) {
                     </div>
 
                     <div className="text-center flex items-center justify-center flex-col">
-                      {/* <h1 className="text-2xl font-black">
-                        {storeSettings?.storeName || "My Store"}
-                      </h1> */}
+                      {/*
+                        <h1 className="text-2xl font-black">
+                          {storeSettings?.storeName || "My Store"}
+                        </h1>
+                      */}
 
                       <p className="text-xl font-semibold mt-2 flex items-center gap-2">
                         <MapPinIcon className="size-5" />
@@ -267,7 +269,7 @@ export function PrinterProvider({}: Props) {
 
                           <div
                             className={cn(
-                              "w-full h-fit flex items-center justify-between text-lg text-black"
+                              "w-full h-fit flex items-center justify-between text-xl text-black"
                             )}
                           >
                             <div className="flex-1 w-full px-6 text-center">

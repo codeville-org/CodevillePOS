@@ -26,13 +26,16 @@ const config: ForgeConfig = {
         });
         callback();
       }
-    ]
+    ],
+    icon: "./assets/app-icon"
   },
   rebuildConfig: {
     force: true
   },
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      setupIcon: "./assets/app-icon.ico"
+    }),
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
     new MakerDeb({})

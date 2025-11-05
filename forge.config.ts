@@ -27,14 +27,14 @@ const config: ForgeConfig = {
         callback();
       }
     ],
-    icon: "./assets/app-icon"
+    icon: "./src/assets/app-icon"
   },
   rebuildConfig: {
     force: true
   },
   makers: [
     new MakerSquirrel({
-      setupIcon: "./assets/app-icon.ico"
+      setupIcon: "./src/assets/app-icon.ico"
     }),
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),

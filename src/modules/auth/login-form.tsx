@@ -98,46 +98,60 @@ export function LoginForm({ className }: Props) {
           </div>
         </div>
       </header>
-      <div className="flex-1 w-full h-full flex items-center justify-center">
-        <Card
-          className={cn(
-            "p-7 px-9 shadow-none w-full max-w-lg bg-white dark:bg-secondary flex flex-col gap-7",
-            className
-          )}
-        >
-          <div className="flex flex-col items-center justify-center gap-1">
-            <h2 className="mb-1 text-center text-2xl font-black tracking-tight">
-              {latestLoginFootprint ? "😾 System Locked" : "😺 Welcome Back !"}
-            </h2>
-            <p className="text-center text-sm text-foreground/70">
-              Please login to your account to continue using CodeVille POS.
-            </p>
-          </div>
 
-          <div className="flex flex-col gap-3">
-            <Input
-              placeholder={TEXTS.lockScreen.placeholder[language]}
-              className="h-12 text-center shadow-none rounded-lg"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              // Handle login when enter key is pressed
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && password.trim().length > 0) {
-                  handleLogin();
-                }
-              }}
-            />
+      <div className="flex-1 grid grid-cols-2 w-full h-full">
+        <div className="relative">
+          <img
+            src="/images/auth-bg.png"
+            className="w-full h-full object-cover"
+          />
 
-            <Button
-              className="w-full h-12 rounded-lg text-base"
-              icon={<UnlockIcon className="size-4" />}
-              disabled={password.trim().length === 0}
-              onClick={handleLogin}
-            >
-              {TEXTS.lockScreen.button[language]}
-            </Button>
-          </div>
-        </Card>
+          <div className="h-2/3 w-full absolute z-30 bg-gradient-to-t bottom-0 left-0 from-black/80 to-transparent" />
+        </div>
+
+        <div className=" flex items-center justify-center">
+          <Card
+            className={cn(
+              "p-7 px-9 shadow-none w-full max-w-lg bg-white dark:bg-secondary flex flex-col gap-7",
+              className
+            )}
+          >
+            <div className="flex flex-col items-center justify-center gap-1">
+              <h2 className="mb-1 text-center text-2xl font-black tracking-tight">
+                {latestLoginFootprint
+                  ? "😾 System Locked"
+                  : "😺 Welcome Back !"}
+              </h2>
+              <p className="text-center text-sm text-foreground/70">
+                Please login to your account to continue using CodeVille POS.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Input
+                placeholder={TEXTS.lockScreen.placeholder[language]}
+                className="h-12 text-center shadow-none rounded-lg"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                // Handle login when enter key is pressed
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && password.trim().length > 0) {
+                    handleLogin();
+                  }
+                }}
+              />
+
+              <Button
+                className="w-full h-12 rounded-lg text-base"
+                icon={<UnlockIcon className="size-4" />}
+                disabled={password.trim().length === 0}
+                onClick={handleLogin}
+              >
+                {TEXTS.lockScreen.button[language]}
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

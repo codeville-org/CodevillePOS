@@ -1,4 +1,5 @@
 import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,18 +12,35 @@ type Props = {
 };
 
 export function SidebarTransactionItem({ item }: Props) {
+  const [qtyValue, setQtyValue] = useState<string>("");
   const { removeTransactionItem } = usePosStore();
   const { changeTransactionItemQuantity } = usePosStore();
 
-  const handleChangeQuantity = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Check any characters except numbers in value
-    const value = e.target.value;
-    let newQuantity = isNaN(Number(value)) ? 1 : Number(value);
-    if (newQuantity === 0) {
-      newQuantity = 1;
+  // Initialize and sync qtyValue with item.quantity
+  useEffect(() => {
+    setQtyValue(item.quantity.toString());
+  }, [item.quantity]);
+
+  const handleChangeQuantity = (value: string) => {
+    setQtyValue(value);
+
+    if (value === "") {
+      // When field is cleared, reset quantity to 1 for better UX
+      changeTransactionItemQuantity(item.productId, 1);
+      return;
     }
 
-    changeTransactionItemQuantity(item.productId, newQuantity);
+    const numericValue = Number(value);
+    if (numericValue > 0) {
+      changeTransactionItemQuantity(item.productId, numericValue);
+    }
+  };
+
+  const handleBlur = () => {
+    // If input is empty on blur, reset to show "1" (which matches the quantity we set)
+    if (qtyValue === "") {
+      setQtyValue("1");
+    }
   };
 
   return (
@@ -54,8 +72,16 @@ export function SidebarTransactionItem({ item }: Props) {
             </button>
 
             <input
-              value={item.quantity}
-              onChange={handleChangeQuantity}
+              type="text"
+              value={qtyValue}
+              placeholder="Qty"
+              onChange={(e) => {
+                // Check if input is a character or number before updating state
+                if (/^[0-9]*$/.test(e.target.value)) {
+                  handleChangeQuantity(e.target.value);
+                }
+              }}
+              onBlur={handleBlur}
               className="text-sm h-7 w-10 text-center text-foreground bg-secondary/40 focus:outline-none"
             />
 

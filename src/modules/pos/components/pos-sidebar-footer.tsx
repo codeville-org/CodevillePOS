@@ -53,9 +53,13 @@ export function PosSidebarFooter({ className }: Props) {
 
   const handleCashGivenChange = (value: number | null) => {
     setCashGiven(value);
+
     if (value !== null) {
       setChange(value - amountOverview.total);
+      return;
     }
+
+    setChange(null);
   };
 
   const handleCompletePurchase = () => {
@@ -164,13 +168,21 @@ export function PosSidebarFooter({ className }: Props) {
                   Cash Given
                 </Label>
                 <Input
-                  type="number"
+                  type="text"
                   placeholder="Cash Given"
                   className="h-12 bg-white"
                   value={cashGiven ?? ""}
-                  onChange={(e) =>
-                    handleCashGivenChange(Number(e.target.value))
-                  }
+                  onChange={(e) => {
+                    // Check if input is a character or number before updating state
+                    if (/^[0-9]*$/.test(e.target.value)) {
+                      if (e.target.value === "") {
+                        handleCashGivenChange(null);
+                        return;
+                      }
+
+                      handleCashGivenChange(Number(e.target.value));
+                    }
+                  }}
                   // Execute complete purchase on Enter key press
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {

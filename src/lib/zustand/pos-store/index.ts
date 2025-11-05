@@ -78,10 +78,9 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
    * @param quantity - New quantity
    */
   changeTransactionItemQuantity: (id: string, quantity: number) => {
-    const { transactionItems, removeTransactionItem } = get();
+    const { transactionItems } = get();
 
     if (quantity <= 0) {
-      removeTransactionItem(id);
       return;
     }
 

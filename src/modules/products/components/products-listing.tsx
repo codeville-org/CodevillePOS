@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { ExportProducts } from "@/modules/pos/components/export-products";
+import { ImportProducts } from "@/modules/pos/components/import-products";
 import { ListingView } from "@/shared/types/global";
 import { useGetAllProducts } from "../queries/use-get-all";
 import { ProductItem } from "./product-item";
@@ -77,6 +79,14 @@ export function ProductsListing({ className }: Props) {
             size="icon"
             variant="outline"
             className="hover:text-foreground size-9"
+            onClick={() => setView(view === "grid" ? "list" : "grid")}
+          >
+            {view === "grid" ? <ListIcon /> : <Grid2x2Icon />}
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            className="hover:text-foreground size-9"
             onClick={() => setSortValue(sortValue === "asc" ? "desc" : "asc")}
           >
             {sortValue === "asc" ? <SortDescIcon /> : <SortAscIcon />}
@@ -89,15 +99,9 @@ export function ProductsListing({ className }: Props) {
           />
         </div>
 
-        <div className="">
-          <Button
-            size="icon"
-            variant="outline"
-            className="hover:text-foreground size-9"
-            onClick={() => setView(view === "grid" ? "list" : "grid")}
-          >
-            {view === "grid" ? <ListIcon /> : <Grid2x2Icon />}
-          </Button>
+        <div className="flex items-center gap-2">
+          <ImportProducts />
+          <ExportProducts />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import {
   getProductByBarcodeController,
   getProductByIDController,
   importProductsController,
+  selectImportFileController,
   updateProductController
 } from "@/controllers/products.controller";
 import { createHandler } from "./create-handler";
@@ -22,5 +23,6 @@ export const productsHandler = {
     handler.handle("delete", deleteProductController);
     handler.handle("import", importProductsController);
     handler.handle("export", exportProductsController);
+    handler.handle("selectImportFile", selectImportFileController);
   }
 };

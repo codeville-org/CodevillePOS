@@ -34,7 +34,8 @@ const electronAPI: ElectronAPI = {
     update: productsInvoker("update"),
     delete: productsInvoker("delete"),
     import: productsInvoker("import"),
-    export: productsInvoker("export")
+    export: productsInvoker("export"),
+    selectImportFile: productsInvoker("selectImportFile")
   },
   images: {
     getImagesDirectory: imagesInvoker("getImagesDirectory"),

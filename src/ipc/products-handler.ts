@@ -1,9 +1,11 @@
 import {
   createNewProductController,
   deleteProductController,
+  exportProductsController,
   getAllProductsController,
   getProductByBarcodeController,
   getProductByIDController,
+  importProductsController,
   updateProductController
 } from "@/controllers/products.controller";
 import { createHandler } from "./create-handler";
@@ -18,5 +20,7 @@ export const productsHandler = {
     handler.handle("create", createNewProductController);
     handler.handle("update", updateProductController);
     handler.handle("delete", deleteProductController);
+    handler.handle("import", importProductsController);
+    handler.handle("export", exportProductsController);
   }
 };

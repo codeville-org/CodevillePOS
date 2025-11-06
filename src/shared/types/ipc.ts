@@ -19,9 +19,12 @@ import {
 import {
   CreateProductResponse,
   DeleteProductResponse,
+  ExportProductsResponse,
   GetAllProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
+  ImportProductsResponse,
+  ImportProductsSchema,
   InsertProductSchema,
   UpdateProductResponse,
   UpdateProductSchema
@@ -91,6 +94,8 @@ export interface ProductsActions {
     payload: UpdateProductSchema
   ) => Promise<UpdateProductResponse>;
   delete: (id: string) => Promise<DeleteProductResponse>;
+  import: (payload: ImportProductsSchema) => Promise<ImportProductsResponse>;
+  export: () => Promise<ExportProductsResponse>;
 }
 
 export interface ImagesActions {

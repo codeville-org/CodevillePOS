@@ -32,7 +32,9 @@ const electronAPI: ElectronAPI = {
     getByBarcode: productsInvoker("getByBarcode"),
     create: productsInvoker("create"),
     update: productsInvoker("update"),
-    delete: productsInvoker("delete")
+    delete: productsInvoker("delete"),
+    import: productsInvoker("import"),
+    export: productsInvoker("export")
   },
   images: {
     getImagesDirectory: imagesInvoker("getImagesDirectory"),

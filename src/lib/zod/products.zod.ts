@@ -94,3 +94,18 @@ export type UpdateProductResponse = z.infer<typeof updateProductResponseSchem>;
 export const deleteProductResponseSchema = getBaseReturnSchema(messageSchema);
 
 export type DeleteProductResponse = z.infer<typeof deleteProductResponseSchema>;
+
+// Import and Export Features
+export const importProductsSchema = z.object({
+  filePath: z.string()
+});
+
+export type ImportProductsSchema = z.infer<typeof importProductsSchema>;
+
+export const importProductsResponse = getBaseReturnSchema(null);
+
+export type ImportProductsResponse = z.infer<typeof importProductsResponse>;
+
+export const exportProductsResponse = getBaseReturnSchema(null);
+
+export type ExportProductsResponse = z.infer<typeof exportProductsResponse>;

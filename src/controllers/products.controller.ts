@@ -1,11 +1,17 @@
+import { app } from "electron";
+import path from "path";
+
 import { getDB } from "@/database";
 import { products } from "@/database/schema";
 import { ProductsQueryParamsSchema } from "@/lib/zod/helpers";
 import {
   CreateProductResponse,
   DeleteProductResponse,
+  ExportProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
+  ImportProductsResponse,
+  ImportProductsSchema,
   InsertProductSchema,
   UpdateProductResponse,
   UpdateProductSchema,
@@ -251,6 +257,56 @@ export async function deleteProductController(
     return {
       success: false,
       error: errorMessage
+    };
+  }
+}
+
+// ================= Import Products =================
+export async function importProductsController(
+  payload: ImportProductsSchema
+): Promise<ImportProductsResponse> {
+  try {
+    // TODO: Implement Import Products Logic
+    console.log(payload);
+
+    return {
+      data: null,
+      success: true,
+      error: null
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error)?.message || "Failed to import products !"
+    };
+  }
+}
+
+// ================= Export Products =================
+export function getExportDirectory(): string {
+  let baseDir: string;
+
+  if (!app.isReady()) {
+    return path.join(process.cwd(), "images");
+  }
+
+  if (app.isPackaged) {
+    // Save all exports in user's Downloads/CodeVille POS/exports
+    baseDir = app.getPath("downloads");
+    return path.join(baseDir, "CodeVille POS", "exports");
+  } else {
+    baseDir = process.cwd();
+    return path.join(baseDir, "exports");
+  }
+}
+
+export async function exportProductsController(): Promise<ExportProductsResponse> {
+  try {
+    // TODO: implement export all products logic
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to export products !"
     };
   }
 }

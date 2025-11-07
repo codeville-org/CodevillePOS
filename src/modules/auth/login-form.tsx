@@ -1,6 +1,7 @@
 import { MoonIcon, SunIcon, UnlockIcon } from "lucide-react";
 import { useId, useState } from "react";
 
+import authBgImage from "@/assets/images/auth-bg.png";
 import { LanguageSelector } from "@/components/elements/language-selector";
 import { WindowActions } from "@/components/layouts/dashboard/window-actions";
 import { Button } from "@/components/ui/button";
@@ -102,7 +103,8 @@ export function LoginForm({ className }: Props) {
       <div className="flex-1 grid grid-cols-2 w-full h-full">
         <div className="relative">
           <img
-            src="/images/auth-bg.png"
+            src={authBgImage}
+            alt="Authentication background"
             className="w-full h-full object-cover"
           />
 

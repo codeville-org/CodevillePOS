@@ -19,10 +19,14 @@ import {
 import {
   CreateProductResponse,
   DeleteProductResponse,
+  ExportProductsResponse,
   GetAllProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
+  ImportProductsResponse,
+  ImportProductsSchema,
   InsertProductSchema,
+  SelectImportFileType,
   UpdateProductResponse,
   UpdateProductSchema
 } from "@/lib/zod/products.zod";
@@ -91,6 +95,9 @@ export interface ProductsActions {
     payload: UpdateProductSchema
   ) => Promise<UpdateProductResponse>;
   delete: (id: string) => Promise<DeleteProductResponse>;
+  import: (payload: ImportProductsSchema) => Promise<ImportProductsResponse>;
+  export: () => Promise<ExportProductsResponse>;
+  selectImportFile: () => Promise<SelectImportFileType>;
 }
 
 export interface ImagesActions {

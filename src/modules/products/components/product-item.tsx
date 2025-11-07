@@ -79,6 +79,7 @@ export function ProductItem({
                 filename={product.imageFilename}
                 className="w-full h-full aspect-square rounded-xl"
                 fallbackClassName="w-full h-full aspect-square rounded-xl"
+                isProductImage
               />
               <Badge
                 variant="secondary"

@@ -152,9 +152,6 @@ const createWindow = async (): Promise<void> => {
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  // Open the DevTools for debugging
-  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished

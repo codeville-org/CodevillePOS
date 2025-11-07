@@ -1,0 +1,4 @@
+name,barcode,categoryName,unitPrice,unitAmount,unit,discountedPrice,stockQuantity,description,imageFilename,isActive,isFeatured
+"Sample Product 1","1234567890123","Electronics",25.99,1,"pcs",25.99,100,"Sample product description","product1.jpg",true,false
+"Sample Product 2","9876543210987","Food & Beverage",15.50,1,"kg",14.99,50,"Another sample product","product2.png",true,true
+"Sample Product 3","","Clothing",89.99,1,"pcs",79.99,25,"Product without barcode","",true,false

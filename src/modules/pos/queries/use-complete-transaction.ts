@@ -69,6 +69,20 @@ export const useCompleteTransaction = () => {
         }
       }
 
+      // Update stock quantities
+      // Promise all stock updates
+      await Promise.all(
+        transactionItems.map(async (item) => {
+          const product = await api.products.getById(item.productId);
+
+          const newStockQuantity = product.data.stockQuantity - item.quantity;
+
+          await api.products.update(item.productId, {
+            stockQuantity: newStockQuantity
+          });
+        })
+      );
+
       return updatedTransaction.data;
     },
     onMutate: () => {
@@ -86,7 +100,7 @@ export const useCompleteTransaction = () => {
       setActiveTransaction(null);
       clearTransactionItems();
 
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions", "products"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to complete transaction", {

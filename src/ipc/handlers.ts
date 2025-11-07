@@ -5,6 +5,7 @@ import { customersHandler } from "./customers-handler";
 import { imagesHandler } from "./images-handler";
 import { printerHandler } from "./printer-handler";
 import { productsHandler } from "./products-handler";
+import { reportsHandler } from "./reports-handler";
 import { securityHandler } from "./security-handler";
 import { appSettingsHandler } from "./settings-handler";
 import { transactionsHandler } from "./transactions-handler";
@@ -21,4 +22,5 @@ export function setupIPCHandlers(mainWindow: BrowserWindow) {
   appSettingsHandler.register();
   securityHandler.register();
   printerHandler.register();
+  reportsHandler.register();
 }

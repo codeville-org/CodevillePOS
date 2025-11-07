@@ -182,6 +182,28 @@ export const TEXTS = {
       si: "ඔබේ ගනුදෙනු මෙහි කළමනාකරණය කරන්න"
     }
   },
+  reports: {
+    title: { en: "Analytics & Reports", si: "විශ්ලේෂණ සහ වාර්තා" },
+    subtitle: {
+      en: "View comprehensive analytics and insights",
+      si: "සවිස්තරාත්මක විශ්ලේෂණ බලන්න"
+    },
+    overview: {
+      totalSales: { en: "Total Sales", si: "මුළු විකුණුම්" },
+      totalTransactions: { en: "Total Transactions", si: "මුළු ගනුදෙනු" },
+      totalCustomers: { en: "Total Customers", si: "මුළු පාරිභෝගිකයින්" },
+      totalProducts: { en: "Total Products", si: "මුළු භාණ්ඩ" },
+      averageOrderValue: { en: "Avg. Order Value", si: "සාමාන්‍ය අගය" }
+    },
+    sections: {
+      salesTrend: { en: "Sales Trend", si: "විකුණුම් ප්‍රවණතාව" },
+      topProducts: { en: "Top Products", si: "ඉහළම භාණ්ඩ" },
+      topCategories: { en: "Top Categories", si: "ඉහළම කාණ්ඩ" },
+      topCustomers: { en: "Top Customers", si: "ඉහළම පාරිභෝගිකයින්" },
+      paymentMethods: { en: "Payment Methods", si: "ගෙවීම් ක්‍රම" },
+      lowStock: { en: "Low Stock Alert", si: "අඩු තොග අනතුරු ඇඟවීම" }
+    }
+  },
   lockScreen: {
     placeholder: {
       en: "Enter your password here",

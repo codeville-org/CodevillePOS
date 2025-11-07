@@ -6,6 +6,7 @@ import { PosPage } from "../pages/pos";
 import { ProductsInventoryPage } from "../pages/products";
 import { NewProductPage } from "../pages/products/new-product";
 import { SingleProductPage } from "../pages/products/single-product";
+import { ReportsPage } from "../pages/reports";
 import { SettingsPage } from "../pages/settings";
 import { TransactionsPage } from "../pages/transactions";
 
@@ -22,7 +23,7 @@ export function AppRouter({}: Props) {
       <Route path="/products/categories" element={<CategoriesPage />} />
       <Route path="/customers" element={<CustomersPage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
-      {/* <Route path="/reports" element={<Reports />} /> */}
+      <Route path="/reports" element={<ReportsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
 
       {/* Fallback */}

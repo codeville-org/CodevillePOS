@@ -57,6 +57,10 @@ import {
   ListPrintersResponseT,
   VoidDataResponseT
 } from "@/lib/zod/printers.zod";
+import {
+  AnalyticsQueryParamsSchema,
+  GetAnalyticsResponse
+} from "@/lib/zod/reports.zod";
 import { GetSecurityResponseT } from "@/lib/zod/security.zod";
 import {
   AppSettingsMapInsertT,
@@ -172,6 +176,12 @@ export interface PrinterActions {
   selectImageFile: () => Promise<string | null>;
 }
 
+export interface ReportsActions {
+  getAnalytics: (
+    params?: AnalyticsQueryParamsSchema
+  ) => Promise<GetAnalyticsResponse>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -183,4 +193,5 @@ export interface ElectronAPI {
   settings: SettingsActions;
   security: SecurityActions;
   print: PrinterActions;
+  reports: ReportsActions;
 }

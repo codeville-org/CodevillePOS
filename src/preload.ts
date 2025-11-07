@@ -13,6 +13,7 @@ const transactionsInvoker = createInvoker("transactions");
 const settingsInvoker = createInvoker("settings");
 const securityInvoker = createInvoker("security");
 const printInvoker = createInvoker("print");
+const reportsInvoker = createInvoker("reports");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -76,6 +77,9 @@ const electronAPI: ElectronAPI = {
     printImage: printInvoker("printImage"),
     printImageBill: printInvoker("printImageBill"),
     selectImageFile: printInvoker("selectImageFile")
+  },
+  reports: {
+    getAnalytics: reportsInvoker("getAnalytics")
   }
 };
 

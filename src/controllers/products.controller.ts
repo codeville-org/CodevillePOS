@@ -360,7 +360,7 @@ export async function importProductsController(
             0,
           stockQuantity: parseInt(rowData.stockQuantity) || 0,
           description: rowData.description || null,
-          imageFilename: null as string | null,
+          imageFilename: rowData.imageFilename || null,
           isActive:
             rowData.isActive === "true" || rowData.isActive === true || true,
           isFeatured:
@@ -500,6 +500,7 @@ export async function exportProductsController(): Promise<ExportProductsResponse
         discountedPrice: products.discountedPrice,
         stockQuantity: products.stockQuantity,
         description: products.description,
+        imageFilename: products.imageFilename,
         isActive: products.isActive,
         isFeatured: products.isFeatured
       })
@@ -535,6 +536,7 @@ export async function exportProductsController(): Promise<ExportProductsResponse
       "discountedPrice",
       "stockQuantity",
       "description",
+      "imageFilename",
       "isActive",
       "isFeatured"
     ];
@@ -553,6 +555,7 @@ export async function exportProductsController(): Promise<ExportProductsResponse
         product.discountedPrice || 0,
         product.stockQuantity || 0,
         `"${(product.description || "").replace(/"/g, '""')}"`,
+        `"${(product.imageFilename || "").replace(/"/g, '""')}"`,
         product.isActive ? "true" : "false",
         product.isFeatured ? "true" : "false"
       ];

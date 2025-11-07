@@ -35,6 +35,7 @@ This document describes the CSV import and export functionality for products in 
 - `discountedPrice` - Discounted price (default: same as unitPrice)
 - `stockQuantity` - Stock quantity (default: 0)
 - `description` - Product description
+- `imageFilename` - Image filename (just the filename, no path validation)
 - `isActive` - Active status (true/false, default: true)
 - `isFeatured` - Featured status (true/false, default: false)
 

@@ -1,5 +1,5 @@
 // renderer/components/ImageDisplay.tsx
-import { AlertCircle, ImageIcon } from "lucide-react";
+import { AlertCircle, ImageIcon, ShoppingBagIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ImageApiService from "../images-service";
 
@@ -10,6 +10,7 @@ type Props = {
   fallbackClassName?: string;
   onError?: () => void;
   onLoad?: () => void;
+  isProductImage?: boolean;
 };
 
 type LoadingStatus = "idle" | "loading" | "success" | "error";
@@ -20,7 +21,8 @@ export function ImageDisplay({
   className = "w-full h-full object-cover",
   fallbackClassName = "w-24 h-24 text-gray-300",
   onError,
-  onLoad
+  onLoad,
+  isProductImage = false
 }: Props) {
   const [imageData, setImageData] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadingStatus>("idle");
@@ -79,7 +81,11 @@ export function ImageDisplay({
       <div
         className={`flex items-center justify-center bg-gray-100 rounded-lg ${fallbackClassName}`}
       >
-        <ImageIcon className="w-8 h-8 text-gray-400" />
+        {isProductImage ? (
+          <ShoppingBagIcon className="w-8 h-8 text-gray-400" />
+        ) : (
+          <ImageIcon className="w-8 h-8 text-gray-400" />
+        )}
       </div>
     );
   }
@@ -97,6 +103,20 @@ export function ImageDisplay({
 
   // Error state
   if (status === "error") {
+    if (isProductImage) {
+      return (
+        <div
+          className={`flex items-center justify-center bg-gray-100 rounded-lg ${fallbackClassName}`}
+        >
+          {isProductImage ? (
+            <ShoppingBagIcon className="w-8 h-8 text-gray-400" />
+          ) : (
+            <ImageIcon className="w-8 h-8 text-gray-400" />
+          )}
+        </div>
+      );
+    }
+
     return (
       <div
         className={`flex flex-col items-center justify-center bg-red-50 rounded-lg p-4 ${fallbackClassName}`}

@@ -35,5 +35,13 @@ export const rules: Required<ModuleOptions>["rules"] = [
     generator: {
       filename: "fonts/[name].[hash][ext]"
     }
+  },
+  // Add image file support
+  {
+    test: /\.(png|jpe?g|gif|svg|ico)$/i,
+    type: "asset/resource",
+    generator: {
+      filename: "images/[name][ext]"
+    }
   }
 ];

@@ -20,5 +20,5 @@
     },
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*", "fonts.d.ts"]
+  "include": ["src/**/*", "fonts.d.ts", "images.d.ts"]
 }

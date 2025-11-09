@@ -38,7 +38,6 @@ const config: ForgeConfig = {
       name: "CodeVille POS",
       description: "Point of Sale application for small and medium businesses",
       authors: "CodeVille",
-      exe: "CodeVille POS.exe",
       setupExe: "CodeVille_POS_Setup.exe"
     }),
     new MakerZIP({}, ["darwin"]),

@@ -27,10 +27,6 @@ export interface PosStoreInterface {
   listingView: POSListingView;
   setListingView: (view: POSListingView) => void;
 
-  // POS Product Search
-  searchMode: SearchMode;
-  setSearchMode: (mode: SearchMode) => void;
-
   searchTerm: string | null;
   setSearchTerm: (term: string) => void;
   resetSearch: () => void;

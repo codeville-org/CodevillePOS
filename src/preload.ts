@@ -62,7 +62,8 @@ const electronAPI: ElectronAPI = {
   },
   settings: {
     get: settingsInvoker("get"),
-    upsert: settingsInvoker("upsert")
+    upsert: settingsInvoker("upsert"),
+    reset: settingsInvoker("reset")
   },
   security: {
     login: securityInvoker("login")

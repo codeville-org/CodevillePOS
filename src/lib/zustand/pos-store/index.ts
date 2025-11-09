@@ -12,9 +12,6 @@ function sortTransactionItems(
 }
 
 export const usePosStore = create<PosStoreInterface>()((set, get) => ({
-  searchMode: "barcode",
-  setSearchMode: (mode) => set({ searchMode: mode }),
-
   listingView: "listing",
   setListingView: (view) => set({ listingView: view }),
 

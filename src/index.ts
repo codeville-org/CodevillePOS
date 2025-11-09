@@ -110,6 +110,8 @@ function setupLogging() {
   }
 }
 
+let mainWindow: BrowserWindow;
+
 const createWindow = async (): Promise<void> => {
   // Initialize database before creating window
   try {
@@ -126,7 +128,7 @@ const createWindow = async (): Promise<void> => {
   }
 
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     icon: path.join(__dirname, "./assets/icon.ico"),
     height: 600,
     width: 800,

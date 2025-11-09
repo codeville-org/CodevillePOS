@@ -20,6 +20,10 @@ export const appSettingsMap = z.object({
   ...storeSettingsSchema.shape
 });
 
+export const resetSystemResponseSchema = z.object({
+  message: z.string().optional()
+});
+
 export const appSettingsMapInsert = appSettingsMap.partial();
 
 export type AppSettingsMapT = z.infer<typeof appSettingsMap>;
@@ -30,3 +34,9 @@ export type AppSettingsMapInsertT = z.infer<typeof appSettingsMapInsert>;
 export const getAppSettingsResponse = getBaseReturnSchema(appSettingsMap);
 
 export type GetAppSettingsResponseT = z.infer<typeof getAppSettingsResponse>;
+
+export const resetSystemResponse = getBaseReturnSchema(
+  resetSystemResponseSchema
+);
+
+export type ResetSystemResponseT = z.infer<typeof resetSystemResponse>;

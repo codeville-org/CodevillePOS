@@ -33,12 +33,8 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
   // Early return if on products page - avoid setting up hooks
   const isOnProductsPage = location.pathname.startsWith("/products/");
 
-  const {
-    searchMode,
-    activeTransaction,
-    addTransactionItem,
-    setLastScannedProduct
-  } = usePosStore();
+  const { activeTransaction, addTransactionItem, setLastScannedProduct } =
+    usePosStore();
 
   // Barcode detection state
   const barcodeBufferRef = useRef<string>("");
@@ -64,31 +60,29 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
         timestamp: Date.now()
       });
 
-      if (searchMode === "barcode") {
-        const item: UninitializedTransactionItem = {
-          productId: scannedProduct.id,
-          productName: scannedProduct.name,
-          productBarcode: scannedProduct.barcode || "",
-          unitPrice:
-            scannedProduct.discountedPrice > 0
-              ? scannedProduct.discountedPrice
-              : scannedProduct.unitPrice,
-          quantity: scannedProduct.unitAmount,
-          unit: scannedProduct.unit,
-          unitAmount: scannedProduct.unitAmount,
-          totalAmount:
-            scannedProduct.discountedPrice > 0
-              ? scannedProduct.discountedPrice
-              : scannedProduct.unitPrice,
-          discountAmount: 0
-        };
+      const item: UninitializedTransactionItem = {
+        productId: scannedProduct.id,
+        productName: scannedProduct.name,
+        productBarcode: scannedProduct.barcode || "",
+        unitPrice:
+          scannedProduct.discountedPrice > 0
+            ? scannedProduct.discountedPrice
+            : scannedProduct.unitPrice,
+        quantity: scannedProduct.unitAmount,
+        unit: scannedProduct.unit,
+        unitAmount: scannedProduct.unitAmount,
+        totalAmount:
+          scannedProduct.discountedPrice > 0
+            ? scannedProduct.discountedPrice
+            : scannedProduct.unitPrice,
+        discountAmount: 0
+      };
 
-        addTransactionItem(item);
+      addTransactionItem(item);
 
-        playBeep(800, 0.1);
+      playBeep(800, 0.1);
 
-        toast.success(`Added: ${scannedProduct.name}`);
-      }
+      toast.success(`Added: ${scannedProduct.name}`);
 
       setScannedBarcode(null);
 
@@ -101,7 +95,6 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
     scannedBarcode,
     activeTransaction,
     isSuccess,
-    searchMode,
     addTransactionItem,
     setLastScannedProduct
   ]);
@@ -130,7 +123,7 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
     setTimeout(() => {
       setScannedBarcode(randomBarcode);
       setStatus("connected");
-    }, 300);
+    }, 600); // 600ms delay
   };
 
   // Add global method for testing (temporary)
@@ -258,11 +251,6 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
         }
       }
 
-      // Only listen in barcode mode
-      // if (searchMode !== "barcode") {
-      //   return;
-      // }
-
       const now = Date.now();
       const timeSinceLastKey = now - lastKeypressTimeRef.current;
 
@@ -313,18 +301,6 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
       }, 50); // 50ms timeout for rapid scanner input
     };
 
-    // Set connected status when barcode mode is active
-    if (searchMode === "barcode") {
-      setStatus("connected");
-
-      // Set inactivity timeout
-      inactivityTimeoutRef.current = setTimeout(() => {
-        setStatus("disconnected");
-      }, 30000); // 30 seconds of inactivity
-    } else {
-      setStatus("disconnected");
-    }
-
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -336,7 +312,7 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
         clearTimeout(inactivityTimeoutRef.current);
       }
     };
-  }, [searchMode, isOnProductsPage]);
+  }, [isOnProductsPage]);
 
   // Return empty if on products page
   if (isOnProductsPage) return <></>;

@@ -5,6 +5,7 @@ import { usePersistStore } from "@/lib/zustand/persist-store";
 import { PasswordSection } from "@/modules/settings/components/password-section";
 import { PrinterManagement } from "@/modules/settings/components/printer-management";
 import { StoreSettings } from "@/modules/settings/components/store-settings";
+import { SystemReset } from "@/modules/settings/components/system-reset";
 
 type Props = {};
 
@@ -27,6 +28,8 @@ export function SettingsPage({}: Props) {
         <PasswordSection />
 
         <PrinterManagement />
+
+        <SystemReset />
 
         {/* NOTE: Uncomment only for debug purposes */}
         {/* <PrinterManager /> */}

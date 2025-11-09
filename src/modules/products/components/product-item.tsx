@@ -34,6 +34,7 @@ export function ProductItem({
               filename={product.imageFilename}
               className="w-full h-full aspect-square rounded-xl"
               fallbackClassName="w-full h-full aspect-square rounded-xl"
+              isProductImage
             />
             <Badge
               variant="secondary"
@@ -126,6 +127,7 @@ export function ProductItem({
           filename={product.imageFilename}
           className="w-12 h-12 rounded-md"
           fallbackClassName="w-12 h-12 rounded-md"
+          isProductImage
         />
 
         <div className="space-y-0.5">

@@ -35,10 +35,9 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       setupIcon: "./src/assets/app-icon.ico",
-      name: "CodeVille POS",
+      name: "CodeVille-POS",
       description: "Point of Sale application for small and medium businesses",
       authors: "CodeVille",
-      exe: "CodeVille POS.exe",
       setupExe: "CodeVille_POS_Setup.exe"
     }),
     new MakerZIP({}, ["darwin"]),

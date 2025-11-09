@@ -7,6 +7,7 @@ import { usePosStore } from "@/lib/zustand/pos-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -40,23 +41,25 @@ export function BillingTable({ className }: Props) {
   return (
     <div className={cn("flex-1 flex flex-col h-full", className)}>
       <div className="flex-1 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-none bg-secondary/50 dark:bg-secondary/30 text-sm text-foreground/60">
-              <TableHead className="py-3 pl-5">Product</TableHead>
-              <TableHead className="py-3">Unit Price</TableHead>
-              <TableHead className="py-3">Quantity</TableHead>
-              <TableHead className="py-3 text-right">Amount</TableHead>
-              <TableHead className="py-3 text-right pr-5">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+        <ScrollArea className="flex-1 flex-shrink-0 h-full w-full">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-none bg-secondary/50 dark:bg-secondary/30 text-sm text-foreground/60">
+                <TableHead className="py-3 pl-5">Product</TableHead>
+                <TableHead className="py-3">Unit Price</TableHead>
+                <TableHead className="py-3">Quantity</TableHead>
+                <TableHead className="py-3 text-right">Amount</TableHead>
+                <TableHead className="py-3 text-right pr-5">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
 
-          <TableBody className="flex-1 flex-shrink-0">
-            {transactionItems.map((item) => (
-              <BillingTableItem item={item} />
-            ))}
-          </TableBody>
-        </Table>
+            <TableBody className="flex-1 flex-shrink-0">
+              {transactionItems.map((item) => (
+                <BillingTableItem item={item} />
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </div>
 
       {/* Billing Footer */}
@@ -146,7 +149,6 @@ export function BillingTableItem({
             value={qtyValue}
             placeholder="Qty"
             onChange={(e) => {
-              // Check if input is a character or number before updating state
               if (/^[0-9]*$/.test(e.target.value)) {
                 handleChangeQuantity(e.target.value);
               }

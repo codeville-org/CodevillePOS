@@ -1,12 +1,23 @@
 import { getDB } from "@/database";
-import { settings } from "@/database/schema";
+import {
+  categories,
+  customers,
+  products,
+  settings,
+  transactionItems,
+  transactions
+} from "@/database/schema";
 import type {
   AppSettingsMapInsertT,
   AppSettingsMapT,
-  GetAppSettingsResponseT
+  GetAppSettingsResponseT,
+  ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
 import { encrypt } from "@/shared/utils/auth-util";
 import { eq } from "drizzle-orm";
+import { app } from "electron";
+import * as fs from "node:fs/promises";
+import path from "path";
 
 // ================= Get App Settings Controller =================
 export async function getAppSettingsController(): Promise<GetAppSettingsResponseT> {
@@ -136,6 +147,127 @@ export async function upsertAppSettingsController(
     return {
       data: null,
       error: (error as Error).message,
+      success: false
+    };
+  }
+}
+
+// Helper function to get images directory path
+function getImagesDirectory(): string {
+  let baseDir: string;
+
+  if (!app.isReady()) {
+    return path.join(process.cwd(), "images");
+  }
+
+  if (app.isPackaged) {
+    baseDir = app.getPath("documents");
+    return path.join(baseDir, "CodeVille POS", "images");
+  } else {
+    baseDir = process.cwd();
+    return path.join(baseDir, "images");
+  }
+}
+
+// Helper function to get bills directory path
+function getBillsDirectory(): string {
+  let baseDir: string;
+
+  if (!app.isReady()) {
+    return path.join(process.cwd(), "bills");
+  }
+
+  if (app.isPackaged) {
+    baseDir = app.getPath("documents");
+    return path.join(baseDir, "CodeVille POS", "bills");
+  } else {
+    baseDir = process.cwd();
+    return path.join(baseDir, "bills");
+  }
+}
+
+// Helper function to clear directory contents
+async function clearDirectoryContents(dirPath: string): Promise<void> {
+  try {
+    // Check if directory exists
+    const dirExists = await fs
+      .access(dirPath)
+      .then(() => true)
+      .catch(() => false);
+
+    if (!dirExists) {
+      // Directory doesn't exist, nothing to clear
+      return;
+    }
+
+    // Read all files and subdirectories
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    // Delete each entry
+    await Promise.all(
+      entries.map(async (entry) => {
+        const fullPath = path.join(dirPath, entry.name);
+
+        if (entry.isDirectory()) {
+          // Recursively delete directory
+          await fs.rm(fullPath, { recursive: true, force: true });
+        } else {
+          // Delete file
+          await fs.unlink(fullPath);
+        }
+      })
+    );
+  } catch (error) {
+    console.error(`Failed to clear directory ${dirPath}:`, error);
+    throw error;
+  }
+}
+
+// ================= System Reset Controller =================
+export async function resetSystemController(): Promise<ResetSystemResponseT> {
+  try {
+    const db = getDB();
+
+    // Clear all database tables
+    // Note: We need to clear in the correct order due to foreign key constraints
+    // 1. Transaction items (has FK to transactions and products)
+    // 2. Transactions (has FK to customers)
+    // 3. Products (has FK to categories)
+    // 4. Customers
+    // 5. Categories
+    // 6. Settings (clear all except password-related settings if needed)
+
+    await db.delete(transactionItems);
+    await db.delete(transactions);
+    await db.delete(products);
+    await db.delete(customers);
+    await db.delete(categories);
+
+    // Clear settings except password (optional - uncomment if you want to keep password)
+    // await db.delete(settings).where(sql`${settings.key} != 'password'`);
+
+    // Or clear all settings
+    await db.delete(settings);
+
+    // Clear images folder
+    const imagesDir = getImagesDirectory();
+    await clearDirectoryContents(imagesDir);
+
+    // Clear bills folder
+    const billsDir = getBillsDirectory();
+    await clearDirectoryContents(billsDir);
+
+    return {
+      data: {
+        message: "System reset successfully. All data has been cleared."
+      },
+      success: true,
+      error: null
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: (error as Error).message || "Failed to reset system",
       success: false
     };
   }

@@ -64,7 +64,8 @@ import {
 import { GetSecurityResponseT } from "@/lib/zod/security.zod";
 import {
   AppSettingsMapInsertT,
-  GetAppSettingsResponseT
+  GetAppSettingsResponseT,
+  ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
 import {
   ALIGNMENT_OPTIONS,
@@ -151,6 +152,7 @@ export interface TransactionsActions {
 export interface SettingsActions {
   get: () => Promise<GetAppSettingsResponseT>;
   upsert: (payload: AppSettingsMapInsertT) => Promise<GetAppSettingsResponseT>;
+  reset: () => Promise<ResetSystemResponseT>;
 }
 
 export interface SecurityActions {

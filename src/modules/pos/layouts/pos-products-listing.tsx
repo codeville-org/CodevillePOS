@@ -16,21 +16,16 @@ export function PosProductsListing({ className }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
 
-  const {
-    filter,
-    searchMode,
-    searchTerm,
-    addTransactionItem,
-    activeTransaction
-  } = usePosStore();
+  const { filter, searchTerm, addTransactionItem, activeTransaction } =
+    usePosStore();
 
   const filterCategory = typeof filter === "string" ? null : filter.id;
 
   const { data, isLoading, error } = useGetAllProducts({
     page: currentPage.toString(),
     limit: itemsPerPage.toString(),
-    search: searchMode === "manual" ? searchTerm || "" : undefined,
-    featured: searchMode !== "manual" && filter === "featured",
+    search: searchTerm || "",
+    featured: filter === "featured",
     category: filterCategory
   });
 

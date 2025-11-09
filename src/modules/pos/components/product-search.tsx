@@ -1,7 +1,6 @@
-import { CheckCircleIcon, ScanBarcodeIcon, SearchIcon } from "lucide-react";
+import { CheckCircleIcon, SearchIcon } from "lucide-react";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePosStore } from "@/lib/zustand/pos-store";
 
@@ -11,12 +10,11 @@ type Props = {
 
 export function ProductSearchInput({ className }: Props) {
   const {
-    searchMode,
-    setSearchMode,
     searchTerm,
     setSearchTerm,
     lastScannedProduct,
-    setLastScannedProduct
+    setLastScannedProduct,
+    setFilter
   } = usePosStore();
 
   const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,49 +24,49 @@ export function ProductSearchInput({ className }: Props) {
     if (e.target.value && lastScannedProduct) {
       setLastScannedProduct(null);
     }
-  };
 
-  const handleModeToggle = () => {
-    if (searchMode === "barcode") {
-      setSearchMode("manual");
-      // Clear scanned product when switching to manual mode
-      if (lastScannedProduct) {
-        setLastScannedProduct(null);
-      }
-    } else {
-      setSearchMode("barcode");
+    // Clear category filter when user starts typing to show all products
+    if (e.target.value) {
+      setFilter("all");
     }
   };
 
-  // Display scanned product name when in barcode mode and product was scanned
-  const displayValue =
-    searchMode === "barcode" && lastScannedProduct && !searchTerm
-      ? lastScannedProduct.name
-      : searchTerm || "";
-
-  const isShowingScannedProduct =
-    searchMode === "barcode" && lastScannedProduct && !searchTerm;
-
-  // Auto-clear scanned product after 7 seconds to restore normal input functionality
   useEffect(() => {
-    if (lastScannedProduct && searchMode === "barcode" && !searchTerm) {
+    // If search term is cleared, set filter to "featured" after a short delay
+    if (!searchTerm) {
       const timer = setTimeout(() => {
-        setLastScannedProduct(null);
-      }, 7000); // 7 seconds
+        setFilter("featured");
+      }, 300);
 
       return () => clearTimeout(timer);
     }
-  }, [lastScannedProduct, searchMode, searchTerm, setLastScannedProduct]);
+  }, [searchTerm]);
 
-  // Dynamic placeholder based on mode and state
+  // Display scanned product name when product was scanned
+  const displayValue =
+    lastScannedProduct && !searchTerm
+      ? lastScannedProduct.name
+      : searchTerm || "";
+
+  const isShowingScannedProduct = lastScannedProduct && !searchTerm;
+
+  // Auto-clear scanned product after 5 seconds to restore normal input functionality
+  useEffect(() => {
+    if (lastScannedProduct && !searchTerm) {
+      const timer = setTimeout(() => {
+        setLastScannedProduct(null);
+      }, 5000); // 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [lastScannedProduct, searchTerm, setLastScannedProduct]);
+
+  // Dynamic placeholder based on state
   const getPlaceholder = () => {
     if (isShowingScannedProduct) {
       return "Scanned product - start typing to search manually";
     }
-    if (searchMode === "barcode") {
-      return "Scan or Type product barcode here...";
-    }
-    return "Search by product name...";
+    return "Search by product name or barcode...";
   };
 
   return (
@@ -102,21 +100,6 @@ export function ProductSearchInput({ className }: Props) {
         onChange={handleSearchTermChange}
         autoFocus
       />
-
-      <div className="w-14 h-full flex items-center justify-center">
-        <Button
-          size="icon"
-          className={cn("shadow-none", {
-            "bg-blue-600 hover:bg-blue-700 text-white":
-              searchMode === "barcode",
-            "bg-blue-600/10 hover:bg-blue-600/20 text-blue-600":
-              searchMode === "manual"
-          })}
-          onClick={handleModeToggle}
-        >
-          <ScanBarcodeIcon className="size-5" />
-        </Button>
-      </div>
     </div>
   );
 }

@@ -43,7 +43,10 @@ const electronAPI: ElectronAPI = {
     getImageAsBase64: imagesInvoker("getImageAsBase64"),
     saveImageFromBase64: imagesInvoker("saveImageFromBase64"),
     saveImageFromPath: imagesInvoker("saveImageFromPath"),
-    deleteImage: imagesInvoker("deleteImage")
+    deleteImage: imagesInvoker("deleteImage"),
+    selectImageDirectory: imagesInvoker("selectImageDirectory"),
+    listImagesInDirectory: imagesInvoker("listImagesInDirectory"),
+    copyImagesFromDirectory: imagesInvoker("copyImagesFromDirectory")
   },
   customers: {
     getAll: customersInvoker("getAll"),

@@ -19,7 +19,7 @@ export function CategoriesBar({}: Props) {
 
   const { data, isPending, error } = useGetAllCategories({
     page: "1",
-    limit: "100",
+    limit: "6",
     search: categorySearchTermDebounce || undefined
   });
 

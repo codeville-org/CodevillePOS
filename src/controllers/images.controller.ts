@@ -3,6 +3,12 @@ import { app } from "electron";
 import * as fs from "node:fs/promises";
 import path from "path";
 
+import type {
+  CopyImagesFromDirectoryResponse,
+  ListImagesInDirectoryResponse,
+  SelectImageDirectoryResponse
+} from "@/lib/zod/images.zod";
+
 // This returns the images directory path
 export function getImagesDirectory(): string {
   let baseDir: string;
@@ -189,5 +195,119 @@ export async function deleteImageController(
   } catch (error) {
     console.error("Failed to delete image:", error);
     return false;
+  }
+}
+
+// ---- Select Image Directory Controller ----
+export async function selectImageDirectoryController(): Promise<SelectImageDirectoryResponse> {
+  try {
+    const { dialog, BrowserWindow } = await import("electron");
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+
+    const result = await dialog.showOpenDialog(focusedWindow!, {
+      properties: ["openDirectory"],
+      title: "Select Image Directory"
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return {
+        success: false,
+        error: "Directory selection was canceled"
+      };
+    }
+
+    return {
+      success: true,
+      directoryPath: result.filePaths[0]
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to select directory"
+    };
+  }
+}
+
+// ---- List Images in Directory Controller ----
+export async function listImagesInDirectoryController(
+  directoryPath: string
+): Promise<ListImagesInDirectoryResponse> {
+  try {
+    // Read directory contents
+    const entries = await fs.readdir(directoryPath, { withFileTypes: true });
+
+    // Filter for image files
+    const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+    const images = entries
+      .filter((entry) => {
+        if (!entry.isFile()) return false;
+        const ext = path.extname(entry.name).toLowerCase();
+        return validExtensions.includes(ext);
+      })
+      .map((entry) => entry.name);
+
+    return {
+      success: true,
+      images
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to list images in directory"
+    };
+  }
+}
+
+// ---- Copy Images from Directory Controller ----
+export async function copyImagesFromDirectoryController(
+  sourceDirectoryPath: string
+): Promise<CopyImagesFromDirectoryResponse> {
+  try {
+    const targetDirectory = getImagesDirectory();
+
+    // Ensure target directory exists
+    await fs.mkdir(targetDirectory, { recursive: true });
+
+    // Get list of images in source directory
+    const listResult =
+      await listImagesInDirectoryController(sourceDirectoryPath);
+
+    if (!listResult.success || !listResult.images) {
+      throw new Error(listResult.error || "Failed to list images");
+    }
+
+    let copiedCount = 0;
+
+    // Copy each image
+    for (const imageName of listResult.images) {
+      const sourcePath = path.join(sourceDirectoryPath, imageName);
+      const targetPath = path.join(targetDirectory, imageName);
+
+      try {
+        // Check if file already exists
+        const exists = await fs
+          .access(targetPath)
+          .then(() => true)
+          .catch(() => false);
+
+        if (!exists) {
+          await fs.copyFile(sourcePath, targetPath);
+          copiedCount++;
+        }
+      } catch (error) {
+        console.error(`Failed to copy ${imageName}:`, error);
+        // Continue with other files even if one fails
+      }
+    }
+
+    return {
+      success: true,
+      copiedCount
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to copy images from directory"
+    };
   }
 }

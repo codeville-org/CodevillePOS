@@ -54,6 +54,11 @@ import {
   UpdateCustomerSchema
 } from "@/lib/zod/customers.zod";
 import {
+  CopyImagesFromDirectoryResponse,
+  ListImagesInDirectoryResponse,
+  SelectImageDirectoryResponse
+} from "@/lib/zod/images.zod";
+import {
   ListPrintersResponseT,
   VoidDataResponseT
 } from "@/lib/zod/printers.zod";
@@ -115,6 +120,13 @@ export interface ImagesActions {
   saveImageFromPath: (sourceImagePath: string) => Promise<string>;
   getImageAsBase64: (filename: string) => Promise<string | null>;
   deleteImage: (filename: string) => Promise<boolean>;
+  selectImageDirectory: () => Promise<SelectImageDirectoryResponse>;
+  listImagesInDirectory: (
+    directoryPath: string
+  ) => Promise<ListImagesInDirectoryResponse>;
+  copyImagesFromDirectory: (
+    sourceDirectoryPath: string
+  ) => Promise<CopyImagesFromDirectoryResponse>;
 }
 
 export interface CustomersActions {

@@ -1,9 +1,12 @@
 import {
+  copyImagesFromDirectoryController,
   deleteImageController,
   getImageAsBase64Controller,
   getImagesDirectory,
+  listImagesInDirectoryController,
   saveImageFromBase64Controller,
-  saveImageFromPathController
+  saveImageFromPathController,
+  selectImageDirectoryController
 } from "@/controllers/images.controller";
 import { createHandler } from "./create-handler";
 
@@ -16,5 +19,11 @@ export const imagesHandler = {
     handler.handle("saveImageFromPath", saveImageFromPathController);
     handler.handle("getImageAsBase64", getImageAsBase64Controller);
     handler.handle("deleteImage", deleteImageController);
+    handler.handle("selectImageDirectory", selectImageDirectoryController);
+    handler.handle("listImagesInDirectory", listImagesInDirectoryController);
+    handler.handle(
+      "copyImagesFromDirectory",
+      copyImagesFromDirectoryController
+    );
   }
 };

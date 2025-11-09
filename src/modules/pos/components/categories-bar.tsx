@@ -1,4 +1,5 @@
-import { ZapIcon } from "lucide-react";
+import { SearchIcon, XCircleIcon, ZapIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -10,12 +11,27 @@ import { useGetAllCategories } from "@/modules/categories/queries/use-get-all";
 type Props = {};
 
 export function CategoriesBar({}: Props) {
+  const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
+  const [categorySearchTermDebounce, setCategorySearchTermDebounce] = useState<
+    string | null
+  >(null);
   const { filter, setFilter } = usePosStore();
 
   const { data, isPending, error } = useGetAllCategories({
     page: "1",
-    limit: "5"
+    limit: "100",
+    search: categorySearchTermDebounce || undefined
   });
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setCategorySearchTermDebounce(categorySearchTerm);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [categorySearchTerm]);
 
   if (error) return <></>;
 
@@ -44,6 +60,24 @@ export function CategoriesBar({}: Props) {
           <ZapIcon fill="#fff" />
           Quick Access
         </Badge>
+
+        <div className="flex items-center gap-2 h-10 max-w-fit px-3 border border-border rounded-full bg-secondary/50 dark:bg-secondary/30">
+          <SearchIcon className="size-4 text-secondary-foreground/70" />
+
+          <input
+            className="w-fit text-sm border-none focus:ring-0 focus:outline-none bg-transparent"
+            placeholder="Search Category..."
+            value={categorySearchTerm}
+            onChange={(e) => setCategorySearchTerm(e.target.value)}
+          />
+
+          {categorySearchTerm && (
+            <XCircleIcon
+              className="text-red-500 hover:text-red-600 size-4 cursor-pointer"
+              onClick={() => setCategorySearchTerm("")}
+            />
+          )}
+        </div>
 
         {data.data.map((category) => (
           <Badge

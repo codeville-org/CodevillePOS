@@ -148,7 +148,6 @@ export async function getImageAsBase64Controller(
     try {
       await fs.access(fullPath);
     } catch (error) {
-      console.warn("Image not found: ", filename);
       return null;
     }
 

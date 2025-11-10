@@ -3,8 +3,10 @@ import { useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TEXTS } from "@/lib/language";
 import { cn, formatPrice } from "@/lib/utils";
 import { SelectCustomer } from "@/lib/zod/customers.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 import { CustomersDropdown } from "@/modules/customers/components/customer-dropdown";
 import { InitializeTransaction } from "../components/initialize-transaction";
@@ -15,6 +17,7 @@ import { useUpdateCustomer } from "../queries/use-update-customer";
 type Props = {};
 
 export function PosSidebar({}: Props) {
+  const { language } = usePersistStore();
   const { transactionItems, activeTransaction, listingView, setListingView } =
     usePosStore();
   const { mutate: mutateCustomerUpdate, isPending: customerUpdating } =
@@ -30,7 +33,7 @@ export function PosSidebar({}: Props) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-semibold text-foreground/70">
-              Customer
+              {TEXTS.posSidebar.customer[language]}
             </Label>
             {selectedCustomer && (
               <Label
@@ -80,10 +83,10 @@ export function PosSidebar({}: Props) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  No Active Transaction
+                  {TEXTS.posSidebar.inactive.title[language]}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Initialize new Transaction here
+                  {TEXTS.posSidebar.inactive.description[language]}
                 </p>
               </div>
 
@@ -98,10 +101,10 @@ export function PosSidebar({}: Props) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Cart is empty
+                  {TEXTS.posSidebar.empty.title[language]}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Add products to start a transaction
+                  {TEXTS.posSidebar.empty.subtitle[language]}
                 </p>
               </div>
             </div>
@@ -109,7 +112,9 @@ export function PosSidebar({}: Props) {
         ) : (
           <div className="flex flex-col gap-3 p-3">
             <div className="w-full flex items-center justify-between">
-              <Label className="text-base font-semibold">Cart Items</Label>
+              <Label className="text-base font-semibold">
+                {TEXTS.posSidebar.cartItems[language]}
+              </Label>
               {listingView === "listing" && (
                 <Label
                   onClick={() => setListingView("billing")}

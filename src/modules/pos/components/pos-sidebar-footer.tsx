@@ -22,8 +22,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { TEXTS } from "@/lib/language";
 import { cn, formatPrice } from "@/lib/utils";
 import { PaymentMethod } from "@/lib/zod/transactions.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 import { useCompleteTransaction } from "../queries/use-complete-transaction";
 
@@ -35,6 +37,7 @@ export function PosSidebarFooter({ className }: Props) {
   const [isClearModalOpen, setClearModalOpen] = useState<boolean>(false);
   const [isCancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 
+  const { language } = usePersistStore();
   const { mutate: completePurchase, isPending: completingPurchase } =
     useCompleteTransaction();
   const {
@@ -89,17 +92,17 @@ export function PosSidebarFooter({ className }: Props) {
       >
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <small>Subtotal</small>
-            <small>{formatPrice(amountOverview.subtotal)}</small>
+            <small>{TEXTS.posSidebar.subtotal[language]}</small>
+            <small>{formatPrice(amountOverview.subtotal, language)}</small>
           </div>
           <div className="flex items-center justify-between">
-            <small>Tax</small>
-            <small>{formatPrice(amountOverview.tax)}</small>
+            <small>{TEXTS.posSidebar.tax[language]}</small>
+            <small>{formatPrice(amountOverview.tax, language)}</small>
           </div>
           <div className="flex items-center justify-between">
-            <small>Discount</small>
+            <small>{TEXTS.posSidebar.discount[language]}</small>
             <small className="text-green-600">
-              - {formatPrice(amountOverview.discount)}
+              - {formatPrice(amountOverview.discount, language)}
             </small>
           </div>
         </div>
@@ -107,9 +110,11 @@ export function PosSidebarFooter({ className }: Props) {
         <Separator />
 
         <div className="flex items-center justify-between">
-          <h4 className="text-lg font-semibold">Total</h4>
           <h4 className="text-lg font-semibold">
-            {formatPrice(amountOverview.total)}
+            {TEXTS.posSidebar.total[language]}
+          </h4>
+          <h4 className="text-lg font-semibold">
+            {formatPrice(amountOverview.total, language)}
           </h4>
         </div>
 
@@ -128,7 +133,7 @@ export function PosSidebarFooter({ className }: Props) {
               })}
               autoBlur
             >
-              Cash
+              {TEXTS.posSidebar.methods.cash[language]}
             </Button>
             <Button
               variant={
@@ -142,7 +147,7 @@ export function PosSidebarFooter({ className }: Props) {
               })}
               autoBlur
             >
-              Card
+              {TEXTS.posSidebar.methods.card[language]}
             </Button>
             <Button
               disabled={!activeTransaction.customerId}
@@ -157,7 +162,7 @@ export function PosSidebarFooter({ className }: Props) {
               })}
               autoBlur
             >
-              Credit
+              {TEXTS.posSidebar.methods.credit[language]}
             </Button>
           </div>
 
@@ -165,11 +170,11 @@ export function PosSidebarFooter({ className }: Props) {
             <div className="flex items-center justify-between gap-3 mt-4 pb-1">
               <div className="space-y-0.5">
                 <Label className="text-xs font-medium text-foreground/80">
-                  Cash Given
+                  {TEXTS.posSidebar.cashGiven[language]}
                 </Label>
                 <Input
                   type="text"
-                  placeholder="Cash Given"
+                  placeholder={TEXTS.posSidebar.cashGiven[language]}
                   className="h-12 bg-white"
                   value={cashGiven ?? ""}
                   onChange={(e) => {
@@ -193,11 +198,11 @@ export function PosSidebarFooter({ className }: Props) {
               </div>
               <div className="space-y-0.5">
                 <Label className="text-xs font-medium text-foreground/80">
-                  Change
+                  {TEXTS.posSidebar.balance[language]}
                 </Label>
                 <Input
                   type="number"
-                  placeholder="Change"
+                  placeholder={TEXTS.posSidebar.balance[language]}
                   className="h-12 bg-white"
                   value={change ?? ""}
                   disabled
@@ -222,7 +227,7 @@ export function PosSidebarFooter({ className }: Props) {
             loading={completingPurchase}
             autoBlur
           >
-            Complete Purchase
+            {TEXTS.posSidebar.complete[language]}
           </Button>
 
           <div className="flex items-center gap-2">
@@ -233,7 +238,7 @@ export function PosSidebarFooter({ className }: Props) {
               onClick={() => setClearModalOpen(true)}
               autoBlur
             >
-              Clear
+              {TEXTS.posSidebar.clear[language]}
             </Button>
             <Button
               variant="outline"
@@ -242,7 +247,7 @@ export function PosSidebarFooter({ className }: Props) {
               onClick={() => setCancelModalOpen(true)}
               autoBlur
             >
-              Cancel
+              {TEXTS.posSidebar.cancel[language]}
             </Button>
           </div>
         </div>

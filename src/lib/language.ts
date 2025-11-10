@@ -215,9 +215,9 @@ export const TEXTS = {
     qty: { en: "Qty.", si: "ප්‍රමාණය" },
     unitPrice: { en: "Unit Price", si: "සදහන් මිල" },
     total: { en: "Total", si: "එකතුව" },
-    subtotal: { en: "Sub Total", si: "එකතුව" },
+    subtotal: { en: "Sub Total", si: "මුළු මුදල" },
     discount: { en: "Discount", si: "වට්ටම" },
-    netTotal: { en: "Net Amount", si: "මුළු එකතුව" },
+    netTotal: { en: "Net Amount", si: "ගෙවිය යුතු මුදල" },
     billNumber: { en: "Bill Number", si: "බිල්පත් අංකය" },
     customer: { en: "Customer", si: "පාරිභෝගික නම" },
     invoiceData: { en: "Invoice Date", si: "නිකුත් කල දිනය" },
@@ -225,5 +225,40 @@ export const TEXTS = {
       en: "Thank you...!, Come Again ✨✨",
       si: "ස්තූතියි...! නැවත එන්න ✨✨"
     }
+  },
+  posSidebar: {
+    customer: { en: "Customer", si: "පාරිභෝගිකයා තෝරන්න" },
+    inactive: {
+      title: {
+        en: "No Active Transaction",
+        si: "සක්‍රීය ගනුදෙනුවක් නොමැත"
+      },
+      description: {
+        en: "Initialize new Transaction here",
+        si: "පහතින් නව ගණුදෙනුවක් ආරම්භ කරන්න"
+      }
+    },
+    cartItems: { en: "Cart Items", si: "ගණුදෙනු භාණ්ඩ " },
+    empty: {
+      title: { en: "Cart is empty", si: "ගණුදෙනුව දැනට හිස්ව පවතී" },
+      subtitle: {
+        en: "Add products to start the transaction",
+        si: "බාර්කෝඩ් රීඩරය හෝ සෙවුම් තීරුව භාවිතා කර භාණ්ඩ එකතු කරන්න"
+      }
+    },
+    total: { en: "Total", si: "ගෙවිය යුතු මුදල" },
+    subtotal: { en: "Subtotal", si: "මුළු මුදල" },
+    tax: { en: "Tax", si: "බදු" },
+    discount: { en: "Discount", si: "වට්ටම" },
+    cashGiven: { en: "Cash Given", si: "දුන් මුදල" },
+    balance: { en: "Change", si: "ඉතිරි මුදල" },
+    methods: {
+      cash: { en: "Cash", si: "මුදල්" },
+      card: { en: "Card", si: "කාඩ්පත්" },
+      credit: { en: "Credit", si: "ණය" }
+    },
+    complete: { en: "Complete Purchase", si: "ගණුදෙනුව අවසන් කරන්න" },
+    clear: { en: "Clear", si: "හිස් කරන්න" },
+    cancel: { en: "Cancel", si: "අවලංගු කරන්න" }
   }
 };

@@ -48,7 +48,7 @@ export function CategoriesBar({}: Props) {
   }
 
   return (
-    <ScrollArea className="flex items-center whitespace-nowrap w-full">
+    <ScrollArea className="flex items-center whitespace-nowrap w-full max-w-[calc(100vw-435px)]">
       <div className="flex items-center gap-2 p-4">
         <Badge
           variant={filter === "featured" ? "default" : "secondary"}

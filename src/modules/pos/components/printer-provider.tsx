@@ -325,6 +325,24 @@ export function PrinterProvider({}: Props) {
                           {formatPrice(transactionData.totalAmount, language)}
                         </p>
                       </div>
+
+                      <div className="mt-3 border-t border-black py-3 flex items-center justify-between">
+                        <p className="text-xl font-semibold">
+                          {TEXTS.bill.cashGiven[language]} :{" "}
+                          <p className="font-medium">
+                            {formatPrice(
+                              transactionData.cashReceived,
+                              language
+                            )}
+                          </p>
+                        </p>
+                        <p className="text-xl font-semibold">
+                          {TEXTS.bill.balance[language]} :{" "}
+                          <p className="font-medium">
+                            {formatPrice(transactionData.changeGiven, language)}
+                          </p>
+                        </p>
+                      </div>
                     </div>
 
                     {/* Footer Section */}

@@ -218,6 +218,8 @@ export const TEXTS = {
     subtotal: { en: "Sub Total", si: "මුළු මුදල" },
     discount: { en: "Discount", si: "වට්ටම" },
     netTotal: { en: "Net Amount", si: "ගෙවිය යුතු මුදල" },
+    cashGiven: { en: "Cash Given", si: "දුන් මුදල" },
+    balance: { en: "Change", si: "ඉතිරි මුදල" },
     billNumber: { en: "Bill Number", si: "බිල්පත් අංකය" },
     customer: { en: "Customer", si: "පාරිභෝගික නම" },
     invoiceData: { en: "Invoice Date", si: "නිකුත් කල දිනය" },

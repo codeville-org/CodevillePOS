@@ -1,7 +1,7 @@
 import { MoonIcon, PhoneIcon, SunIcon, UnlockIcon } from "lucide-react";
 import { useId, useState } from "react";
 
-import authBgImage from "@/assets/images/auth-bg.png";
+import authBgImage from "@/assets/images/auth-bg.jpg";
 import codevilleLogoDark from "@/assets/images/logo-dark.png";
 import codevilleLogoLight from "@/assets/images/logo-light.png";
 
@@ -111,7 +111,19 @@ export function LoginForm({ className }: Props) {
             className="w-full h-full object-cover"
           />
 
-          <div className="h-2/3 w-full absolute z-30 bg-gradient-to-t bottom-0 left-0 from-black/80 to-transparent" />
+          <div className="absolute z-50 h-fit bottom-4 left-4 space-y-3 text-white">
+            <p className="text-base opacity-80 font-sans">
+              {`"Empowering Your Grocery Store with Seamless POS Experience"`}
+            </p>
+
+            <img
+              src={codevilleLogoDark}
+              alt="Authentication background"
+              className="h-7 object-cover opacity-80"
+            />
+          </div>
+
+          <div className="h-2/3 w-full absolute z-30 bg-gradient-to-t bottom-0 left-0 from-black/90 to-transparent" />
         </div>
 
         <div className="flex flex-col items-center justify-center">
@@ -145,8 +157,8 @@ export function LoginForm({ className }: Props) {
               <div className="flex flex-col items-center justify-center gap-1">
                 <h2 className="mb-1 text-center text-2xl font-black tracking-tight">
                   {latestLoginFootprint
-                    ? "😾 System Locked"
-                    : "😺 Welcome Back !"}
+                    ? "🔒 System Locked"
+                    : "👋 Welcome Back !"}
                 </h2>
                 <p className="text-center text-sm text-foreground/70">
                   Please login to your account to continue using CodeVille POS.

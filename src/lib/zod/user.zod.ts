@@ -4,7 +4,14 @@ import { getBaseReturnSchema, getPaginatedSchema } from "./helpers";
 export const baseUserSchema = z.object({
   id: z.string(),
 
-  username: z.string(),
+  // Username cannot contain spaces and special characters
+  username: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username must not contain spaces or special characters"
+    ),
+
   email: z.string().email().optional(),
   password: z.string(),
   isAdmin: z.boolean().default(false),

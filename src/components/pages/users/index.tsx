@@ -3,6 +3,7 @@ import { AppPageShell } from "@/components/layouts/dashboard/page-shell";
 import { Separator } from "@/components/ui/separator";
 import { TEXTS } from "@/lib/language";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { AddUser } from "@/modules/users/components/add-user";
 
 type Props = {};
 
@@ -15,7 +16,7 @@ export function UsersPage({}: Props) {
         <AppPageShell
           title={TEXTS.users.title[language]}
           description={TEXTS.users.subtitle[language]}
-          actionComponent={undefined}
+          actionComponent={<AddUser />}
         />
 
         <Separator />

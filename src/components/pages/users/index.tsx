@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { TEXTS } from "@/lib/language";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { AddUser } from "@/modules/users/components/add-user";
+import { UsersListing } from "@/modules/users/components/user-listing";
 
 type Props = {};
 
@@ -21,7 +22,7 @@ export function UsersPage({}: Props) {
 
         <Separator />
 
-        {/* <CategoryListing className="flex-1" /> */}
+        <UsersListing className="flex-1" />
       </div>
     </PageContainer>
   );

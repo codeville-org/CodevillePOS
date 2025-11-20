@@ -28,10 +28,12 @@ import { insertUserSchema, InsertUserSchema } from "@/lib/zod/user.zod";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useCreateUser } from "../queries/use-create";
 
 type Props = {};
 
 export function AddUser({}: Props) {
+  const { mutate, isPending } = useCreateUser();
   const { language } = usePersistStore();
   const [open, setOpen] = useState(false);
 
@@ -46,7 +48,12 @@ export function AddUser({}: Props) {
   });
 
   const onSubmit = (data: InsertUserSchema) => {
-    console.log("Create User:", data);
+    mutate(data, {
+      onSuccess: () => {
+        form.reset();
+        setOpen(false);
+      }
+    });
   };
 
   return (
@@ -206,7 +213,14 @@ export function AddUser({}: Props) {
               >
                 Cancel
               </Button>
-              <Button type="submit">Create User</Button>
+              <Button
+                type="submit"
+                icon={<UserPlus2Icon />}
+                loading={isPending}
+                disabled={isPending}
+              >
+                Create User
+              </Button>
             </DialogFooter>
           </form>
         </Form>

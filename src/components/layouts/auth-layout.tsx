@@ -16,7 +16,7 @@ export function AuthLayout({ children }: Props) {
   if (isPending) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <Loader2 className="size-8 text-primary" />
+        <Loader2 className="animate-spin size-8 text-primary" />
       </div>
     );
   }

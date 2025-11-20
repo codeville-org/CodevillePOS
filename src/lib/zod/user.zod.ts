@@ -20,6 +20,8 @@ export const baseUserSchema = z.object({
   updatedAt: z.date()
 });
 
+export type SelectUserSchema = z.infer<typeof baseUserSchema>;
+
 export const insertUserSchema = baseUserSchema.omit({
   id: true,
   createdAt: true,

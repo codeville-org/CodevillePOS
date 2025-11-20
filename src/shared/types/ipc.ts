@@ -175,7 +175,7 @@ export interface SettingsActions {
 }
 
 export interface SecurityActions {
-  login: (password: string) => Promise<GetSecurityResponseT>;
+  login: (username: string, password: string) => Promise<GetSecurityResponseT>;
 }
 
 export interface PrinterActions {

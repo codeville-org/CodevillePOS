@@ -9,6 +9,7 @@ import { LanguageSelector } from "@/components/elements/language-selector";
 import { WindowActions } from "@/components/layouts/dashboard/window-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -27,6 +28,7 @@ export function LoginForm({ className }: Props) {
   const toastId = useId();
   const { theme, setTheme, language } = usePersistStore();
   const { latestLoginFootprint, login } = useSecurityStore();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleToggleTheme = () => {
@@ -36,7 +38,7 @@ export function LoginForm({ className }: Props) {
   const handleLogin = async () => {
     toast.loading("Logging in...", { id: toastId });
 
-    const res = await login(password);
+    const res = await login(username, password);
 
     if (res.success) {
       toast.success(res.message, { id: toastId });
@@ -166,8 +168,15 @@ export function LoginForm({ className }: Props) {
               </div>
 
               <div className="flex flex-col gap-3">
+                <Input
+                  placeholder={TEXTS.lockScreen.username.placeholder[language]}
+                  className="h-12 text-center shadow-none rounded-lg"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+
                 <PasswordInput
-                  placeholder={TEXTS.lockScreen.placeholder[language]}
+                  placeholder={TEXTS.lockScreen.password.placeholder[language]}
                   className="h-12 text-center shadow-none rounded-lg"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

@@ -12,7 +12,7 @@ export const baseUserSchema = z.object({
       "Username must not contain spaces or special characters"
     ),
 
-  email: z.string().email().optional(),
+  email: z.string(),
   password: z.string(),
   isAdmin: z.boolean().default(false),
 

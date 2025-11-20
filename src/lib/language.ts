@@ -252,9 +252,17 @@ export const TEXTS = {
     }
   },
   lockScreen: {
-    placeholder: {
-      en: "Enter your password here",
-      si: "ඔබේ මුරපදය මෙහි ඇතුලත් කරන්න"
+    username: {
+      placeholder: {
+        en: "Enter your username here",
+        si: "පරිශීලක නම මෙහි ඇතුලත් කරන්න"
+      }
+    },
+    password: {
+      placeholder: {
+        en: "Enter your password here",
+        si: "ඔබේ මුරපදය මෙහි ඇතුලත් කරන්න"
+      }
     },
     button: { en: "Login", si: "ඇතුල්වන්න" }
   },

@@ -23,10 +23,14 @@ import {
 } from "@/components/ui/sidebar";
 import { CONSTANTS } from "@/lib/constants";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { useSecurityStore } from "@/lib/zustand/security-store";
 import { NavMain } from "./nav-main";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { language } = usePersistStore();
+  const { user } = useSecurityStore();
+
+  const isAdmin = user?.isAdmin;
 
   // Dynamic navigation data based on current language
   const navMainData = [
@@ -68,24 +72,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/transactions",
       icon: NotebookPen
     },
-    {
-      key: "users",
-      title: CONSTANTS.SIDEBAR.users.text[language],
-      url: "/users",
-      icon: UserCircle2Icon
-    },
-    {
-      key: "reports",
-      title: CONSTANTS.SIDEBAR.reports.text[language],
-      url: "/reports",
-      icon: BarChart3
-    },
-    {
-      key: "settings",
-      title: CONSTANTS.SIDEBAR.settings.text[language],
-      url: "/settings",
-      icon: Settings
-    }
+    // Only show Users and Reports to Admin users
+    ...(isAdmin
+      ? [
+          {
+            key: "users",
+            title: CONSTANTS.SIDEBAR.users.text[language],
+            url: "/users",
+            icon: UserCircle2Icon
+          },
+          {
+            key: "reports",
+            title: CONSTANTS.SIDEBAR.reports.text[language],
+            url: "/reports",
+            icon: BarChart3
+          },
+          {
+            key: "settings",
+            title: CONSTANTS.SIDEBAR.settings.text[language],
+            url: "/settings",
+            icon: Settings
+          }
+        ]
+      : [])
   ];
 
   return (

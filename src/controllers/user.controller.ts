@@ -155,6 +155,12 @@ export async function updateUserByIdController(
   try {
     const db = getDB();
 
+    if (values.password) {
+      // Encrypt password before storing
+      const encryptedPassword = encrypt(values.password);
+      values.password = encryptedPassword;
+    }
+
     const [updated] = await db
       .update(users)
       .set({ ...values, updatedAt: new Date() })

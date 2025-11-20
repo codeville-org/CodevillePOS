@@ -2,7 +2,9 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Language, Theme } from "@/shared/types/global";
-import { applyTheme, electronStorage } from "./actions";
+
+import { electronStorage } from "../local-storage";
+import { applyTheme } from "./actions";
 import type { PersistStoreState } from "./types";
 
 export const usePersistStore = create<PersistStoreState>()(

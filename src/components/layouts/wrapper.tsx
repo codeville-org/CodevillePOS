@@ -8,7 +8,8 @@ import { useEffect } from "react";
 
 import { cn } from "@/lib/utils";
 import { usePersistStore } from "@/lib/zustand/persist-store";
-import { LockSwitch } from "@/modules/auth/lock-switch";
+import { useSecurityStore } from "@/lib/zustand/security-store";
+import { LogoutBadge } from "@/modules/auth/logout-badge";
 import { RealtimeClock } from "@/modules/pos/components/clock";
 import { useGetSettings } from "@/modules/settings/query/use-get";
 import { LanguageSelector } from "../elements/language-selector";
@@ -19,6 +20,7 @@ import { AppRouter } from "./router";
 export function Wrapper() {
   const { data, error } = useGetSettings();
   const { language, setStoreSettings } = usePersistStore();
+  const { user } = useSecurityStore();
 
   // Update persisted store settings from database
   useEffect(() => {
@@ -64,7 +66,14 @@ export function Wrapper() {
                 </div>
 
                 <div className="flex items-center gap-2 h-full">
-                  <LockSwitch />
+                  <div className="flex items-center gap-3">
+                    {user && (
+                      <p className="text-xs text-secondary-foreground/70">
+                        Hello, {user.username}
+                      </p>
+                    )}
+                    <LogoutBadge />
+                  </div>
 
                   <Separator
                     className="mx-2 ml-4 data-[orientation=vertical]:h-4"

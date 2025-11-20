@@ -175,6 +175,16 @@ export const TEXTS = {
       }
     }
   },
+  users: {
+    title: { en: "User Management", si: "පරිශීලක කළමනාකරණය" },
+    subtitle: {
+      en: "Manage application users here",
+      si: "යෙදුම් පරිශීලකයන් මෙහි කළමනාකරණය කරන්න"
+    },
+    addNew: {
+      button: { en: "Add User", si: "එක් කරන්න" }
+    }
+  },
   transactions: {
     title: { en: "All Transactions", si: "සියලුම ගනුදෙනු" },
     subtitle: {

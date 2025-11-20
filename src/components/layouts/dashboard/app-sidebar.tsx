@@ -6,6 +6,7 @@ import {
   NotebookPen,
   Settings,
   ShoppingCart,
+  UserCircle2Icon,
   Users,
   Warehouse
 } from "lucide-react";
@@ -66,6 +67,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: CONSTANTS.SIDEBAR.transactions.text[language],
       url: "/transactions",
       icon: NotebookPen
+    },
+    {
+      key: "users",
+      title: CONSTANTS.SIDEBAR.users.text[language],
+      url: "/users",
+      icon: UserCircle2Icon
     },
     {
       key: "reports",

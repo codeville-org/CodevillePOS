@@ -40,6 +40,9 @@ export const CONSTANTS = {
     transactions: {
       text: { en: "Transactions", si: "ගණුදෙනු" }
     },
+    users: {
+      text: { en: "User Management", si: "පරිශීලකයින්" }
+    },
     reports: {
       text: { en: "Reports", si: "අලෙවි වාර්තා" }
     },

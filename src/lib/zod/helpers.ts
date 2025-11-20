@@ -65,3 +65,7 @@ export const messageSchema = z.object({
 });
 
 export type MessageSchema = z.infer<typeof messageSchema>;
+
+export const messageResponseSchema = getBaseReturnSchema(messageSchema);
+
+export type MessageResponseT = z.infer<typeof messageResponseSchema>;

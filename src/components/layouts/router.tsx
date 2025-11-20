@@ -9,6 +9,7 @@ import { SingleProductPage } from "../pages/products/single-product";
 import { ReportsPage } from "../pages/reports";
 import { SettingsPage } from "../pages/settings";
 import { TransactionsPage } from "../pages/transactions";
+import { UsersPage } from "../pages/users";
 
 type Props = {};
 
@@ -22,6 +23,7 @@ export function AppRouter({}: Props) {
       <Route path="/products/:id" element={<SingleProductPage />} />
       <Route path="/products/categories" element={<CategoriesPage />} />
       <Route path="/customers" element={<CustomersPage />} />
+      <Route path="/users" element={<UsersPage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
       <Route path="/reports" element={<ReportsPage />} />
       <Route path="/settings" element={<SettingsPage />} />

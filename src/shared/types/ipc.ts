@@ -1,4 +1,5 @@
 import {
+  MessageResponseT,
   ProductsQueryParamsSchema,
   QueryParamsSchema,
   TransactionsQueryParamsSchema
@@ -72,6 +73,12 @@ import {
   GetAppSettingsResponseT,
   ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
+import {
+  GetAllUsersResponseT,
+  GetUserResponseT,
+  InsertUserSchema,
+  UpdateUserSchema
+} from "@/lib/zod/user.zod";
 import {
   ALIGNMENT_OPTIONS,
   PrinterConfig,
@@ -196,6 +203,14 @@ export interface ReportsActions {
   ) => Promise<GetAnalyticsResponse>;
 }
 
+export interface UserActions {
+  getAll: (query: QueryParamsSchema) => Promise<GetAllUsersResponseT>;
+  get: (id: string) => Promise<GetUserResponseT>;
+  create: (body: InsertUserSchema) => Promise<GetUserResponseT>;
+  update: (id: string, body: UpdateUserSchema) => Promise<GetUserResponseT>;
+  delete: (id: string) => Promise<MessageResponseT>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -208,4 +223,5 @@ export interface ElectronAPI {
   security: SecurityActions;
   print: PrinterActions;
   reports: ReportsActions;
+  user: UserActions;
 }

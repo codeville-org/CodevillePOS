@@ -19,13 +19,15 @@ import { AppRouter } from "./router";
 
 export function Wrapper() {
   const { data, error } = useGetSettings();
-  const { language, setStoreSettings } = usePersistStore();
+  const { language, setStoreSettings, setAvailablePaymentMethods } =
+    usePersistStore();
   const { user } = useSecurityStore();
 
   // Update persisted store settings from database
   useEffect(() => {
     if (data && !error) {
       setStoreSettings({ ...data });
+      setAvailablePaymentMethods(data.availablePaymentMethods || []);
     }
   }, [data, error]);
 

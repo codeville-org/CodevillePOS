@@ -312,7 +312,7 @@ export const TEXTS = {
     methods: {
       cash: { en: "Cash", si: "මුදල්" },
       card: { en: "Card", si: "කාඩ්පත්" },
-      credit: { en: "Credit", si: "ණය" }
+      lend: { en: "Lend", si: "ණය" }
     },
     complete: { en: "Complete Purchase", si: "ගණුදෙනුව අවසන් කරන්න" },
     clear: { en: "Clear", si: "හිස් කරන්න" },

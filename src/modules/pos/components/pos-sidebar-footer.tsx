@@ -6,7 +6,7 @@ import {
   PrinterCheckIcon,
   TrashIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   AlertDialog,
@@ -37,7 +37,13 @@ export function PosSidebarFooter({ className }: Props) {
   const [isClearModalOpen, setClearModalOpen] = useState<boolean>(false);
   const [isCancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 
-  const { language } = usePersistStore();
+  const { language, availablePaymentMethods } = usePersistStore();
+
+  // Debug logging
+  console.log(
+    "[POS-FOOTER] Available payment methods:",
+    availablePaymentMethods
+  );
   const { mutate: completePurchase, isPending: completingPurchase } =
     useCompleteTransaction();
   const {
@@ -53,6 +59,18 @@ export function PosSidebarFooter({ className }: Props) {
   );
   const [cashGiven, setCashGiven] = useState<number | null>(null);
   const [change, setChange] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (availablePaymentMethods && availablePaymentMethods.length > 0) {
+      // Set the first available payment method as default if current selection is not in the list
+      if (!availablePaymentMethods.includes(paymentMethod)) {
+        setPaymentMethod(availablePaymentMethods[0]);
+      }
+    } else {
+      // Fallback to CASH if no payment methods are available
+      setPaymentMethod(PaymentMethod.CASH);
+    }
+  }, [availablePaymentMethods, paymentMethod]);
 
   const handleCashGivenChange = (value: number | null) => {
     setCashGiven(value);
@@ -120,51 +138,101 @@ export function PosSidebarFooter({ className }: Props) {
 
         {/* Payment Methods List */}
         <div className="space-y-1">
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant={
-                paymentMethod === PaymentMethod.CASH ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.CASH)}
-              icon={<BanknoteIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-green-700 text-white hover:bg-green-800":
-                  paymentMethod === PaymentMethod.CASH
+          {availablePaymentMethods && availablePaymentMethods.length > 0 ? (
+            <div
+              className={cn("flex items-center gap-2", {
+                "justify-center": availablePaymentMethods.length === 1
               })}
-              autoBlur
             >
-              {TEXTS.posSidebar.methods.cash[language]}
-            </Button>
-            <Button
-              variant={
-                paymentMethod === PaymentMethod.CARD ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.CARD)}
-              icon={<CreditCardIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-blue-700 text-white hover:bg-blue-800":
-                  paymentMethod === PaymentMethod.CARD
-              })}
-              autoBlur
-            >
-              {TEXTS.posSidebar.methods.card[language]}
-            </Button>
-            <Button
-              disabled={!activeTransaction.customerId}
-              variant={
-                paymentMethod === PaymentMethod.LEND ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.LEND)}
-              icon={<HandCoinsIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-yellow-700 text-white hover:bg-yellow-800":
-                  paymentMethod === PaymentMethod.LEND
-              })}
-              autoBlur
-            >
-              {TEXTS.posSidebar.methods.credit[language]}
-            </Button>
-          </div>
+              {availablePaymentMethods.length === 1 ? (
+                // Single payment method - show as label/indicator
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Payment Method:</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded-md">
+                    {paymentMethod === PaymentMethod.CASH ? (
+                      <BanknoteIcon className="w-4 h-4" />
+                    ) : paymentMethod === PaymentMethod.CARD ? (
+                      <CreditCardIcon className="w-4 h-4" />
+                    ) : paymentMethod === PaymentMethod.LEND ? (
+                      <HandCoinsIcon className="w-4 h-4" />
+                    ) : null}
+                    <span className="font-medium">
+                      {(() => {
+                        switch (paymentMethod) {
+                          case PaymentMethod.CASH:
+                            return TEXTS.posSidebar.methods.cash[language];
+                          case PaymentMethod.CARD:
+                            return TEXTS.posSidebar.methods.card[language];
+                          case PaymentMethod.LEND:
+                            return TEXTS.posSidebar.methods.lend[language];
+                          default:
+                            return paymentMethod;
+                        }
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                // Multiple payment methods - show as buttons
+                availablePaymentMethods.map((method) => {
+                  const getMethodText = () => {
+                    switch (method) {
+                      case PaymentMethod.CASH:
+                        return TEXTS.posSidebar.methods.cash[language];
+                      case PaymentMethod.CARD:
+                        return TEXTS.posSidebar.methods.card[language];
+                      case PaymentMethod.LEND:
+                        return TEXTS.posSidebar.methods.lend[language];
+                      default:
+                        return method;
+                    }
+                  };
+
+                  return (
+                    <Button
+                      key={method}
+                      variant={paymentMethod === method ? "default" : "outline"}
+                      onClick={() => setPaymentMethod(method)}
+                      icon={
+                        method === PaymentMethod.CASH ? (
+                          <BanknoteIcon />
+                        ) : method === PaymentMethod.CARD ? (
+                          <CreditCardIcon />
+                        ) : method === PaymentMethod.LEND ? (
+                          <HandCoinsIcon />
+                        ) : undefined
+                      }
+                      className={cn(
+                        "hover:text-foreground flex-1 shadow-none",
+                        {
+                          "bg-green-700 text-white hover:bg-green-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.CASH,
+                          "bg-blue-700 text-white hover:bg-blue-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.CARD,
+                          "bg-yellow-700 text-white hover:bg-yellow-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.LEND
+                        }
+                      )}
+                      autoBlur
+                    >
+                      {getMethodText()}
+                    </Button>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            // Fallback for empty payment methods
+            <div className="flex items-center justify-center text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 px-2 py-1 bg-secondary/50 rounded-md">
+                <BanknoteIcon className="w-4 h-4" />
+                <span>Cash Only</span>
+              </div>
+            </div>
+          )}
 
           {paymentMethod === PaymentMethod.CASH && (
             <div className="flex items-center justify-between gap-3 mt-4 pb-1">

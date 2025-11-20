@@ -1,4 +1,5 @@
 import { StoreSettingsT } from "@/lib/zod/settings.zod";
+import { PaymentMethod } from "@/lib/zod/transactions.zod";
 import { Language, Theme } from "@/shared/types/global";
 
 export interface PersistStoreState {
@@ -16,4 +17,7 @@ export interface PersistStoreState {
   // (Store Settings fetched from Database)
   storeSettings: StoreSettingsT;
   setStoreSettings: (settings: StoreSettingsT) => void;
+
+  availablePaymentMethods: PaymentMethod[];
+  setAvailablePaymentMethods: (methods: PaymentMethod[]) => void;
 }

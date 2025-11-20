@@ -13,11 +13,70 @@ import type {
   GetAppSettingsResponseT,
   ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
-import { encrypt } from "@/shared/utils/auth-util";
+import { PaymentMethod } from "@/lib/zod/transactions.zod";
 import { eq } from "drizzle-orm";
 import { app } from "electron";
 import * as fs from "node:fs/promises";
 import path from "path";
+
+function prepareSettingsMap(allValues: any[]): AppSettingsMapT {
+  let settingsMap: AppSettingsMapT = {
+    defaultPrinter: "",
+    storeLogo: "",
+    storeName: "",
+    address: "",
+    contactPhone: "",
+    availablePaymentMethods: []
+  };
+
+  for (const setting of allValues) {
+    switch (setting.key) {
+      case "defaultPrinter":
+        settingsMap.defaultPrinter = (setting?.value as string) || "";
+        break;
+      case "storeLogo":
+        settingsMap.storeLogo = (setting?.value as string) || "";
+        break;
+      case "storeName":
+        settingsMap.storeName = (setting?.value as string) || "";
+        break;
+      case "address":
+        settingsMap.address = (setting?.value as string) || "";
+        break;
+      case "contactPhone":
+        settingsMap.contactPhone = (setting?.value as string) || "";
+        break;
+      case "availablePaymentMethods":
+        try {
+          // Parse JSON string back to array
+          const availableMethods = setting?.value
+            ? JSON.parse(setting.value as string)
+            : [];
+
+          if (!Array.isArray(availableMethods) || availableMethods.length < 1) {
+            settingsMap.availablePaymentMethods = [PaymentMethod.CASH];
+          } else {
+            // Filter and deduplicate payment methods
+            const validMethods = Array.from(new Set(availableMethods)).filter(
+              (method) =>
+                Object.values(PaymentMethod).includes(method as PaymentMethod)
+            );
+
+            settingsMap.availablePaymentMethods =
+              validMethods.length > 0
+                ? (validMethods as PaymentMethod[])
+                : [PaymentMethod.CASH];
+          }
+        } catch (error) {
+          console.error("Failed to parse availablePaymentMethods:", error);
+          settingsMap.availablePaymentMethods = [PaymentMethod.CASH];
+        }
+        break;
+    }
+  }
+
+  return settingsMap;
+}
 
 // ================= Get App Settings Controller =================
 export async function getAppSettingsController(): Promise<GetAppSettingsResponseT> {
@@ -26,37 +85,7 @@ export async function getAppSettingsController(): Promise<GetAppSettingsResponse
 
     const allValues = await db.query.settings.findMany();
 
-    let settingsMap: AppSettingsMapT = {
-      password: "",
-      defaultPrinter: "",
-      storeLogo: "",
-      storeName: "",
-      address: "",
-      contactPhone: ""
-    };
-
-    for (const setting of allValues) {
-      switch (setting.key) {
-        case "password":
-          settingsMap.password = (setting?.value as string) || "";
-          break;
-        case "defaultPrinter":
-          settingsMap.defaultPrinter = (setting?.value as string) || "";
-          break;
-        case "storeLogo":
-          settingsMap.storeLogo = (setting?.value as string) || "";
-          break;
-        case "storeName":
-          settingsMap.storeName = (setting?.value as string) || "";
-          break;
-        case "address":
-          settingsMap.address = (setting?.value as string) || "";
-          break;
-        case "contactPhone":
-          settingsMap.contactPhone = (setting?.value as string) || "";
-          break;
-      }
-    }
+    const settingsMap = prepareSettingsMap(allValues);
 
     return {
       data: settingsMap,
@@ -81,43 +110,35 @@ export async function upsertAppSettingsController(
 
     await Promise.all(
       Object.keys(payload).map(async (key: string) => {
-        const keyValue: string | undefined = (payload as Record<string, any>)[
-          key
-        ];
+        const keyValue: any = (payload as Record<string, any>)[key];
 
-        if (keyValue) {
+        if (keyValue !== undefined && keyValue !== null) {
+          // Serialize arrays to JSON strings for storage
+          const valueToStore = Array.isArray(keyValue)
+            ? JSON.stringify(keyValue)
+            : (keyValue as string);
+
+          // Debug logging for payment methods
+          // if (key === "availablePaymentMethods") {
+          //   console.log(`[UPSERT] Storing ${key}:`, {
+          //     original: keyValue,
+          //     serialized: valueToStore
+          //   });
+          // }
+
           // Check if the setting already exists
           const existingSetting = await db.query.settings.findFirst({
             where: eq(settings.key, key)
           });
 
           if (existingSetting) {
-            // Update the existing setting
-
-            if (key === "password" && keyValue !== "") {
-              await db
-                .update(settings)
-                .set({ value: encrypt(keyValue), updatedAt: new Date() })
-                .where(eq(settings.id, existingSetting.id));
-
-              return;
-            }
-
             await db
               .update(settings)
-              .set({ value: keyValue, updatedAt: new Date() })
+              .set({ value: valueToStore, updatedAt: new Date() })
               .where(eq(settings.id, existingSetting.id));
           } else {
             // Insert a new setting
-
-            if (key === "password" && keyValue !== "") {
-              await db
-                .insert(settings)
-                .values({ key, value: encrypt(keyValue) });
-              return;
-            }
-
-            await db.insert(settings).values({ key, value: keyValue });
+            await db.insert(settings).values({ key, value: valueToStore });
           }
         }
       })
@@ -125,17 +146,7 @@ export async function upsertAppSettingsController(
 
     const allValues = await db.query.settings.findMany();
 
-    let settingsMap: AppSettingsMapT = {
-      password: ""
-    };
-
-    for (const setting of allValues) {
-      switch (setting.key) {
-        case "password":
-          settingsMap.password = (setting?.value as string) || "";
-          break;
-      }
-    }
+    const settingsMap = prepareSettingsMap(allValues);
 
     return {
       data: settingsMap,

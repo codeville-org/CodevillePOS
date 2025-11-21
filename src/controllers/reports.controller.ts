@@ -19,15 +19,85 @@ export async function getDashboardAnalyticsController(
   try {
     const db = getDB();
 
-    // Date range filtering - Convert string params to Unix timestamps (seconds)
-    const startDateObj = params?.startDate
-      ? new Date(params.startDate)
-      : new Date(new Date().setMonth(new Date().getMonth() - 1));
-    const endDateObj = params?.endDate ? new Date(params.endDate) : new Date();
+    // Helper function to get date range based on filter type
+    const getDateRangeFromFilter = (
+      filterType?: string,
+      startDate?: string,
+      endDate?: string
+    ) => {
+      const now = new Date();
 
-    // Convert to Unix timestamps (seconds) for SQLite comparison
-    const startTimestamp = Math.floor(startDateObj.getTime() / 1000);
-    const endTimestamp = Math.floor(endDateObj.getTime() / 1000);
+      if (startDate && endDate) {
+        return {
+          start: new Date(startDate),
+          end: new Date(endDate)
+        };
+      }
+
+      switch (filterType) {
+        case "today": {
+          const today = new Date(now);
+          today.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(today);
+          endOfDay.setHours(23, 59, 59, 999);
+          return { start: today, end: endOfDay };
+        }
+
+        case "week": {
+          const today = new Date(now);
+          today.setHours(0, 0, 0, 0);
+          const dayOfWeek = today.getDay();
+          const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          const startOfWeek = new Date(today);
+          startOfWeek.setDate(today.getDate() - daysToMonday);
+
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          endOfWeek.setHours(23, 59, 59, 999);
+
+          return { start: startOfWeek, end: endOfWeek };
+        }
+
+        case "month": {
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          endOfMonth.setHours(23, 59, 59, 999);
+          return { start: startOfMonth, end: endOfMonth };
+        }
+
+        case "quarter": {
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          const startOfQuarter = new Date(
+            now.getFullYear(),
+            currentQuarter * 3,
+            1
+          );
+          const endOfQuarter = new Date(
+            now.getFullYear(),
+            currentQuarter * 3 + 3,
+            0
+          );
+          endOfQuarter.setHours(23, 59, 59, 999);
+          return { start: startOfQuarter, end: endOfQuarter };
+        }
+
+        default: {
+          // Default to last month for backward compatibility
+          const defaultStart = new Date(now);
+          defaultStart.setMonth(now.getMonth() - 1);
+          return { start: defaultStart, end: now };
+        }
+      }
+    };
+
+    // Get date range based on params
+    const dateRange = getDateRangeFromFilter(
+      params?.filterType,
+      params?.startDate,
+      params?.endDate
+    );
+    const startTimestamp = Math.floor(dateRange.start.getTime() / 1000);
+    const endTimestamp = Math.floor(dateRange.end.getTime() / 1000);
 
     // Overview Statistics
     const totalSalesResult = await db
@@ -103,67 +173,182 @@ export async function getDashboardAnalyticsController(
     const todayAverageIncome =
       todayTransactions > 0 ? todayIncome / todayTransactions : 0;
 
-    // Hourly Sales (Today only)
-    const hourlySalesData = await db
+    // Period-specific Statistics (based on selected date range)
+    const periodTransactionsResult = await db
       .select({
-        hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`,
-        sales: sum(transactions.totalAmount)
+        count: count(),
+        totalAmount: sum(transactions.totalAmount)
       })
       .from(transactions)
       .where(
         and(
           eq(transactions.status, "completed"),
-          sql`${transactions.createdAt} >= ${todayStartTimestamp}`,
-          sql`${transactions.createdAt} <= ${todayEndTimestamp}`
+          sql`${transactions.createdAt} >= ${startTimestamp}`,
+          sql`${transactions.createdAt} <= ${endTimestamp}`
         )
-      )
-      .groupBy(
-        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
-      )
-      .orderBy(
-        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
       );
 
-    // Create complete hourly data (0-23 hours)
-    const hourlySales = Array.from({ length: 24 }, (_, hour) => {
-      const existingData = hourlySalesData.find((item) => item.hour === hour);
-      return {
-        hour,
-        sales: Number(existingData?.sales || 0)
-      };
-    });
+    const periodTransactions = periodTransactionsResult[0]?.count || 0;
+    const periodIncome = Number(periodTransactionsResult[0]?.totalAmount || 0);
+    const periodAverageIncome =
+      periodTransactions > 0 ? periodIncome / periodTransactions : 0;
 
-    // Hourly Transactions (Today only)
-    const hourlyTransactionsData = await db
-      .select({
-        hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`,
-        transactions: count()
-      })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.status, "completed"),
-          sql`${transactions.createdAt} >= ${todayStartTimestamp}`,
-          sql`${transactions.createdAt} <= ${todayEndTimestamp}`
+    // Determine if we should show hourly data (only for today and single day ranges)
+    const showHourlyData =
+      params?.filterType === "today" ||
+      dateRange.start.toDateString() === dateRange.end.toDateString();
+
+    let salesChartData: Array<{ hour?: number; date?: string; sales: number }> =
+      [];
+    let transactionsChartData: Array<{
+      hour?: number;
+      date?: string;
+      transactions: number;
+    }> = [];
+
+    if (showHourlyData) {
+      // Hourly Sales - Using local time (UTC+5:30 for Sri Lanka)
+      const hourlySalesData = await db
+        .select({
+          hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`,
+          sales: sum(transactions.totalAmount)
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.status, "completed"),
+            sql`${transactions.createdAt} >= ${startTimestamp}`,
+            sql`${transactions.createdAt} <= ${endTimestamp}`
+          )
         )
-      )
-      .groupBy(
-        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
-      )
-      .orderBy(
-        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
-      );
+        .groupBy(
+          sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`
+        )
+        .orderBy(
+          sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`
+        );
 
-    // Create complete hourly transactions data (0-23 hours)
-    const hourlyTransactions = Array.from({ length: 24 }, (_, hour) => {
-      const existingData = hourlyTransactionsData.find(
-        (item) => item.hour === hour
-      );
-      return {
-        hour,
-        transactions: existingData?.transactions || 0
-      };
-    });
+      // Create complete hourly sales data (0-23 hours)
+      salesChartData = Array.from({ length: 24 }, (_, hour) => {
+        const existingData = hourlySalesData.find((item) => item.hour === hour);
+        return {
+          hour,
+          sales: Number(existingData?.sales || 0)
+        };
+      });
+    } else {
+      // Daily Sales for multi-day periods
+      const dailySalesData = await db
+        .select({
+          date: sql<string>`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`,
+          sales: sum(transactions.totalAmount)
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.status, "completed"),
+            sql`${transactions.createdAt} >= ${startTimestamp}`,
+            sql`${transactions.createdAt} <= ${endTimestamp}`
+          )
+        )
+        .groupBy(
+          sql`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`
+        )
+        .orderBy(
+          sql`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`
+        );
+
+      // Generate all dates in the range
+      const currentDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
+
+      while (currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split("T")[0];
+        const existingData = dailySalesData.find(
+          (item) => item.date === dateStr
+        );
+
+        salesChartData.push({
+          date: dateStr,
+          sales: Number(existingData?.sales || 0)
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+
+    if (showHourlyData) {
+      // Hourly Transactions - Using local time (UTC+5:30 for Sri Lanka)
+      const hourlyTransactionsData = await db
+        .select({
+          hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`,
+          transactions: count()
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.status, "completed"),
+            sql`${transactions.createdAt} >= ${startTimestamp}`,
+            sql`${transactions.createdAt} <= ${endTimestamp}`
+          )
+        )
+        .groupBy(
+          sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`
+        )
+        .orderBy(
+          sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch', 'localtime')) AS INTEGER)`
+        );
+
+      // Create complete hourly transactions data (0-23 hours)
+      transactionsChartData = Array.from({ length: 24 }, (_, hour) => {
+        const existingData = hourlyTransactionsData.find(
+          (item) => item.hour === hour
+        );
+        return {
+          hour,
+          transactions: existingData?.transactions || 0
+        };
+      });
+    } else {
+      // Daily Transactions for multi-day periods
+      const dailyTransactionsData = await db
+        .select({
+          date: sql<string>`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`,
+          transactions: count()
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.status, "completed"),
+            sql`${transactions.createdAt} >= ${startTimestamp}`,
+            sql`${transactions.createdAt} <= ${endTimestamp}`
+          )
+        )
+        .groupBy(
+          sql`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`
+        )
+        .orderBy(
+          sql`DATE(datetime(${transactions.createdAt}, 'unixepoch', 'localtime'))`
+        );
+
+      // Generate all dates in the range for transactions
+      const currentDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
+
+      while (currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split("T")[0];
+        const existingData = dailyTransactionsData.find(
+          (item) => item.date === dateStr
+        );
+
+        transactionsChartData.push({
+          date: dateStr,
+          transactions: existingData?.transactions || 0
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
 
     // Sales Trend (Last 7 days) - keeping for compatibility
     const salesTrendData = await db
@@ -342,13 +527,18 @@ export async function getDashboardAnalyticsController(
           totalCustomers: totalCustomersResult[0]?.count || 0,
           totalProducts: totalProductsResult[0]?.count || 0,
           averageOrderValue,
+          // Period-specific metrics
+          periodTransactions,
+          periodIncome,
+          periodAverageIncome,
+          // Keep today metrics for compatibility
           todayTransactions,
           todayIncome,
           todayAverageIncome
         },
         salesTrend,
-        hourlySales,
-        hourlyTransactions,
+        hourlySales: salesChartData,
+        hourlyTransactions: transactionsChartData,
         topProducts,
         topCategories,
         topCustomers,

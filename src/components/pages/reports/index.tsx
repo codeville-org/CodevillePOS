@@ -22,6 +22,10 @@ import { TEXTS } from "@/lib/language";
 import { formatPrice } from "@/lib/utils";
 import { AnalyticsQueryParamsSchema } from "@/lib/zod/reports.zod";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import {
+  DateRangeFilter,
+  DateRangeFilterValue
+} from "@/modules/reports/components/date-range-filter";
 import { useGetReportsAnalytics } from "@/modules/reports/queries/use-get-analytics";
 import {
   Bar,
@@ -48,9 +52,27 @@ const COLORS = [
 
 export function ReportsPage({}: Props) {
   const { language } = usePersistStore();
-  const [dateRange] = useState<AnalyticsQueryParamsSchema>({});
+  const [dateFilter, setDateFilter] = useState<DateRangeFilterValue>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
 
-  const { data, isLoading, error } = useGetReportsAnalytics(dateRange);
+    return {
+      type: "today",
+      startDate: today,
+      endDate: endOfDay
+    };
+  });
+
+  // Convert DateRangeFilterValue to AnalyticsQueryParamsSchema
+  const queryParams: AnalyticsQueryParamsSchema = {
+    filterType: dateFilter.type,
+    startDate: dateFilter.startDate?.toISOString(),
+    endDate: dateFilter.endDate?.toISOString()
+  };
+
+  const { data, isLoading, error } = useGetReportsAnalytics(queryParams);
 
   if (isLoading) {
     return (
@@ -91,8 +113,16 @@ export function ReportsPage({}: Props) {
         <AppPageShell
           title={TEXTS.reports.title[language]}
           description={TEXTS.reports.subtitle[language]}
-          actionComponent={undefined}
+          actionComponent={
+            <DateRangeFilter
+              value={dateFilter}
+              onChange={setDateFilter}
+              className="flex-shrink-0"
+            />
+          }
         />
+
+        {/* Date Range Filter */}
 
         <Separator />
 
@@ -107,14 +137,23 @@ export function ReportsPage({}: Props) {
                   <Receipt className="h-5 w-5" />
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Today Transactions
+                  {dateFilter.type === "today"
+                    ? "Today"
+                    : dateFilter.type === "week"
+                      ? "This Week"
+                      : dateFilter.type === "month"
+                        ? "This Month"
+                        : dateFilter.type === "quarter"
+                          ? "This Quarter"
+                          : "Period"}{" "}
+                  Transactions
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-2">
               <div className="flex items-end justify-between">
                 <div className="text-3xl font-semibold tabular-nums text-primary">
-                  {data.overview.todayTransactions || 0}
+                  {data.overview.periodTransactions || 0}
                 </div>
                 <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
                   Completed
@@ -135,21 +174,32 @@ export function ReportsPage({}: Props) {
                   <DollarSign className="h-5 w-5" />
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Today Income
+                  {dateFilter.type === "today"
+                    ? "Today"
+                    : dateFilter.type === "week"
+                      ? "This Week"
+                      : dateFilter.type === "month"
+                        ? "This Month"
+                        : dateFilter.type === "quarter"
+                          ? "This Quarter"
+                          : "Period"}{" "}
+                  Income
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-2">
               <div className="flex items-end justify-between">
                 <div className="text-3xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-                  {formatPrice(data.overview.todayIncome || 0, language)}
+                  {formatPrice(data.overview.periodIncome || 0, language)}
                 </div>
                 {/* <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
                   Revenue
                 </span> */}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Gross sales today
+                {dateFilter.type === "today"
+                  ? "Gross sales today"
+                  : "Gross sales for selected period"}
               </p>
             </CardContent>
           </Card>
@@ -170,7 +220,10 @@ export function ReportsPage({}: Props) {
             <CardContent className="px-4 pb-4 pt-2">
               <div className="flex items-end justify-between">
                 <div className="text-3xl font-semibold tabular-nums text-indigo-600 dark:text-indigo-400">
-                  {formatPrice(data.overview.todayAverageIncome || 0, language)}
+                  {formatPrice(
+                    data.overview.periodAverageIncome || 0,
+                    language
+                  )}
                 </div>
                 <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
                   Per txn
@@ -221,10 +274,16 @@ export function ReportsPage({}: Props) {
                 </div>
                 <div>
                   <CardTitle className="text-lg font-semibold">
-                    Today's Transactions by Hour
+                    {dateFilter.type === "today" ? "Today's" : "Period"}{" "}
+                    Transactions by{" "}
+                    {data.hourlyTransactions[0]?.hour !== undefined
+                      ? "Hour"
+                      : "Day"}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Hourly transaction volume throughout the day
+                    {data.hourlyTransactions[0]?.hour !== undefined
+                      ? "Hourly transaction volume throughout the day"
+                      : "Daily transaction volume for the selected period"}
                   </p>
                 </div>
               </div>
@@ -232,10 +291,11 @@ export function ReportsPage({}: Props) {
               <div className="flex items-center gap-4">
                 <div className="text-right bg-card/80 rounded-lg px-4 py-2 border border-border/50">
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                    Total Transactions
+                    {dateFilter.type === "today" ? "Today" : "Period"}{" "}
+                    Transactions
                   </p>
                   <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">
-                    {data.overview.todayTransactions || 0}
+                    {data.overview.periodTransactions || 0}
                   </p>
                 </div>
               </div>
@@ -275,8 +335,21 @@ export function ReportsPage({}: Props) {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis
-                    dataKey="hour"
-                    tickFormatter={(value) => `${value}:00`}
+                    dataKey={
+                      data.hourlyTransactions[0]?.hour !== undefined
+                        ? "hour"
+                        : "date"
+                    }
+                    tickFormatter={(value) => {
+                      if (data.hourlyTransactions[0]?.hour !== undefined) {
+                        return `${value}:00`;
+                      } else {
+                        return new Date(value).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric"
+                        });
+                      }
+                    }}
                     axisLine={false}
                     tickLine={false}
                     className="text-xs fill-muted-foreground"
@@ -289,10 +362,20 @@ export function ReportsPage({}: Props) {
                   <ChartTooltip
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
+                        const isHourly =
+                          data.hourlyTransactions[0]?.hour !== undefined;
+                        data.hourlyTransactions[0]?.hour !== undefined;
                         return (
                           <div className="rounded-lg border bg-background p-3 shadow-md">
                             <p className="font-medium mb-2">
-                              {label}:00 - {label + 1}:00
+                              {isHourly
+                                ? `${label}:00 - ${label + 1}:00`
+                                : new Date(label).toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                  })}
                             </p>
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded-full bg-cyan-500" />
@@ -333,10 +416,14 @@ export function ReportsPage({}: Props) {
                 </div>
                 <div>
                   <CardTitle className="text-lg font-semibold">
-                    Today's Sales by Hour
+                    {dateFilter.type === "today" ? "Today's" : "Period"} Sales
+                    by{" "}
+                    {data.hourlySales[0]?.hour !== undefined ? "Hour" : "Day"}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Real-time hourly sales performance
+                    {data.hourlySales[0]?.hour !== undefined
+                      ? "Real-time hourly sales performance"
+                      : "Daily sales performance for the selected period"}
                   </p>
                 </div>
               </div>
@@ -344,10 +431,10 @@ export function ReportsPage({}: Props) {
               <div className="flex items-center gap-4">
                 <div className="text-right bg-card/80 rounded-lg px-4 py-2 border border-border/50">
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                    Total Income
+                    {dateFilter.type === "today" ? "Today" : "Period"} Income
                   </p>
                   <p className="text-2xl font-bold text-primary mt-1">
-                    {formatPrice(data.overview.todayIncome || 0, language)}
+                    {formatPrice(data.overview.periodIncome || 0, language)}
                   </p>
                 </div>
               </div>
@@ -382,8 +469,19 @@ export function ReportsPage({}: Props) {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis
-                    dataKey="hour"
-                    tickFormatter={(value) => `${value}:00`}
+                    dataKey={
+                      data.hourlySales[0]?.hour !== undefined ? "hour" : "date"
+                    }
+                    tickFormatter={(value) => {
+                      if (data.hourlySales[0]?.hour !== undefined) {
+                        return `${value}:00`;
+                      } else {
+                        return new Date(value).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric"
+                        });
+                      }
+                    }}
                     axisLine={false}
                     tickLine={false}
                     className="text-xs fill-muted-foreground"
@@ -396,10 +494,20 @@ export function ReportsPage({}: Props) {
                   <ChartTooltip
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
+                        const isHourly =
+                          data.hourlySales[0]?.hour !== undefined;
+                        data.hourlySales[0]?.hour !== undefined;
                         return (
                           <div className="rounded-lg border bg-background p-3 shadow-md">
                             <p className="font-medium mb-2">
-                              {label}:00 - {label + 1}:00
+                              {isHourly
+                                ? `${label}:00 - ${label + 1}:00`
+                                : new Date(label).toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                  })}
                             </p>
                             <div className="flex items-center gap-2">
                               <div

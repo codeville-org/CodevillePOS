@@ -34,6 +34,7 @@ const overviewSchema = z.object({
   periodTransactions: z.number(),
   periodIncome: z.number(),
   periodAverageIncome: z.number(),
+  periodSoldItems: z.number(),
   // For backward compatibility
   todayTransactions: z.number(),
   todayIncome: z.number(),

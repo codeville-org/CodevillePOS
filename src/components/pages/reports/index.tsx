@@ -122,15 +122,13 @@ export function ReportsPage({}: Props) {
           }
         />
 
-        {/* Date Range Filter */}
-
         <Separator />
 
         {/* Overview Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Card: Today Transactions */}
           <Card className="group relative overflow-hidden p-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/0 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-primary/5 opacity-60 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 px-4 pt-4">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -167,7 +165,7 @@ export function ReportsPage({}: Props) {
 
           {/* Card: Today Income */}
           <Card className="group relative overflow-hidden p-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-primary/0 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/20 to-emerald-500/5 opacity-60 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 px-4 pt-4">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -204,9 +202,48 @@ export function ReportsPage({}: Props) {
             </CardContent>
           </Card>
 
+          {/* Card: Sold Items */}
+          <Card className="group relative overflow-hidden p-0">
+            <div className="absolute inset-0 bg-gradient-to-t from-amber-500/20 to-amber-500/5 opacity-60 transition-opacity" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 px-4 pt-4">
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <Package className="h-5 w-5" />
+                </div>
+                <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {dateFilter.type === "today"
+                    ? "Today"
+                    : dateFilter.type === "week"
+                      ? "This Week"
+                      : dateFilter.type === "month"
+                        ? "This Month"
+                        : dateFilter.type === "quarter"
+                          ? "This Quarter"
+                          : "Period"}{" "}
+                  Sold Items
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-2">
+              <div className="flex items-end justify-between">
+                <div className="text-3xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                  {data.overview.periodSoldItems || 0}
+                </div>
+                <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
+                  Units
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {dateFilter.type === "today"
+                  ? "Items sold today"
+                  : "Items sold for selected period"}
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Card: Today Average Income */}
           <Card className="group relative overflow-hidden p-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-primary/0 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/20 to-indigo-500/5 opacity-60 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 px-4 pt-4">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
@@ -225,40 +262,12 @@ export function ReportsPage({}: Props) {
                     language
                   )}
                 </div>
-                <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
+                {/* <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
                   Per txn
-                </span>
+                </span> */}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Average per completed transaction
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Card: Total Products */}
-          <Card className="group relative overflow-hidden p-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-primary/0 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 px-4 pt-4">
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                  <Package className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Total Products
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 pt-2">
-              <div className="flex items-end justify-between">
-                <div className="text-3xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
-                  {data.overview.totalProducts}
-                </div>
-                <span className="text-[11px] rounded-md border px-2 py-1 bg-muted/40 text-muted-foreground">
-                  Inventory
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Active catalogue size
               </p>
             </CardContent>
           </Card>

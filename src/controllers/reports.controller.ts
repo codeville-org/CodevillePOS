@@ -193,6 +193,28 @@ export async function getDashboardAnalyticsController(
     const periodAverageIncome =
       periodTransactions > 0 ? periodIncome / periodTransactions : 0;
 
+    // Period-specific Sold Items (total quantity of all items sold)
+    const periodSoldItemsResult = await db
+      .select({
+        totalQuantity: sum(transactionItems.quantity)
+      })
+      .from(transactionItems)
+      .innerJoin(
+        transactions,
+        eq(transactionItems.transactionId, transactions.id)
+      )
+      .where(
+        and(
+          eq(transactions.status, "completed"),
+          sql`${transactions.createdAt} >= ${startTimestamp}`,
+          sql`${transactions.createdAt} <= ${endTimestamp}`
+        )
+      );
+
+    const periodSoldItems = Number(
+      periodSoldItemsResult[0]?.totalQuantity || 0
+    );
+
     // Determine if we should show hourly data (only for today and single day ranges)
     const showHourlyData =
       params?.filterType === "today" ||
@@ -531,6 +553,7 @@ export async function getDashboardAnalyticsController(
           periodTransactions,
           periodIncome,
           periodAverageIncome,
+          periodSoldItems,
           // Keep today metrics for compatibility
           todayTransactions,
           todayIncome,

@@ -25,7 +25,7 @@ export function LanguageSelector({ className }: Props) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <button
           className={cn(
             "bg-transparent flex items-center gap-2 text-foreground text-xs hover:bg-transparent cursor-pointer hover:underline",

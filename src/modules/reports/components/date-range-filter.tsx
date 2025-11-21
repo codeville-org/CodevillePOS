@@ -8,7 +8,9 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { TEXTS } from "@/lib/language";
 import { cn } from "@/lib/utils";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 
 export type DateFilterType = "today" | "week" | "month" | "quarter" | "custom";
 
@@ -25,6 +27,8 @@ interface Props {
 }
 
 export function DateRangeFilter({ value, onChange, className }: Props) {
+  const { language } = usePersistStore();
+
   const formatDateRange = (startDate?: Date, endDate?: Date) => {
     if (!startDate || !endDate) return "Pick a date range";
 
@@ -144,10 +148,18 @@ export function DateRangeFilter({ value, onChange, className }: Props) {
           <SelectValue placeholder="Select period" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="today">Today</SelectItem>
-          <SelectItem value="week">This Week</SelectItem>
-          <SelectItem value="month">This Month</SelectItem>
-          <SelectItem value="quarter">This Quarter</SelectItem>
+          <SelectItem value="today">
+            {TEXTS.reports.filters.today[language]}
+          </SelectItem>
+          <SelectItem value="week">
+            {TEXTS.reports.filters.thisWeek[language]}
+          </SelectItem>
+          <SelectItem value="month">
+            {TEXTS.reports.filters.thisMonth[language]}
+          </SelectItem>
+          <SelectItem value="quarter">
+            {TEXTS.reports.filters.thisQuarter[language]}
+          </SelectItem>
         </SelectContent>
       </Select>
 

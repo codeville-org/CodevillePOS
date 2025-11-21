@@ -235,12 +235,17 @@ export const TEXTS = {
       en: "View comprehensive analytics and insights",
       si: "සවිස්තරාත්මක විශ්ලේෂණ බලන්න"
     },
+    filters: {
+      today: { en: "Today", si: "අද දින" },
+      thisWeek: { en: "This Week", si: "මෙම සතියේ" },
+      thisMonth: { en: "This Month", si: "මෙම මාසයේ" },
+      thisQuarter: { en: "This Quarter", si: "මෙම කාර්තුවේ" }
+    },
     overview: {
-      totalSales: { en: "Total Sales", si: "මුළු විකුණුම්" },
-      totalTransactions: { en: "Total Transactions", si: "මුළු ගනුදෙනු" },
-      totalCustomers: { en: "Total Customers", si: "මුළු පාරිභෝගිකයින්" },
-      totalProducts: { en: "Total Products", si: "මුළු භාණ්ඩ" },
-      averageOrderValue: { en: "Avg. Order Value", si: "සාමාන්‍ය අගය" }
+      transactions: { en: "Transactions", si: "ගණුදෙනු ගණන" },
+      income: { en: "Income", si: "ආදායම" },
+      soldItems: { en: "Sold Items", si: "විකිණූ භාණ්ඩ" },
+      avgIncome: { en: "Average Income", si: "සාමාන්‍ය ආදායම" }
     },
     sections: {
       salesTrend: { en: "Sales Trend", si: "විකුණුම් ප්‍රවණතාව" },

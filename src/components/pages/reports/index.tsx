@@ -136,15 +136,15 @@ export function ReportsPage({}: Props) {
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {dateFilter.type === "today"
-                    ? "Today"
+                    ? TEXTS.reports.filters.today[language]
                     : dateFilter.type === "week"
-                      ? "This Week"
+                      ? TEXTS.reports.filters.thisWeek[language]
                       : dateFilter.type === "month"
-                        ? "This Month"
+                        ? TEXTS.reports.filters.thisMonth[language]
                         : dateFilter.type === "quarter"
-                          ? "This Quarter"
+                          ? TEXTS.reports.filters.thisQuarter[language]
                           : "Period"}{" "}
-                  Transactions
+                  {TEXTS.reports.overview.transactions[language]}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -173,15 +173,15 @@ export function ReportsPage({}: Props) {
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {dateFilter.type === "today"
-                    ? "Today"
+                    ? TEXTS.reports.filters.today[language]
                     : dateFilter.type === "week"
-                      ? "This Week"
+                      ? TEXTS.reports.filters.thisWeek[language]
                       : dateFilter.type === "month"
-                        ? "This Month"
+                        ? TEXTS.reports.filters.thisMonth[language]
                         : dateFilter.type === "quarter"
-                          ? "This Quarter"
+                          ? TEXTS.reports.filters.thisQuarter[language]
                           : "Period"}{" "}
-                  Income
+                  {TEXTS.reports.overview.income[language]}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -212,15 +212,15 @@ export function ReportsPage({}: Props) {
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {dateFilter.type === "today"
-                    ? "Today"
+                    ? TEXTS.reports.filters.today[language]
                     : dateFilter.type === "week"
-                      ? "This Week"
+                      ? TEXTS.reports.filters.thisWeek[language]
                       : dateFilter.type === "month"
-                        ? "This Month"
+                        ? TEXTS.reports.filters.thisMonth[language]
                         : dateFilter.type === "quarter"
-                          ? "This Quarter"
+                          ? TEXTS.reports.filters.thisQuarter[language]
                           : "Period"}{" "}
-                  Sold Items
+                  {TEXTS.reports.overview.soldItems[language]}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -250,7 +250,7 @@ export function ReportsPage({}: Props) {
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Avg Income
+                  {TEXTS.reports.overview.avgIncome[language]}
                 </CardTitle>
               </div>
             </CardHeader>

@@ -17,6 +17,8 @@ export const appSettingsMap = z.object({
 
   availablePaymentMethods: z.array(z.nativeEnum(PaymentMethod)).optional(),
 
+  imagesEnabled: z.boolean().default(true).optional(),
+
   // Store Settings
   ...storeSettingsSchema.shape
 });

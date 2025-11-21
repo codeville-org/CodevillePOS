@@ -2,6 +2,7 @@ import PageContainer from "@/components/layouts/dashboard/page-container";
 import { AppPageShell } from "@/components/layouts/dashboard/page-shell";
 import { Separator } from "@/components/ui/separator";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { AdditionalSettings } from "@/modules/settings/components/additional-settings";
 import { PasswordSection } from "@/modules/settings/components/password-section";
 import { PaymentMethodsManagement } from "@/modules/settings/components/payment-methods";
 import { PrinterManagement } from "@/modules/settings/components/printer-management";
@@ -29,6 +30,8 @@ export function SettingsPage({}: Props) {
         <PasswordSection />
 
         <PaymentMethodsManagement />
+
+        <AdditionalSettings />
 
         <PrinterManagement />
 

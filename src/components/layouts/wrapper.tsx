@@ -19,8 +19,12 @@ import { AppRouter } from "./router";
 
 export function Wrapper() {
   const { data, error } = useGetSettings();
-  const { language, setStoreSettings, setAvailablePaymentMethods } =
-    usePersistStore();
+  const {
+    language,
+    setStoreSettings,
+    setAvailablePaymentMethods,
+    setImagesEnabled
+  } = usePersistStore();
   const { user } = useSecurityStore();
 
   // Update persisted store settings from database
@@ -28,6 +32,7 @@ export function Wrapper() {
     if (data && !error) {
       setStoreSettings({ ...data });
       setAvailablePaymentMethods(data.availablePaymentMethods || []);
+      setImagesEnabled(data.imagesEnabled ?? true);
     }
   }, [data, error]);
 

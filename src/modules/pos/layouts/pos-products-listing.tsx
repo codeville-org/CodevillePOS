@@ -39,7 +39,7 @@ export function PosProductsListing({ className }: Props) {
     // Check if product is in stock
     if (product.stockQuantity <= 0) {
       // Could show a toast notification here
-      return;
+      // return;
     }
 
     const item: UninitializedTransactionItem = {

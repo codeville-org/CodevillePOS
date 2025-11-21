@@ -48,6 +48,10 @@ export const usePersistStore = create<PersistStoreState>()(
       availablePaymentMethods: [PaymentMethod.CASH],
       setAvailablePaymentMethods: (methods: PaymentMethod[]) => {
         set({ availablePaymentMethods: methods });
+      },
+      imagesEnabled: true,
+      setImagesEnabled: (enabled: boolean) => {
+        set({ imagesEnabled: enabled });
       }
     }),
     {

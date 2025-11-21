@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn, formatDate, formatPrice } from "@/lib/utils";
 import { SelectProductSchema } from "@/lib/zod/products.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import ImageDisplay from "@/modules/image-manager/components/image-display";
 import { ListingView } from "@/shared/types/global";
 
@@ -21,6 +22,8 @@ export function ProductItem({
   page = "listing",
   onClick
 }: Props) {
+  const { imagesEnabled } = usePersistStore();
+
   if (page === "pos") {
     return (
       <Card
@@ -28,19 +31,21 @@ export function ProductItem({
         onClick={onClick}
       >
         <div className="flex flex-col gap-3">
-          <div className="relative">
-            <ImageDisplay
-              alt={product.name}
-              filename={product.imageFilename}
-              className="w-full h-full aspect-square rounded-xl"
-              fallbackClassName="w-full h-full aspect-square rounded-xl"
-              isProductImage
-            />
-            <Badge
-              variant="secondary"
-              className="absolute top-3 left-3"
-            >{`${product.category.name}`}</Badge>
-          </div>
+          {imagesEnabled && (
+            <div className="relative">
+              <ImageDisplay
+                alt={product.name}
+                filename={product.imageFilename}
+                className="w-full h-full aspect-square rounded-xl"
+                fallbackClassName="w-full h-full aspect-square rounded-xl"
+                isProductImage
+              />
+              <Badge
+                variant="secondary"
+                className="absolute top-3 left-3"
+              >{`${product.category.name}`}</Badge>
+            </div>
+          )}
 
           <div className="space-y-1">
             <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
@@ -74,19 +79,21 @@ export function ProductItem({
       <Link to={{ pathname: `/products/${product.id}` }}>
         <Card className="p-3 rounded-xl shadow-xs hover:shadow-md transition-shadow group bg-secondary/80 dark:bg-sidebar border-sidebar-border/60">
           <div className="flex flex-col gap-3">
-            <div className="relative">
-              <ImageDisplay
-                alt={product.name}
-                filename={product.imageFilename}
-                className="w-full h-full aspect-square rounded-xl"
-                fallbackClassName="w-full h-full aspect-square rounded-xl"
-                isProductImage
-              />
-              <Badge
-                variant="secondary"
-                className="absolute top-3 left-3"
-              >{`${product.category.name}`}</Badge>
-            </div>
+            {imagesEnabled && (
+              <div className="relative">
+                <ImageDisplay
+                  alt={product.name}
+                  filename={product.imageFilename}
+                  className="w-full h-full aspect-square rounded-xl"
+                  fallbackClassName="w-full h-full aspect-square rounded-xl"
+                  isProductImage
+                />
+                <Badge
+                  variant="secondary"
+                  className="absolute top-3 left-3"
+                >{`${product.category.name}`}</Badge>
+              </div>
+            )}
 
             <div className="space-y-1">
               <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
@@ -122,13 +129,15 @@ export function ProductItem({
       className="group flex items-center p-3 hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-b-0"
     >
       <div className="flex items-center gap-3 flex-1">
-        <ImageDisplay
-          alt={product.name}
-          filename={product.imageFilename}
-          className="w-12 h-12 rounded-md"
-          fallbackClassName="w-12 h-12 rounded-md"
-          isProductImage
-        />
+        {imagesEnabled && (
+          <ImageDisplay
+            alt={product.name}
+            filename={product.imageFilename}
+            className="w-12 h-12 rounded-md"
+            fallbackClassName="w-12 h-12 rounded-md"
+            isProductImage
+          />
+        )}
 
         <div className="space-y-0.5">
           <h3 className="font-medium text-sm group-hover:text-primary transition-colors">

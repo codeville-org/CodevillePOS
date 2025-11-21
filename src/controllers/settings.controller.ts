@@ -26,7 +26,8 @@ function prepareSettingsMap(allValues: any[]): AppSettingsMapT {
     storeName: "",
     address: "",
     contactPhone: "",
-    availablePaymentMethods: []
+    availablePaymentMethods: [],
+    imagesEnabled: true
   };
 
   for (const setting of allValues) {
@@ -45,6 +46,9 @@ function prepareSettingsMap(allValues: any[]): AppSettingsMapT {
         break;
       case "contactPhone":
         settingsMap.contactPhone = (setting?.value as string) || "";
+        break;
+      case "imagesEnabled":
+        settingsMap.imagesEnabled = setting?.value === "true" ? true : false;
         break;
       case "availablePaymentMethods":
         try {
@@ -113,10 +117,16 @@ export async function upsertAppSettingsController(
         const keyValue: any = (payload as Record<string, any>)[key];
 
         if (keyValue !== undefined && keyValue !== null) {
-          // Serialize arrays to JSON strings for storage
-          const valueToStore = Array.isArray(keyValue)
-            ? JSON.stringify(keyValue)
-            : (keyValue as string);
+          // Serialize different types for storage (SQLite only accepts strings, numbers, bigints, buffers, and null)
+          let valueToStore: string;
+
+          if (Array.isArray(keyValue)) {
+            valueToStore = JSON.stringify(keyValue);
+          } else if (typeof keyValue === "boolean") {
+            valueToStore = keyValue.toString();
+          } else {
+            valueToStore = keyValue as string;
+          }
 
           // Debug logging for payment methods
           // if (key === "availablePaymentMethods") {

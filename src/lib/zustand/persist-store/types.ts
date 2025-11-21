@@ -20,4 +20,7 @@ export interface PersistStoreState {
 
   availablePaymentMethods: PaymentMethod[];
   setAvailablePaymentMethods: (methods: PaymentMethod[]) => void;
+
+  imagesEnabled: boolean;
+  setImagesEnabled: (enabled: boolean) => void;
 }

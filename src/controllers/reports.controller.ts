@@ -75,7 +75,97 @@ export async function getDashboardAnalyticsController(
     const averageOrderValue =
       totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
-    // Sales Trend (Last 7 days)
+    // Today's Statistics
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const todayStartTimestamp = Math.floor(todayStart.getTime() / 1000);
+    const todayEndTimestamp = Math.floor(todayEnd.getTime() / 1000);
+
+    const todayTransactionsResult = await db
+      .select({
+        count: count(),
+        totalAmount: sum(transactions.totalAmount)
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.status, "completed"),
+          sql`${transactions.createdAt} >= ${todayStartTimestamp}`,
+          sql`${transactions.createdAt} <= ${todayEndTimestamp}`
+        )
+      );
+
+    const todayTransactions = todayTransactionsResult[0]?.count || 0;
+    const todayIncome = Number(todayTransactionsResult[0]?.totalAmount || 0);
+    const todayAverageIncome =
+      todayTransactions > 0 ? todayIncome / todayTransactions : 0;
+
+    // Hourly Sales (Today only)
+    const hourlySalesData = await db
+      .select({
+        hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`,
+        sales: sum(transactions.totalAmount)
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.status, "completed"),
+          sql`${transactions.createdAt} >= ${todayStartTimestamp}`,
+          sql`${transactions.createdAt} <= ${todayEndTimestamp}`
+        )
+      )
+      .groupBy(
+        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
+      )
+      .orderBy(
+        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
+      );
+
+    // Create complete hourly data (0-23 hours)
+    const hourlySales = Array.from({ length: 24 }, (_, hour) => {
+      const existingData = hourlySalesData.find((item) => item.hour === hour);
+      return {
+        hour,
+        sales: Number(existingData?.sales || 0)
+      };
+    });
+
+    // Hourly Transactions (Today only)
+    const hourlyTransactionsData = await db
+      .select({
+        hour: sql<number>`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`,
+        transactions: count()
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.status, "completed"),
+          sql`${transactions.createdAt} >= ${todayStartTimestamp}`,
+          sql`${transactions.createdAt} <= ${todayEndTimestamp}`
+        )
+      )
+      .groupBy(
+        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
+      )
+      .orderBy(
+        sql`CAST(strftime('%H', datetime(${transactions.createdAt}, 'unixepoch')) AS INTEGER)`
+      );
+
+    // Create complete hourly transactions data (0-23 hours)
+    const hourlyTransactions = Array.from({ length: 24 }, (_, hour) => {
+      const existingData = hourlyTransactionsData.find(
+        (item) => item.hour === hour
+      );
+      return {
+        hour,
+        transactions: existingData?.transactions || 0
+      };
+    });
+
+    // Sales Trend (Last 7 days) - keeping for compatibility
     const salesTrendData = await db
       .select({
         date: sql<string>`DATE(${transactions.createdAt}, 'unixepoch')`,
@@ -251,9 +341,14 @@ export async function getDashboardAnalyticsController(
           totalTransactions,
           totalCustomers: totalCustomersResult[0]?.count || 0,
           totalProducts: totalProductsResult[0]?.count || 0,
-          averageOrderValue
+          averageOrderValue,
+          todayTransactions,
+          todayIncome,
+          todayAverageIncome
         },
         salesTrend,
+        hourlySales,
+        hourlyTransactions,
         topProducts,
         topCategories,
         topCustomers,

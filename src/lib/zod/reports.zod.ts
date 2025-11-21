@@ -17,7 +17,10 @@ const overviewSchema = z.object({
   totalTransactions: z.number(),
   totalCustomers: z.number(),
   totalProducts: z.number(),
-  averageOrderValue: z.number()
+  averageOrderValue: z.number(),
+  todayTransactions: z.number(),
+  todayIncome: z.number(),
+  todayAverageIncome: z.number()
 });
 
 export type OverviewSchema = z.infer<typeof overviewSchema>;
@@ -30,6 +33,24 @@ const salesTrendItemSchema = z.object({
 });
 
 export type SalesTrendItemSchema = z.infer<typeof salesTrendItemSchema>;
+
+// Hourly Sales Schema
+const hourlySalesItemSchema = z.object({
+  hour: z.number(),
+  sales: z.number()
+});
+
+export type HourlySalesItemSchema = z.infer<typeof hourlySalesItemSchema>;
+
+// Hourly Transactions Schema
+const hourlyTransactionsItemSchema = z.object({
+  hour: z.number(),
+  transactions: z.number()
+});
+
+export type HourlyTransactionsItemSchema = z.infer<
+  typeof hourlyTransactionsItemSchema
+>;
 
 // Top Products Schema
 const topProductSchema = z.object({
@@ -85,6 +106,8 @@ export type LowStockProductSchema = z.infer<typeof lowStockProductSchema>;
 export const analyticsDataSchema = z.object({
   overview: overviewSchema,
   salesTrend: z.array(salesTrendItemSchema),
+  hourlySales: z.array(hourlySalesItemSchema),
+  hourlyTransactions: z.array(hourlyTransactionsItemSchema),
   topProducts: z.array(topProductSchema),
   topCategories: z.array(topCategorySchema),
   topCustomers: z.array(topCustomerSchema),

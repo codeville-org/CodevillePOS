@@ -12,7 +12,7 @@ Initial Stage
 
 <!-- Features Requested -->
 
-- No images needed
-- No credit feature needed
+- No images needed - Done
+- No credit feature needed - Done
 - Make chart for top products
-- Auto generated barcode
+- Auto generated barcode - Done

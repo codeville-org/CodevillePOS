@@ -72,11 +72,11 @@ export type ChartTransactionsItemSchema = z.infer<
 >;
 
 // Legacy schemas for backward compatibility
-const hourlySalesItemSchema = chartSalesItemSchema;
-export type HourlySalesItemSchema = ChartSalesItemSchema;
+// const hourlySalesItemSchema = chartSalesItemSchema;
+// export type HourlySalesItemSchema = ChartSalesItemSchema;
 
-const hourlyTransactionsItemSchema = chartTransactionsItemSchema;
-export type HourlyTransactionsItemSchema = ChartTransactionsItemSchema;
+// const hourlyTransactionsItemSchema = chartTransactionsItemSchema;
+// export type HourlyTransactionsItemSchema = ChartTransactionsItemSchema;
 
 // Top Products Schema
 const topProductSchema = z.object({

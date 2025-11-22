@@ -46,6 +46,12 @@ import type {
 
 // Customers Imports
 import {
+  GetCashDrawerBalanceResponse,
+  InitializeCashDrawerBalanceResponse,
+  UpdateCashDrawerBalance,
+  UpdateCashDrawerBalanceResponse
+} from "@/lib/zod/cashflow.zod";
+import {
   CreateCustomerResponseSchema,
   CreateCustomerSchema,
   DeleteCustomerResponseSchema,
@@ -211,6 +217,14 @@ export interface UserActions {
   delete: (id: string) => Promise<MessageResponseT>;
 }
 
+export interface CashflowActions {
+  initializeBalance: () => Promise<InitializeCashDrawerBalanceResponse>;
+  getBalance: () => Promise<GetCashDrawerBalanceResponse>;
+  updateBalance: (
+    data: UpdateCashDrawerBalance
+  ) => Promise<UpdateCashDrawerBalanceResponse>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -224,4 +238,5 @@ export interface ElectronAPI {
   print: PrinterActions;
   reports: ReportsActions;
   user: UserActions;
+  cashflow: CashflowActions;
 }

@@ -7,6 +7,7 @@ import {
 import { useEffect } from "react";
 
 import { cn } from "@/lib/utils";
+import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
 import { LogoutBadge } from "@/modules/auth/logout-badge";
@@ -27,6 +28,8 @@ export function Wrapper() {
   } = usePersistStore();
   const { user } = useSecurityStore();
 
+  const { activeBalance } = useCashflow();
+
   // Update persisted store settings from database
   useEffect(() => {
     if (data && !error) {
@@ -35,6 +38,13 @@ export function Wrapper() {
       setImagesEnabled(data.imagesEnabled ?? true);
     }
   }, [data, error]);
+
+  // Validate cash drawer balance status
+  useEffect(() => {
+    if (!activeBalance) {
+      console.warn("No active cash drawer balance found.");
+    }
+  }, [activeBalance]);
 
   return (
     <main
@@ -73,6 +83,15 @@ export function Wrapper() {
                 </div>
 
                 <div className="flex items-center gap-2 h-full">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs">Shift Data</p>
+                  </div>
+
+                  <Separator
+                    className="mx-2 ml-4 data-[orientation=vertical]:h-4"
+                    orientation="vertical"
+                  />
+
                   <div className="flex items-center gap-3">
                     {user && (
                       <p className="text-xs text-secondary-foreground/70">

@@ -1,3 +1,4 @@
+export * from "./cashdrawer.schema";
 export * from "./categories.schema";
 export * from "./customers.schema";
 export * from "./products.schema";

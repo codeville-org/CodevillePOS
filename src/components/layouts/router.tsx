@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { CashflowPage } from "../pages/cashflow";
 import { CategoriesPage } from "../pages/categories";
 import { CustomersPage } from "../pages/customers";
 import { PosPage } from "../pages/pos";
@@ -26,6 +27,7 @@ export function AppRouter({}: Props) {
       <Route path="/users" element={<UsersPage />} />
       <Route path="/transactions" element={<TransactionsPage />} />
       <Route path="/reports" element={<ReportsPage />} />
+      <Route path="/cashflow" element={<CashflowPage />} />
       <Route path="/settings" element={<SettingsPage />} />
 
       {/* Fallback */}

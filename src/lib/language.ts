@@ -322,5 +322,15 @@ export const TEXTS = {
     complete: { en: "Complete Purchase", si: "ගණුදෙනුව අවසන් කරන්න" },
     clear: { en: "Clear", si: "හිස් කරන්න" },
     cancel: { en: "Cancel", si: "අවලංගු කරන්න" }
+  },
+  cashflow: {
+    title: {
+      en: "Cashflow Management",
+      si: "මුදල් ප්‍රවාහ කළමනාකරණය"
+    },
+    subtitle: {
+      en: "Monitor and manage your cashflow here",
+      si: "ඔබේ මුදල් ප්‍රවාහය මෙහිදී නිරීක්ෂණය සහ කළමනාකරණය කලහැක"
+    }
   }
 };

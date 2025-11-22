@@ -175,6 +175,53 @@ export const TEXTS = {
       }
     }
   },
+  users: {
+    title: { en: "User Management", si: "පරිශීලක කළමනාකරණය" },
+    subtitle: {
+      en: "Manage application users here",
+      si: "යෙදුම් පරිශීලකයන් මෙහි කළමනාකරණය කරන්න"
+    },
+    addNew: {
+      button: { en: "Add new User", si: " නව පරිශීලකයෙක් එක් කරන්න" },
+      dialog: {
+        title: {
+          en: "Create new user",
+          si: "නව පරිශීලකයෙක් සාදන්න"
+        },
+        description: {
+          en: "Fill below form to create a new user account",
+          si: "නව පරිශීලක ගිණුමක් සෑදිම සදහා පහත ෆෝරමය පුරවන්න"
+        }
+      },
+      form: {
+        username: {
+          label: { en: "Username", si: "පරිශීලක නාමය" },
+          placeholder: {
+            en: "Enter username",
+            si: "පරිශීලක නාමය ඇතුලත් කරන්න"
+          },
+          description: {
+            en: "No spaces, special characters allowed. (e.g., johndoe)",
+            si: "හිස්තැන්, විශේෂ අක්ෂර භාවිතා නොකරන්න. (උදා., johndoe)"
+          }
+        },
+        email: {
+          label: { en: "Email", si: "ඊමේල් ලිපිනය" },
+          placeholder: {
+            en: "Enter email address",
+            si: "ඊමේල් ලිපිනය ඇතුලත් කරන්න"
+          }
+        },
+        password: {
+          label: { en: "Password", si: "මුරපදය" },
+          placeholder: {
+            en: "Enter password",
+            si: "මුරපදය ඇතුලත් කරන්න"
+          }
+        }
+      }
+    }
+  },
   transactions: {
     title: { en: "All Transactions", si: "සියලුම ගනුදෙනු" },
     subtitle: {
@@ -188,12 +235,17 @@ export const TEXTS = {
       en: "View comprehensive analytics and insights",
       si: "සවිස්තරාත්මක විශ්ලේෂණ බලන්න"
     },
+    filters: {
+      today: { en: "Today", si: "අද දින" },
+      thisWeek: { en: "This Week", si: "මෙම සතියේ" },
+      thisMonth: { en: "This Month", si: "මෙම මාසයේ" },
+      thisQuarter: { en: "This Quarter", si: "මෙම කාර්තුවේ" }
+    },
     overview: {
-      totalSales: { en: "Total Sales", si: "මුළු විකුණුම්" },
-      totalTransactions: { en: "Total Transactions", si: "මුළු ගනුදෙනු" },
-      totalCustomers: { en: "Total Customers", si: "මුළු පාරිභෝගිකයින්" },
-      totalProducts: { en: "Total Products", si: "මුළු භාණ්ඩ" },
-      averageOrderValue: { en: "Avg. Order Value", si: "සාමාන්‍ය අගය" }
+      transactions: { en: "Transactions", si: "ගණුදෙනු ගණන" },
+      income: { en: "Income", si: "ආදායම" },
+      soldItems: { en: "Sold Items", si: "විකිණූ භාණ්ඩ" },
+      avgIncome: { en: "Average Income", si: "සාමාන්‍ය ආදායම" }
     },
     sections: {
       salesTrend: { en: "Sales Trend", si: "විකුණුම් ප්‍රවණතාව" },
@@ -205,9 +257,17 @@ export const TEXTS = {
     }
   },
   lockScreen: {
-    placeholder: {
-      en: "Enter your password here",
-      si: "ඔබේ මුරපදය මෙහි ඇතුලත් කරන්න"
+    username: {
+      placeholder: {
+        en: "Enter your username here",
+        si: "පරිශීලක නම මෙහි ඇතුලත් කරන්න"
+      }
+    },
+    password: {
+      placeholder: {
+        en: "Enter your password here",
+        si: "ඔබේ මුරපදය මෙහි ඇතුලත් කරන්න"
+      }
     },
     button: { en: "Login", si: "ඇතුල්වන්න" }
   },
@@ -218,6 +278,8 @@ export const TEXTS = {
     subtotal: { en: "Sub Total", si: "මුළු මුදල" },
     discount: { en: "Discount", si: "වට්ටම" },
     netTotal: { en: "Net Amount", si: "ගෙවිය යුතු මුදල" },
+    cashGiven: { en: "Cash Given", si: "දුන් මුදල" },
+    balance: { en: "Change", si: "ඉතිරි මුදල" },
     billNumber: { en: "Bill Number", si: "බිල්පත් අංකය" },
     customer: { en: "Customer", si: "පාරිභෝගික නම" },
     invoiceData: { en: "Invoice Date", si: "නිකුත් කල දිනය" },
@@ -255,7 +317,7 @@ export const TEXTS = {
     methods: {
       cash: { en: "Cash", si: "මුදල්" },
       card: { en: "Card", si: "කාඩ්පත්" },
-      credit: { en: "Credit", si: "ණය" }
+      lend: { en: "Lend", si: "ණය" }
     },
     complete: { en: "Complete Purchase", si: "ගණුදෙනුව අවසන් කරන්න" },
     clear: { en: "Clear", si: "හිස් කරන්න" },

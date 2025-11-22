@@ -14,6 +14,7 @@ const settingsInvoker = createInvoker("settings");
 const securityInvoker = createInvoker("security");
 const printInvoker = createInvoker("print");
 const reportsInvoker = createInvoker("reports");
+const userInvoker = createInvoker("user");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -84,6 +85,13 @@ const electronAPI: ElectronAPI = {
   },
   reports: {
     getAnalytics: reportsInvoker("getAnalytics")
+  },
+  user: {
+    getAll: userInvoker("getAll"),
+    get: userInvoker("get"),
+    create: userInvoker("create"),
+    update: userInvoker("update"),
+    delete: userInvoker("delete")
   }
 };
 

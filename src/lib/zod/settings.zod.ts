@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getBaseReturnSchema } from "./helpers";
+import { PaymentMethod } from "./transactions.zod";
 
 export const storeSettingsSchema = z.object({
   storeLogo: z.string().optional(),
@@ -12,9 +13,11 @@ export type StoreSettingsT = z.infer<typeof storeSettingsSchema>;
 
 // Key-Value Mapper for App Settings
 export const appSettingsMap = z.object({
-  // Security Settings
-  password: z.string().optional(),
   defaultPrinter: z.string().optional(),
+
+  availablePaymentMethods: z.array(z.nativeEnum(PaymentMethod)).optional(),
+
+  imagesEnabled: z.boolean().default(true).optional(),
 
   // Store Settings
   ...storeSettingsSchema.shape

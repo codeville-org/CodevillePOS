@@ -44,24 +44,24 @@ export function SidebarTransactionItem({ item }: Props) {
   };
 
   return (
-    <Card className="px-2 py-3 bg-white dark:bg-secondary/60 flex flex-col gap-3 shadow-none rounded-md">
-      <div className="w-full flex items-center justify-between">
-        <p className="text-[13px] font-semibold whitespace-nowrap truncate">
+    <Card className="px-2 py-3 bg-white dark:bg-secondary/60 flex flex-col gap-3 shadow-none rounded-md w-full">
+      <div className="w-full flex items-start justify-between gap-2">
+        <p className="text-[13px] font-semibold leading-tight break-words flex-1 min-w-0">
           {item.productName}
         </p>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 w-full">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Button
-            className="p-1 rounded-full size-6 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+            className="p-1 rounded-full size-6 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex-shrink-0"
             size="icon"
             onClick={() => removeTransactionItem(item.productId)}
           >
             <TrashIcon />
           </Button>
 
-          <div className="bg-secondary/40 flex items-center h-7">
+          <div className="bg-secondary/40 flex items-center h-7 flex-shrink-0">
             <button
               className="size-7 bg-secondary text-secondary-foreground flex items-center justify-center rounded-l-md hover:bg-secondary-foreground/30 cursor-pointer"
               onClick={() =>
@@ -100,12 +100,10 @@ export function SidebarTransactionItem({ item }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <p>
-            <span className="text-sm text-red-500 font-semibold">
-              {formatPrice(item.totalAmount)}
-            </span>
-          </p>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+          <span className="text-sm text-red-500 font-semibold whitespace-nowrap">
+            {formatPrice(item.totalAmount)}
+          </span>
         </div>
       </div>
     </Card>

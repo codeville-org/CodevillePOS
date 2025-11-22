@@ -9,6 +9,7 @@ import { reportsHandler } from "./reports-handler";
 import { securityHandler } from "./security-handler";
 import { appSettingsHandler } from "./settings-handler";
 import { transactionsHandler } from "./transactions-handler";
+import { userHandler } from "./user-handler";
 import { windowHandlers } from "./window-handler";
 
 export function setupIPCHandlers(mainWindow: BrowserWindow) {
@@ -23,4 +24,5 @@ export function setupIPCHandlers(mainWindow: BrowserWindow) {
   securityHandler.register();
   printerHandler.register();
   reportsHandler.register();
+  userHandler.register();
 }

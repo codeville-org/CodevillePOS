@@ -1,23 +1,28 @@
+import { getDB } from "@/database";
 import { GetSecurityResponseT } from "@/lib/zod/security.zod";
 import { decrypt } from "@/shared/utils/auth-util";
-import { getAppSettingsController } from "./settings.controller";
 
 // ================= Login Controller =================
 export async function loginController(
+  username: string,
   password: string
 ): Promise<GetSecurityResponseT> {
   try {
-    const appSettings = await getAppSettingsController();
+    const db = getDB();
 
-    if (!appSettings.success && !appSettings.data)
-      throw new Error(appSettings.error || "Failed to fetch app settings");
+    // Get user by username
+    const user = await db.query.users.findFirst({
+      where: (fields, { eq }) => eq(fields.username, username)
+    });
+
+    if (!user) throw new Error("Sorry, Username not found!");
 
     // Check if the passed password matches the stored password
-    const decryptedPassword = decrypt(appSettings.data.password);
+    const decryptedPassword = decrypt(user.password);
 
     if (password === decryptedPassword) {
       return {
-        data: { message: "Login successful" },
+        data: { message: "Login successful", user },
         success: true,
         error: null
       };

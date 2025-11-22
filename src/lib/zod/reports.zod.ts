@@ -1,10 +1,22 @@
 import { z } from "zod";
 import { getBaseReturnSchema } from "./helpers";
 
+// Date Filter Type Enum
+export const dateFilterTypeSchema = z.enum([
+  "today",
+  "week",
+  "month",
+  "quarter",
+  "custom"
+]);
+
+export type DateFilterTypeSchema = z.infer<typeof dateFilterTypeSchema>;
+
 // Analytics Query Parameters Schema
 export const analyticsQueryParamsSchema = z.object({
   startDate: z.string().optional(),
-  endDate: z.string().optional()
+  endDate: z.string().optional(),
+  filterType: dateFilterTypeSchema.optional()
 });
 
 export type AnalyticsQueryParamsSchema = z.infer<
@@ -17,7 +29,16 @@ const overviewSchema = z.object({
   totalTransactions: z.number(),
   totalCustomers: z.number(),
   totalProducts: z.number(),
-  averageOrderValue: z.number()
+  averageOrderValue: z.number(),
+  // Period-specific metrics (based on selected date range)
+  periodTransactions: z.number(),
+  periodIncome: z.number(),
+  periodAverageIncome: z.number(),
+  periodSoldItems: z.number(),
+  // For backward compatibility
+  todayTransactions: z.number(),
+  todayIncome: z.number(),
+  todayAverageIncome: z.number()
 });
 
 export type OverviewSchema = z.infer<typeof overviewSchema>;
@@ -30,6 +51,33 @@ const salesTrendItemSchema = z.object({
 });
 
 export type SalesTrendItemSchema = z.infer<typeof salesTrendItemSchema>;
+
+// Chart Data Schema (supports both hourly and daily data)
+const chartSalesItemSchema = z.object({
+  hour: z.number().optional(),
+  date: z.string().optional(),
+  sales: z.number()
+});
+
+export type ChartSalesItemSchema = z.infer<typeof chartSalesItemSchema>;
+
+// Chart Transactions Schema (supports both hourly and daily data)
+const chartTransactionsItemSchema = z.object({
+  hour: z.number().optional(),
+  date: z.string().optional(),
+  transactions: z.number()
+});
+
+export type ChartTransactionsItemSchema = z.infer<
+  typeof chartTransactionsItemSchema
+>;
+
+// Legacy schemas for backward compatibility
+// const hourlySalesItemSchema = chartSalesItemSchema;
+// export type HourlySalesItemSchema = ChartSalesItemSchema;
+
+// const hourlyTransactionsItemSchema = chartTransactionsItemSchema;
+// export type HourlyTransactionsItemSchema = ChartTransactionsItemSchema;
 
 // Top Products Schema
 const topProductSchema = z.object({
@@ -85,6 +133,8 @@ export type LowStockProductSchema = z.infer<typeof lowStockProductSchema>;
 export const analyticsDataSchema = z.object({
   overview: overviewSchema,
   salesTrend: z.array(salesTrendItemSchema),
+  hourlySales: z.array(chartSalesItemSchema),
+  hourlyTransactions: z.array(chartTransactionsItemSchema),
   topProducts: z.array(topProductSchema),
   topCategories: z.array(topCategorySchema),
   topCustomers: z.array(topCustomerSchema),

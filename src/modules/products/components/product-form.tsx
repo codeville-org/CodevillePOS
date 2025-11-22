@@ -251,6 +251,9 @@ export function ProductForm({ className, mode, productId }: Props) {
                                 <BarcodeInput
                                   value={field.value}
                                   onChange={field.onChange}
+                                  onGenerate={(barcode) => {
+                                    console.log("Generated barcode:", barcode);
+                                  }}
                                   placeholder={
                                     TEXTS.products.addNew.form.barcode
                                       .placeholder[language]
@@ -263,8 +266,9 @@ export function ProductForm({ className, mode, productId }: Props) {
                                     shift: true,
                                     key: "B"
                                   }}
-                                  showScanButton={true}
-                                  showStatusIndicator={true}
+                                  showGenerateButton={true}
+                                  generatePrefix="PRD"
+                                  generateLength={13}
                                 />
                               )}
                             </div>

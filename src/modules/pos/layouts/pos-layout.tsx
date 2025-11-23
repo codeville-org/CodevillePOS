@@ -1,8 +1,10 @@
 import { BarcodeReaderStatusBadge } from "@/components/elements/barcode-reader-status-badge";
 import { PrinterStatusBadge } from "@/components/elements/printer-status-badge";
 import { Separator } from "@/components/ui/separator";
+import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
+import { BalanceAlert } from "@/modules/cashflow/components/balance-alert";
 import ImageDisplay from "@/modules/image-manager/components/image-display";
 import { BillingTable } from "../components/billing-table";
 import { CategoriesBar } from "../components/categories-bar";
@@ -18,6 +20,7 @@ type Props = {};
 export function PosScreenLayout({}: Props) {
   const { storeSettings } = usePersistStore();
   const { listingView, activeTransaction } = usePosStore();
+  const { activeBalance } = useCashflow();
 
   return (
     <div className="flex h-[calc(100vh-48px)] max-h-[calc(100vh-48px)] overflow-hidden">
@@ -26,7 +29,7 @@ export function PosScreenLayout({}: Props) {
       {/* Left Panel - Products */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 p-4 pb-2 shadow-none">
+        <div className="flex-shrink-0 p-4 pb-2 shadow-none space-y-3">
           <div className="flex items-center justify-between mb-6">
             {/* Store Name / Logo */}
             <div className={`flex items-center gap-2`}>
@@ -52,6 +55,13 @@ export function PosScreenLayout({}: Props) {
               {activeTransaction && <ListingViewSwitcher />}
               <InitializeTransaction />
             </div>
+          </div>
+
+          {/* Alert Compartment */}
+          <div className="space-y-2">
+            {activeBalance && activeBalance?.totalAmount < 1 && (
+              <BalanceAlert />
+            )}
           </div>
 
           <ProductSearchInput />

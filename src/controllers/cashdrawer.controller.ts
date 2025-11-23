@@ -51,11 +51,14 @@ export async function initializeCashDrawerBalanceController(): Promise<Initializ
     const db = getDB();
 
     // Check if cash drawer balance already exists using direct select
-    const existingBalance = await db
-      .select()
-      .from(cashDrawerBalance)
-      .where(eq(cashDrawerBalance.isActive, true))
-      .limit(1);
+    const existingBalance = await db.query.cashDrawerBalance.findMany({
+      limit: 1,
+      where: (table) => eq(table.isActive, true),
+      with: {
+        lastEvent: true,
+        lastUpdatedByUser: true
+      }
+    });
 
     if (existingBalance.length > 0) {
       // Balance already exists, return the existing balance

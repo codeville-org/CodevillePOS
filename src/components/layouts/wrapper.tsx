@@ -11,8 +11,11 @@ import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
 import { LogoutBadge } from "@/modules/auth/logout-badge";
+import { useGetCashflowBalance } from "@/modules/cashflow/queries/use-get-balance";
+import { useInitializeBalance } from "@/modules/cashflow/queries/use-initialize-balance";
 import { RealtimeClock } from "@/modules/pos/components/clock";
 import { useGetSettings } from "@/modules/settings/query/use-get";
+import { Loader2 } from "lucide-react";
 import { LanguageSelector } from "../elements/language-selector";
 import { AppSidebar } from "./dashboard/app-sidebar";
 import { WindowActions } from "./dashboard/window-actions";
@@ -29,6 +32,10 @@ export function Wrapper() {
   const { user } = useSecurityStore();
 
   const { activeBalance } = useCashflow();
+  const { mutate: initializeBalance, isPending: balanceInitializing } =
+    useInitializeBalance();
+
+  const { isPending: balanceLoading } = useGetCashflowBalance();
 
   // Update persisted store settings from database
   useEffect(() => {
@@ -41,10 +48,14 @@ export function Wrapper() {
 
   // Validate cash drawer balance status
   useEffect(() => {
-    if (!activeBalance) {
-      console.warn("No active cash drawer balance found.");
-    }
+    handleInitializeBalance();
   }, [activeBalance]);
+
+  const handleInitializeBalance = () => {
+    if (!activeBalance) {
+      initializeBalance();
+    }
+  };
 
   return (
     <main
@@ -84,7 +95,17 @@ export function Wrapper() {
 
                 <div className="flex items-center gap-2 h-full">
                   <div className="flex items-center gap-2">
-                    <p className="text-xs">Shift Data</p>
+                    {balanceInitializing ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Cash Flow is Getting Ready
+                      </p>
+                    ) : balanceLoading ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Balance is Loading...
+                      </p>
+                    ) : null}
                   </div>
 
                   <Separator

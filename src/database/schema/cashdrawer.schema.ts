@@ -99,9 +99,7 @@ export const cashDrawerBalance = sqliteTable(
     // Status tracking
     isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
     lastEventId: text("last_event_id").references(() => cashDrawerEvents.id),
-    lastUpdatedBy: text("last_updated_by")
-      .references(() => users.id)
-      .notNull(),
+    lastUpdatedBy: text("last_updated_by").references(() => users.id),
 
     // System fields
     ...timestamps

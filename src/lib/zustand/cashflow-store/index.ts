@@ -6,7 +6,7 @@ import type { CashflowStoreInterface } from "./types";
 
 export const useCashflow = create<CashflowStoreInterface>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       activeBalance: null as CashflowStoreInterface["activeBalance"],
       setActiveBalance: (balance) => set({ activeBalance: balance })
     }),

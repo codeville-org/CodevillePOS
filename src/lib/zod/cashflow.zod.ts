@@ -75,6 +75,13 @@ const baseCashDrawerBalanceSchema = z.object({
   updatedAt: z.date()
 });
 
+const baseShiftSchema = z.object({
+  startedAt: z.date().default(new Date()),
+  endedAt: z.date().nullable().default(null),
+
+  event: baseCashDrawerEventSchema.optional()
+});
+
 // Foundmental Schemas
 // --- Events Schemas
 export const selectCashDrawerEventSchema = baseCashDrawerEventSchema;
@@ -105,6 +112,13 @@ export type UpdateCashDrawerBalance = z.infer<
   typeof updateCashDrawerBalanceSchema
 >;
 
+// -- Shift Schemas
+export const selectShiftSchema = baseShiftSchema;
+
+export type SelectShift = z.infer<typeof selectShiftSchema>;
+
+// ===== Controller Schemas =====
+
 // Intitialize Cash Drawer Balance Controller - Return
 export const initializeCashDrawerBalanceResponseSchema = getBaseReturnSchema(
   selectCashDrawerBalanceSchema
@@ -130,4 +144,26 @@ export const updateCashDrawerBalanceResponseSchema = getBaseReturnSchema(
 
 export type UpdateCashDrawerBalanceResponse = z.infer<
   typeof updateCashDrawerBalanceResponseSchema
+>;
+
+// Start Shift Controller - Return
+export const startShiftControllerResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type StartShiftControllerResponse = z.infer<
+  typeof startShiftControllerResponseSchema
+>;
+
+export const getActiveShiftResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type GetActiveShiftResponse = z.infer<
+  typeof getActiveShiftResponseSchema
+>;
+
+export const endShiftControllerResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type EndShiftControllerResponse = z.infer<
+  typeof endShiftControllerResponseSchema
 >;

@@ -46,8 +46,11 @@ import type {
 
 // Customers Imports
 import {
+  EndShiftControllerResponse,
+  GetActiveShiftResponse,
   GetCashDrawerBalanceResponse,
   InitializeCashDrawerBalanceResponse,
+  StartShiftControllerResponse,
   UpdateCashDrawerBalance,
   UpdateCashDrawerBalanceResponse
 } from "@/lib/zod/cashflow.zod";
@@ -218,11 +221,17 @@ export interface UserActions {
 }
 
 export interface CashflowActions {
+  // Balance
   initializeBalance: () => Promise<InitializeCashDrawerBalanceResponse>;
   getBalance: () => Promise<GetCashDrawerBalanceResponse>;
   updateBalance: (
     data: UpdateCashDrawerBalance
   ) => Promise<UpdateCashDrawerBalanceResponse>;
+
+  // Events
+  startShift: (userId: string) => Promise<StartShiftControllerResponse>;
+  getActiveShift: () => Promise<GetActiveShiftResponse>;
+  endShift: () => Promise<EndShiftControllerResponse>;
 }
 
 // Main IPC API interface

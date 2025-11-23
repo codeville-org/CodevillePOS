@@ -1,27 +1,35 @@
 // Cash drawer controllers
 
 import { getDB } from "@/database";
-import { cashDrawerBalance } from "@/database/schema/cashdrawer.schema";
 import {
+  cashDrawerBalance,
+  cashDrawerEvents
+} from "@/database/schema/cashdrawer.schema";
+import {
+  EndShiftControllerResponse,
+  GetActiveShiftResponse,
   GetCashDrawerBalanceResponse,
   InitializeCashDrawerBalanceResponse,
   SelectCashDrawerBalance,
+  StartShiftControllerResponse,
   UpdateCashDrawerBalance,
   UpdateCashDrawerBalanceResponse
 } from "@/lib/zod/cashflow.zod";
 import { eq } from "drizzle-orm";
+import { getUserByIdController } from "./user.controller";
 
 // * Cash Drawer Balance Controller
-// 1. Initialize the cash drawer balance (if not exists)
-// 2. Get current cash drawer balance
-// 3. Update cash drawer balance after events
+// 1. Initialize the cash drawer balance (if not exists) - ✅
+// 2. Get current cash drawer balance - ✅
+// 3. Update cash drawer balance after events - ✅
 
 // * Cash Drawer Events Controllers
-// 4. Start the shift with openning balance
-// 5. End the shift with closing balance
-// 6. Manual cash add or remove
-// 7. Correction entries
-// 8. Cash in and out for transactions
+// 4. Start the shift with openning balance - ✅
+// 5. Get active shift details - ✅
+// 6. End the shift with closing balance - ✅
+// 7. Manual cash add or remove
+// 8. Correction entries
+// 9. Cash in and out for transactions
 
 /**
  * Note: Implementation roadmap and idea
@@ -182,6 +190,190 @@ export async function updateCashDrawerBalanceController(
     return {
       success: false,
       error: (error as Error).message || "Failed to update cash drawer balance"
+    };
+  }
+}
+
+// 4. Start Shift Controller
+export async function startShiftController(
+  userId: string
+): Promise<StartShiftControllerResponse> {
+  try {
+    const db = getDB();
+
+    const today = new Date();
+
+    // Check if there is already a event that fullfill following conditions
+    // event type = "opening_balance"
+    // and createdAt is today
+
+    // NOTE: Uncomment if limit one shift per 1 day
+    // today.setHours(0, 0, 0, 0);
+
+    // const existingShiftEvent = await db.query.cashDrawerEvents.findMany({
+    //   limit: 1,
+    //   where: (table, { eq, and, gte }) =>
+    //     and(eq(table.eventType, "opening_balance"), gte(table.createdAt, today))
+    // });
+
+    // if (existingShiftEvent.length > 0)
+    //   throw new Error("Shift already started for today");
+
+    // Get starting cashdrawer balance
+    const balanceRes = await getCashDrawerBalanceController();
+
+    if (!balanceRes.success || !balanceRes.data) {
+      throw new Error(balanceRes.error || "Failed to get cash drawer balance");
+    }
+
+    const userById = await getUserByIdController(userId);
+
+    if (!userById.success || !userById.data) {
+      throw new Error(userById.error || "Failed to get user data");
+    }
+
+    const [startedShift] = await db
+      .insert(cashDrawerEvents)
+      .values({
+        eventType: "opening_balance",
+        createdAt: today,
+        totalAmount: balanceRes.data.totalAmount,
+        userId: userById.data.id,
+
+        notes_5000: balanceRes.data.notes_5000,
+        notes_2000: balanceRes.data.notes_2000,
+        notes_1000: balanceRes.data.notes_1000,
+        notes_500: balanceRes.data.notes_500,
+        notes_100: balanceRes.data.notes_100,
+        notes_50: balanceRes.data.notes_50,
+        notes_20: balanceRes.data.notes_20,
+        coins_1: balanceRes.data.coins_1,
+        coins_2: balanceRes.data.coins_2,
+        coins_5: balanceRes.data.coins_5,
+        coins_10: balanceRes.data.coins_10,
+        previousBalance: balanceRes.data.totalAmount,
+        newBalance: balanceRes.data.totalAmount,
+        description: `Shift started on ${today.toDateString()} with ${balanceRes.data.totalAmount} balance.`
+      })
+      .returning();
+
+    return {
+      success: true,
+      data: {
+        startedAt: new Date(),
+        event: startedShift
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to start shift"
+    };
+  }
+}
+
+// 5. Get Active Shift Details Controller
+export async function getActiveShiftController(): Promise<GetActiveShiftResponse> {
+  try {
+    const db = getDB();
+
+    // Check if there is already a event that fullfill following conditions
+    // event type = "opening_balance"
+    // and createdAt is today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const latestStartedShiftEvent = await db.query.cashDrawerEvents.findMany({
+      limit: 1,
+      where: (table, { eq, and, gte }) =>
+        and(
+          eq(table.eventType, "opening_balance"),
+          gte(table.createdAt, today)
+        ),
+      orderBy: (table, { desc }) => [desc(table.createdAt)]
+    });
+
+    const latestEndShiftEvent = await db.query.cashDrawerEvents.findMany({
+      limit: 1,
+      where: (table, { eq, and, gte }) =>
+        and(eq(table.eventType, "shift_end"), gte(table.createdAt, today)),
+      orderBy: (table, { desc }) => [desc(table.createdAt)]
+    });
+
+    // Check latest started shift event is after latest end shift event
+    if (latestEndShiftEvent.length > 0 && latestStartedShiftEvent.length > 0) {
+      if (
+        latestEndShiftEvent[0].createdAt >= latestStartedShiftEvent[0].createdAt
+      ) {
+        return {
+          success: false,
+          error: "No active shift found for today"
+        };
+      }
+    }
+
+    if (latestStartedShiftEvent.length === 0) {
+      return {
+        success: false,
+        error: "No active shift found for today"
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        startedAt: latestStartedShiftEvent[0].createdAt,
+        event: latestStartedShiftEvent[0]
+      }
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to get active shift details",
+      success: false
+    };
+  }
+}
+
+// 6. End Shift Controller
+export async function endShiftController(): Promise<EndShiftControllerResponse> {
+  try {
+    const db = getDB();
+
+    const activeShiftRes = await getActiveShiftController();
+
+    if (!activeShiftRes.success || !activeShiftRes.data) {
+      throw new Error(activeShiftRes.error || "No active shift found");
+    }
+
+    const cashDrawerBalanceRes = await getCashDrawerBalanceController();
+
+    if (!cashDrawerBalanceRes.success || !cashDrawerBalanceRes.data) {
+      throw new Error(
+        cashDrawerBalanceRes.error || "Failed to get cash drawer balance"
+      );
+    }
+
+    const [endedShift] = await db
+      .insert(cashDrawerEvents)
+      .values({
+        eventType: "shift_end",
+        createdAt: new Date(),
+        totalAmount: cashDrawerBalanceRes.data.totalAmount,
+        userId: activeShiftRes.data.event.userId
+      })
+      .returning();
+
+    return {
+      success: true,
+      data: {
+        endedAt: new Date(),
+        event: endedShift
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to end shift"
     };
   }
 }

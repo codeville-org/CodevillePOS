@@ -97,7 +97,10 @@ const electronAPI: ElectronAPI = {
   cashflow: {
     initializeBalance: cashflowInvoker("initializeBalance"),
     getBalance: cashflowInvoker("getBalance"),
-    updateBalance: cashflowInvoker("updateBalance")
+    updateBalance: cashflowInvoker("updateBalance"),
+    startShift: cashflowInvoker("startShift"),
+    getActiveShift: cashflowInvoker("getActiveShift"),
+    endShift: cashflowInvoker("endShift")
   }
 };
 

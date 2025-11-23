@@ -14,7 +14,15 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { BanknoteIcon, CoinsIcon } from "lucide-react";
+import {
+  BanknoteIcon,
+  ClockFadingIcon,
+  CoinsIcon,
+  PowerIcon,
+  PowerOffIcon,
+  User2Icon,
+  XCircleIcon
+} from "lucide-react";
 
 // Denomination Images
 import rb100Image from "@/assets/images/denominations/RB100.jpg";
@@ -27,11 +35,25 @@ import rc1Image from "@/assets/images/denominations/RC1.jpg";
 import rc10Image from "@/assets/images/denominations/RC10.jpg";
 import rc2Image from "@/assets/images/denominations/RC2.jpg";
 import rc5Image from "@/assets/images/denominations/RC5.jpg";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { Denominations } from "@/lib/zod/cashflow.zod";
+import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
+import { useEndShift } from "../queries/use-end-shift";
 import { useGetCashflowBalance } from "../queries/use-get-balance";
+import { useStartShift } from "../queries/use-start-shift";
 import { useUpdateBalance } from "../queries/use-update-balance";
 
 type Props = {
@@ -40,11 +62,15 @@ type Props = {
 
 export function CashflowModal({ children }: Props) {
   const { user } = useSecurityStore();
+  const { activeShift } = useCashflow();
   const { mutate: updateBalance, isPending: isUpdating } = useUpdateBalance();
   const { data: currentBalance, isPending: isLoadingBalance } =
     useGetCashflowBalance();
+  const { mutate: startShift, isPending: isStartingShift } = useStartShift();
+  const { mutate: endShift, isPending: isEndingShift } = useEndShift();
 
   const [open, setOpen] = useState<boolean>(false);
+  const [elapsedTime, setElapsedTime] = useState<string>("");
   const [denominations, setDenominations] = useState<Denominations>({
     coins_1: 0,
     coins_10: 0,
@@ -103,6 +129,36 @@ export function CashflowModal({ children }: Props) {
       );
     }
   }, [currentBalance, isLoadingBalance]);
+
+  // Real-time elapsed time calculation for active shift
+  useEffect(() => {
+    if (!activeShift) {
+      setElapsedTime("");
+      return;
+    }
+
+    const calculateElapsedTime = () => {
+      const startedAt = new Date(activeShift.startedAt);
+      const now = new Date();
+      const elapsedMs = now.getTime() - startedAt.getTime();
+
+      const hours = Math.floor(elapsedMs / (1000 * 60 * 60));
+      const minutes = Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((elapsedMs % (1000 * 60)) / 1000);
+
+      return `${hours}h ${minutes}m ${seconds}s`;
+    };
+
+    // Initial calculation
+    setElapsedTime(calculateElapsedTime());
+
+    // Update every second
+    const interval = setInterval(() => {
+      setElapsedTime(calculateElapsedTime());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeShift]);
 
   useEffect(() => {
     // Calculate Total Float
@@ -199,11 +255,29 @@ export function CashflowModal({ children }: Props) {
         className="sm:max-w-5xl max-h-[95vh]"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle>Manage Cash Drawer and Work Shift</DialogTitle>
-          <DialogDescription>
-            You can manage cash drawer balance & start / end work shifts here
-          </DialogDescription>
+        <DialogHeader className="w-full flex flex-row items-center justify-between">
+          <div>
+            <DialogTitle>Manage Cash Drawer and Work Shift</DialogTitle>
+            <DialogDescription>
+              You can manage cash drawer balance & start / end work shifts here
+            </DialogDescription>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              <ClockFadingIcon /> Last Updated at: {/* Show date with time */}
+              {currentBalance && currentBalance.updatedAt
+                ? new Date(currentBalance.updatedAt).toLocaleString()
+                : "N/A"}
+            </Badge>
+
+            {currentBalance?.lastUpdatedByUser && (
+              <Badge variant="outline">
+                <User2Icon />
+                By {currentBalance.lastUpdatedByUser.username}
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
 
         <ScrollArea className="h-[68vh] bg-secondary/50 border border-secondary rounded-md">
@@ -228,6 +302,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 2 */}
@@ -241,6 +316,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 3 */}
@@ -254,6 +330,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 4 */}
@@ -267,6 +344,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 5 */}
@@ -280,6 +358,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 6 */}
@@ -293,6 +372,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-10 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Notes Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
           </div>
@@ -321,6 +401,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-14 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Coins Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 8 */}
@@ -337,6 +418,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-14 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Coins Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 9 */}
@@ -353,6 +435,7 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-14 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Coins Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
             {/* Denomination 10 */}
@@ -369,31 +452,89 @@ export function CashflowModal({ children }: Props) {
                 }
                 className="w-full h-full min-h-14 text-center border-b-2 border-dashed border-primary"
                 placeholder="Type Coins Count..."
+                disabled={!user.isAdmin}
               />
             </Card>
           </div>
         </ScrollArea>
 
         <DialogFooter className="h-14 mt-2 w-full flex items-center justify-center flex-row gap-2">
-          <Card className="flex-1 h-full rounded-md flex flex-col gap-0 items-center justify-center bg-primary/20 border border-primary">
+          <Card className="flex-1 h-full rounded-md flex flex-col gap-0 items-center justify-center bg-primary/5 dark:bg-primary/20 border border-primary">
             <h2 className="font-semibold text-lg text-primary">
               {formatPrice(totalFloat)}
             </h2>
             <p className="text-xs">Total Float</p>
           </Card>
 
-          <Button
-            variant="default"
-            className="flex-1 h-full text-base font-medium"
-            onClick={handleMutation}
-            loading={isUpdating}
-          >
-            Update Balance
-          </Button>
+          {user.isAdmin && (
+            <Button
+              variant="default"
+              className="flex-1 h-full text-base font-medium"
+              onClick={handleMutation}
+              loading={isUpdating}
+            >
+              Update Balance
+            </Button>
+          )}
+
+          {activeShift ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className={
+                    "bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500 text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 flex-1 h-full text-base font-medium"
+                  }
+                  icon={<PowerOffIcon />}
+                  onClick={() => {}}
+                  loading={false}
+                >
+                  <div className="pl-2 text-center flex flex-col items-start gap-y-0">
+                    <h2>Work Shift is Active</h2>
+                    <p className="text-xs text-foreground">
+                      Duration: {elapsedTime}
+                    </p>
+                  </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Is your work shift over ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to end your current work shift? Make
+                    sure you have reconciled the cash drawer balance before
+                    proceeding.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction asChild>
+                    <Button
+                      onClick={() => endShift()}
+                      loading={isEndingShift}
+                      icon={<PowerOffIcon />}
+                    >
+                      End Shift
+                    </Button>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              className={
+                "bg-amber-500 text-amber-50 hover:bg-amber-600 flex-1 h-full text-base font-medium"
+              }
+              icon={<PowerIcon />}
+              onClick={() => startShift()}
+              loading={isStartingShift}
+            >
+              Start Shift
+            </Button>
+          )}
 
           <DialogClose asChild className="">
-            <Button variant="destructive" className="h-full">
-              Close
+            <Button variant="destructive" className="h-full w-14">
+              <XCircleIcon className="size-6" />
             </Button>
           </DialogClose>
         </DialogFooter>

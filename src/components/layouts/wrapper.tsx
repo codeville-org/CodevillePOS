@@ -6,16 +6,17 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
 import { LogoutBadge } from "@/modules/auth/logout-badge";
+import { CashflowModal } from "@/modules/cashflow/components/cashflow-modal";
 import { useGetCashflowBalance } from "@/modules/cashflow/queries/use-get-balance";
 import { useInitializeBalance } from "@/modules/cashflow/queries/use-initialize-balance";
 import { RealtimeClock } from "@/modules/pos/components/clock";
 import { useGetSettings } from "@/modules/settings/query/use-get";
-import { Loader2 } from "lucide-react";
+import { CircleDollarSignIcon, Loader2 } from "lucide-react";
 import { LanguageSelector } from "../elements/language-selector";
 import { AppSidebar } from "./dashboard/app-sidebar";
 import { WindowActions } from "./dashboard/window-actions";
@@ -31,7 +32,8 @@ export function Wrapper() {
   } = usePersistStore();
   const { user } = useSecurityStore();
 
-  const { activeBalance } = useCashflow();
+  const { activeBalance, getActiveShift, fetchingActiveShift, activeShift } =
+    useCashflow();
   const { mutate: initializeBalance, isPending: balanceInitializing } =
     useInitializeBalance();
 
@@ -53,7 +55,11 @@ export function Wrapper() {
 
   const handleInitializeBalance = () => {
     if (!activeBalance) {
-      initializeBalance();
+      initializeBalance(undefined, {
+        onSuccess: () => {
+          getActiveShift();
+        }
+      });
     }
   };
 
@@ -105,7 +111,38 @@ export function Wrapper() {
                         <Loader2 className="animate-spin size-3" />
                         Balance is Loading...
                       </p>
-                    ) : null}
+                    ) : fetchingActiveShift ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Getting Shift...
+                      </p>
+                    ) : (
+                      <CashflowModal>
+                        <div className="text-xs flex items-center gap-2 cursor-pointer hover:underline">
+                          <div
+                            className={cn("size-2 rounded-full", {
+                              "bg-amber-500": activeShift === null,
+                              "bg-green-600": activeShift
+                            })}
+                          />
+
+                          {activeShift ? (
+                            <p className={"text-green-600"}>
+                              Work Shift Ongoing
+                            </p>
+                          ) : (
+                            <p className={"text-amber-500"}>Shift Inactive</p>
+                          )}
+
+                          {activeShift && activeBalance && (
+                            <div className="ml-3 flex items-center gap-2 text-green-500">
+                              <CircleDollarSignIcon className="size-3" />
+                              {formatPrice(activeBalance.totalAmount, language)}
+                            </div>
+                          )}
+                        </div>
+                      </CashflowModal>
+                    )}
                   </div>
 
                   <Separator

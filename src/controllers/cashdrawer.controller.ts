@@ -8,9 +8,14 @@ import {
 import {
   EndShiftControllerResponse,
   GetActiveShiftResponse,
+  GetAllShiftsInput,
+  GetAllShiftsResponse,
   GetCashDrawerBalanceResponse,
   InitializeCashDrawerBalanceResponse,
+  InsertCashDrawerEvent,
+  InsertCashDrawerEventResponse,
   SelectCashDrawerBalance,
+  SelectShift,
   StartShiftControllerResponse,
   UpdateCashDrawerBalance,
   UpdateCashDrawerBalanceResponse
@@ -27,9 +32,7 @@ import { getUserByIdController } from "./user.controller";
 // 4. Start the shift with openning balance - ✅
 // 5. Get active shift details - ✅
 // 6. End the shift with closing balance - ✅
-// 7. Manual cash add or remove
-// 8. Correction entries
-// 9. Cash in and out for transactions
+// 7. Create cashdrawer event controller -
 
 /**
  * Note: Implementation roadmap and idea
@@ -39,16 +42,10 @@ import { getUserByIdController } from "./user.controller";
  * -  Show alert for user if cash drawer balance is 0
  *
  * - When system initialize, Check there are any active shift in zustand store,
- * -   if not, user can start a new shift by opening "Shift Management" modal
- * -    - In shift management modal, there will be option to enter opening balance with each denominations
+ * -   if not, user can start a new shift by opening "Cashflow" modal
  * -    - On starting shift, create a new cash drawer event with "opening_balance" type
  * -    - Update the cash drawer balance in database and refresh zustand store for updated balance.
- * -   if there is an active shift, check active shift older than 24 hours.
- * -    - If its older than 24 hours, expire the shift
- *        (User can start new shift by modal like in above step)
- * -   If active shift is valid, keep zustand store as it is.
- *
- * - When user perform cash in or cash out (from transaction),
+ * -   All active shift & cash drawrs are saved on zustand persist storage.
  */
 
 // ======= IMPLEMENTATION =======
@@ -374,6 +371,134 @@ export async function endShiftController(): Promise<EndShiftControllerResponse> 
     return {
       success: false,
       error: (error as Error).message || "Failed to end shift"
+    };
+  }
+}
+
+// 7. Cash In and Out for Transactions Controller
+export async function createCashDrawerEventController(
+  values: InsertCashDrawerEvent
+): Promise<InsertCashDrawerEventResponse> {
+  try {
+    const db = getDB();
+
+    const [newEvent] = await db
+      .insert(cashDrawerEvents)
+      .values({
+        ...values,
+        totalAmount: values.totalAmount,
+        eventType: values.eventType,
+        userId: values.userId
+      })
+      .returning();
+
+    return {
+      success: true,
+      data: newEvent
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to create cash drawer event",
+      success: false
+    };
+  }
+}
+
+// 8. Get all shifts by start and end times, controller
+export async function getAllShiftsController(
+  input: GetAllShiftsInput
+): Promise<GetAllShiftsResponse> {
+  try {
+    const { search, page, limit, sort } = input;
+
+    // Convert to numbers and validate
+    const pageNum = Math.max(1, parseInt(page || "1"));
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit || "10"))); // Cap at 100 items
+    const offset = (pageNum - 1) * limitNum;
+
+    const db = getDB();
+
+    // Get all opening_balance events ordered by creation date
+    const openingBalanceEvents = await db.query.cashDrawerEvents.findMany({
+      where: (table, { eq }) => eq(table.eventType, "opening_balance"),
+      orderBy: (table, { desc, asc }) => [
+        sort?.toLowerCase() === "asc"
+          ? asc(table.createdAt)
+          : desc(table.createdAt)
+      ],
+      with: {
+        user: true,
+        transaction: true
+      }
+    });
+
+    // Get all shift_end events
+    const shiftEndEvents = await db.query.cashDrawerEvents.findMany({
+      where: (table, { eq }) => eq(table.eventType, "shift_end"),
+      orderBy: (table, { asc }) => [asc(table.createdAt)]
+    });
+
+    // Build shifts array by pairing opening_balance with shift_end events
+    const allShifts = [];
+
+    for (const openingEvent of openingBalanceEvents) {
+      // Find the corresponding shift_end event that occurred after this opening_balance
+      const correspondingShiftEnd = shiftEndEvents.find(
+        (endEvent) =>
+          endEvent.createdAt > openingEvent.createdAt &&
+          endEvent.userId === openingEvent.userId
+      );
+
+      const shift = {
+        startedAt: openingEvent.createdAt,
+        endedAt: correspondingShiftEnd ? correspondingShiftEnd.createdAt : null,
+        event: openingEvent
+      } as SelectShift;
+
+      // Apply search filter if provided
+      if (search) {
+        const searchLower = search.toLowerCase();
+
+        const matchesSearch =
+          openingEvent?.user?.username.toLowerCase().includes(searchLower) ||
+          openingEvent.description?.toLowerCase().includes(searchLower) ||
+          openingEvent.totalAmount.toString().includes(searchLower);
+
+        if (matchesSearch) {
+          allShifts.push(shift);
+        }
+      } else {
+        allShifts.push(shift);
+      }
+    }
+
+    // Calculate total count before pagination
+    const totalCount = allShifts.length;
+
+    // Apply pagination
+    const paginatedShifts = allShifts.slice(offset, offset + limitNum);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    return {
+      success: true,
+      error: null,
+      data: {
+        data: paginatedShifts,
+        meta: {
+          currentPage: pageNum,
+          limit: limitNum,
+          totalCount,
+          totalPages
+        }
+      }
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to get all shifts",
+      success: false,
+      data: null
     };
   }
 }

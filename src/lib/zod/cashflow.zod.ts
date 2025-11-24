@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { getBaseReturnSchema } from "./helpers";
+import {
+  getBaseReturnSchema,
+  getPaginatedSchema,
+  queryParamsSchema
+} from "./helpers";
 import { selectTransactionSchema } from "./transactions.zod";
 import { baseUserSchema } from "./user.zod";
 
@@ -88,6 +92,16 @@ export const selectCashDrawerEventSchema = baseCashDrawerEventSchema;
 
 export type SelectCashDrawerEvent = z.infer<typeof selectCashDrawerEventSchema>;
 
+export const insertCashDrawerEventSchema = baseCashDrawerEventSchema.omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+  user: true,
+  transaction: true
+});
+
+export type InsertCashDrawerEvent = z.infer<typeof insertCashDrawerEventSchema>;
+
 // --- Balance Schemas
 export const selectCashDrawerBalanceSchema = baseCashDrawerBalanceSchema;
 
@@ -166,4 +180,37 @@ export const endShiftControllerResponseSchema =
 
 export type EndShiftControllerResponse = z.infer<
   typeof endShiftControllerResponseSchema
+>;
+
+export const insertCashDrawerEventResponseSchema = getBaseReturnSchema(
+  selectCashDrawerEventSchema
+);
+
+export type InsertCashDrawerEventResponse = z.infer<
+  typeof insertCashDrawerEventResponseSchema
+>;
+
+export const getAllShiftsInputSchema = queryParamsSchema;
+
+export type GetAllShiftsInput = z.infer<typeof getAllShiftsInputSchema>;
+
+export const getAllShiftsResponseSchema = getBaseReturnSchema(
+  getPaginatedSchema(z.array(selectShiftSchema))
+);
+
+export type GetAllShiftsResponse = z.infer<typeof getAllShiftsResponseSchema>;
+
+export const getShiftEventsInputSchema = z.object({
+  startedAt: z.date().default(new Date()),
+  endedAt: z.date()
+});
+
+export type GetShiftEventsInput = z.infer<typeof getShiftEventsInputSchema>;
+
+export const getShiftEventsResponseSchema = z.array(
+  selectCashDrawerEventSchema
+);
+
+export type getShiftEventsResponse = z.infer<
+  typeof getShiftEventsResponseSchema
 >;

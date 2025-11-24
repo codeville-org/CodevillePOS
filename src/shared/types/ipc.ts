@@ -48,8 +48,12 @@ import type {
 import {
   EndShiftControllerResponse,
   GetActiveShiftResponse,
+  GetAllShiftsInput,
+  GetAllShiftsResponse,
   GetCashDrawerBalanceResponse,
   InitializeCashDrawerBalanceResponse,
+  InsertCashDrawerEvent,
+  InsertCashDrawerEventResponse,
   StartShiftControllerResponse,
   UpdateCashDrawerBalance,
   UpdateCashDrawerBalanceResponse
@@ -232,6 +236,10 @@ export interface CashflowActions {
   startShift: (userId: string) => Promise<StartShiftControllerResponse>;
   getActiveShift: () => Promise<GetActiveShiftResponse>;
   endShift: () => Promise<EndShiftControllerResponse>;
+  createEvent: (
+    values: InsertCashDrawerEvent
+  ) => Promise<InsertCashDrawerEventResponse>;
+  getAllShifts: (input: GetAllShiftsInput) => Promise<GetAllShiftsResponse>;
 }
 
 // Main IPC API interface

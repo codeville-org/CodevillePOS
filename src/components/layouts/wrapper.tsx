@@ -6,12 +6,17 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
 import { LogoutBadge } from "@/modules/auth/logout-badge";
+import { CashflowModal } from "@/modules/cashflow/components/cashflow-modal";
+import { useGetCashflowBalance } from "@/modules/cashflow/queries/use-get-balance";
+import { useInitializeBalance } from "@/modules/cashflow/queries/use-initialize-balance";
 import { RealtimeClock } from "@/modules/pos/components/clock";
 import { useGetSettings } from "@/modules/settings/query/use-get";
+import { CircleDollarSignIcon, Loader2 } from "lucide-react";
 import { LanguageSelector } from "../elements/language-selector";
 import { AppSidebar } from "./dashboard/app-sidebar";
 import { WindowActions } from "./dashboard/window-actions";
@@ -27,6 +32,13 @@ export function Wrapper() {
   } = usePersistStore();
   const { user } = useSecurityStore();
 
+  const { activeBalance, getActiveShift, fetchingActiveShift, activeShift } =
+    useCashflow();
+  const { mutate: initializeBalance, isPending: balanceInitializing } =
+    useInitializeBalance();
+
+  const { isPending: balanceLoading } = useGetCashflowBalance();
+
   // Update persisted store settings from database
   useEffect(() => {
     if (data && !error) {
@@ -35,6 +47,21 @@ export function Wrapper() {
       setImagesEnabled(data.imagesEnabled ?? true);
     }
   }, [data, error]);
+
+  // Validate cash drawer balance status
+  useEffect(() => {
+    handleInitializeBalance();
+  }, [activeBalance]);
+
+  const handleInitializeBalance = () => {
+    if (!activeBalance) {
+      initializeBalance(undefined, {
+        onSuccess: () => {
+          getActiveShift();
+        }
+      });
+    }
+  };
 
   return (
     <main
@@ -73,6 +100,56 @@ export function Wrapper() {
                 </div>
 
                 <div className="flex items-center gap-2 h-full">
+                  <div className="flex items-center gap-2">
+                    {balanceInitializing ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Cash Flow is Getting Ready
+                      </p>
+                    ) : balanceLoading ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Balance is Loading...
+                      </p>
+                    ) : fetchingActiveShift ? (
+                      <p className="text-xs flex items-center gap-2 text-foreground/60">
+                        <Loader2 className="animate-spin size-3" />
+                        Getting Shift...
+                      </p>
+                    ) : (
+                      <CashflowModal>
+                        <div className="text-xs flex items-center gap-2 cursor-pointer hover:underline">
+                          <div
+                            className={cn("size-2 rounded-full", {
+                              "bg-amber-500": activeShift === null,
+                              "bg-green-600": activeShift
+                            })}
+                          />
+
+                          {activeShift ? (
+                            <p className={"text-green-600"}>
+                              Work Shift Ongoing
+                            </p>
+                          ) : (
+                            <p className={"text-amber-500"}>Shift Inactive</p>
+                          )}
+
+                          {activeShift && activeBalance && (
+                            <div className="ml-3 flex items-center gap-2 text-green-500">
+                              <CircleDollarSignIcon className="size-3" />
+                              {formatPrice(activeBalance.totalAmount, language)}
+                            </div>
+                          )}
+                        </div>
+                      </CashflowModal>
+                    )}
+                  </div>
+
+                  <Separator
+                    className="mx-2 ml-4 data-[orientation=vertical]:h-4"
+                    orientation="vertical"
+                  />
+
                   <div className="flex items-center gap-3">
                     {user && (
                       <p className="text-xs text-secondary-foreground/70">

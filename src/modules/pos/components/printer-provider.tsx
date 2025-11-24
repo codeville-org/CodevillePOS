@@ -27,7 +27,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useElectronAPI } from "@/hooks/use-electron-api";
 import { TEXTS } from "@/lib/language";
 import { cn, formatDate, formatPrice } from "@/lib/utils";
-import { SelectTransactionSchema } from "@/lib/zod/transactions.zod";
+import {
+  PaymentMethod,
+  SelectTransactionSchema
+} from "@/lib/zod/transactions.zod";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePrinterStore } from "@/lib/zustand/printer-store";
 import ImageDisplay from "@/modules/image-manager/components/image-display";
@@ -62,9 +65,15 @@ export function PrinterProvider({}: Props) {
     setIsFetching(true);
 
     await getTransactionByID(currentItem.transactionId, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setTransactionData(data);
         setIsFetching(false);
+
+        // Open cash drawer after fetching transaction
+        if (data.paymentMethod === PaymentMethod.CASH) {
+          await electronAPI.print.openCashDrawer();
+          toast.success("Cash drawer opened !");
+        }
       },
       onSettled: () => {
         setIsFetching(false);

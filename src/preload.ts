@@ -15,6 +15,7 @@ const securityInvoker = createInvoker("security");
 const printInvoker = createInvoker("print");
 const reportsInvoker = createInvoker("reports");
 const userInvoker = createInvoker("user");
+const cashflowInvoker = createInvoker("cashflow");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -92,6 +93,17 @@ const electronAPI: ElectronAPI = {
     create: userInvoker("create"),
     update: userInvoker("update"),
     delete: userInvoker("delete")
+  },
+  cashflow: {
+    initializeBalance: cashflowInvoker("initializeBalance"),
+    getBalance: cashflowInvoker("getBalance"),
+    updateBalance: cashflowInvoker("updateBalance"),
+    startShift: cashflowInvoker("startShift"),
+    getActiveShift: cashflowInvoker("getActiveShift"),
+    endShift: cashflowInvoker("endShift"),
+    createEvent: cashflowInvoker("createEvent"),
+    getAllShifts: cashflowInvoker("getAllShifts"),
+    getShiftEvents: cashflowInvoker("getShiftEvents")
   }
 };
 

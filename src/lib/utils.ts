@@ -99,3 +99,16 @@ export function playBeep(frequency: number, duration: number) {
     console.error("Failed to play beep:", error);
   }
 }
+
+/**
+ * Cash Drawer Events List
+ */
+export const cashdrawerEventsList = [
+  "opening_balance", // Morning cash count
+  "cash_in", // Cash received from customer
+  "cash_out", // Change given to customer
+  "manual_add", // Admin manually adds cash
+  "manual_remove", // Admin manually removes cash
+  "shift_end", // End of shift reconciliation
+  "correction" // Balance correction
+];

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BanknoteIcon,
   BarChart3,
   CodeSquareIcon,
   NotebookPen,
@@ -86,6 +87,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: CONSTANTS.SIDEBAR.reports.text[language],
             url: "/reports",
             icon: BarChart3
+          },
+          {
+            key: "cashflow",
+            title: CONSTANTS.SIDEBAR.cashflow.text[language],
+            url: "/cashflow",
+            icon: BanknoteIcon
           },
           {
             key: "settings",

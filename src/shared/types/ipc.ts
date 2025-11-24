@@ -46,6 +46,21 @@ import type {
 
 // Customers Imports
 import {
+  EndShiftControllerResponse,
+  GetActiveShiftResponse,
+  GetAllShiftsInput,
+  GetAllShiftsResponse,
+  GetCashDrawerBalanceResponse,
+  GetShiftEventsInput,
+  GetShiftEventsResponse,
+  InitializeCashDrawerBalanceResponse,
+  InsertCashDrawerEvent,
+  InsertCashDrawerEventResponse,
+  StartShiftControllerResponse,
+  UpdateCashDrawerBalance,
+  UpdateCashDrawerBalanceResponse
+} from "@/lib/zod/cashflow.zod";
+import {
   CreateCustomerResponseSchema,
   CreateCustomerSchema,
   DeleteCustomerResponseSchema,
@@ -211,6 +226,27 @@ export interface UserActions {
   delete: (id: string) => Promise<MessageResponseT>;
 }
 
+export interface CashflowActions {
+  // Balance
+  initializeBalance: () => Promise<InitializeCashDrawerBalanceResponse>;
+  getBalance: () => Promise<GetCashDrawerBalanceResponse>;
+  updateBalance: (
+    data: UpdateCashDrawerBalance
+  ) => Promise<UpdateCashDrawerBalanceResponse>;
+
+  // Events
+  startShift: (userId: string) => Promise<StartShiftControllerResponse>;
+  getActiveShift: () => Promise<GetActiveShiftResponse>;
+  endShift: () => Promise<EndShiftControllerResponse>;
+  createEvent: (
+    values: InsertCashDrawerEvent
+  ) => Promise<InsertCashDrawerEventResponse>;
+  getAllShifts: (input: GetAllShiftsInput) => Promise<GetAllShiftsResponse>;
+  getShiftEvents: (
+    input: GetShiftEventsInput
+  ) => Promise<GetShiftEventsResponse>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -224,4 +260,5 @@ export interface ElectronAPI {
   print: PrinterActions;
   reports: ReportsActions;
   user: UserActions;
+  cashflow: CashflowActions;
 }

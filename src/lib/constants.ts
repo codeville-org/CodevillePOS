@@ -46,6 +46,9 @@ export const CONSTANTS = {
     reports: {
       text: { en: "Reports", si: "අලෙවි වාර්තා" }
     },
+    cashflow: {
+      text: { en: "Cash Management", si: "මුදල් කළමනාකරණය" }
+    },
     settings: {
       text: { en: "Settings", si: "සැකසුම්" }
     }

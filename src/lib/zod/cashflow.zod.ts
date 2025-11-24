@@ -1,0 +1,216 @@
+import { z } from "zod";
+
+import {
+  getBaseReturnSchema,
+  getPaginatedSchema,
+  queryParamsSchema
+} from "./helpers";
+import { selectTransactionSchema } from "./transactions.zod";
+import { baseUserSchema } from "./user.zod";
+
+export const cashDrawerEventTypeSchema = z.enum([
+  "opening_balance", // Morning cash count
+  "cash_in", // Cash received from customer
+  "cash_out", // Change given to customer
+  "manual_add", // Admin manually adds cash
+  "manual_remove", // Admin manually removes cash
+  "shift_end", // End of shift reconciliation
+  "correction" // Balance correction
+]);
+
+export type cashDrawerEventType = z.infer<typeof cashDrawerEventTypeSchema>;
+
+export const denominationsSchema = z.object({
+  notes_5000: z.number().int().nonnegative().default(0),
+  notes_2000: z.number().int().nonnegative().default(0),
+  notes_1000: z.number().int().nonnegative().default(0),
+  notes_500: z.number().int().nonnegative().default(0),
+  notes_100: z.number().int().nonnegative().default(0),
+  notes_50: z.number().int().nonnegative().default(0),
+  notes_20: z.number().int().nonnegative().default(0),
+
+  coins_10: z.number().int().nonnegative().default(0),
+  coins_5: z.number().int().nonnegative().default(0),
+  coins_2: z.number().int().nonnegative().default(0),
+  coins_1: z.number().int().nonnegative().default(0)
+});
+
+export type Denominations = z.infer<typeof denominationsSchema>;
+
+const baseCashDrawerEventSchema = z.object({
+  id: z.string(),
+
+  eventType: cashDrawerEventTypeSchema,
+
+  totalAmount: z.number(),
+
+  ...denominationsSchema.shape,
+
+  transactionId: z.string().nullable(),
+  transaction: selectTransactionSchema.optional(),
+
+  userId: z.string(),
+  user: baseUserSchema.optional(),
+
+  description: z.string().nullable(),
+  previousBalance: z.number().nullable(),
+  newBalance: z.number().nullable(),
+
+  createdAt: z.date(),
+  updatedAt: z.date()
+});
+
+const baseCashDrawerBalanceSchema = z.object({
+  id: z.string(),
+
+  ...denominationsSchema.shape,
+
+  totalAmount: z.number().nonnegative(),
+
+  isActive: z.boolean().default(true),
+
+  lastEventId: z.string().nullable(),
+  lastEvent: baseCashDrawerEventSchema.optional(),
+
+  lastUpdatedBy: z.string(),
+  lastUpdatedByUser: baseUserSchema.optional(),
+
+  createdAt: z.date(),
+  updatedAt: z.date()
+});
+
+const baseShiftSchema = z.object({
+  startedAt: z.date().default(new Date()),
+  endedAt: z.date().nullable().default(null),
+
+  event: baseCashDrawerEventSchema.optional()
+});
+
+// Foundmental Schemas
+// --- Events Schemas
+export const selectCashDrawerEventSchema = baseCashDrawerEventSchema;
+
+export type SelectCashDrawerEvent = z.infer<typeof selectCashDrawerEventSchema>;
+
+export const insertCashDrawerEventSchema = baseCashDrawerEventSchema.omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+  user: true,
+  transaction: true
+});
+
+export type InsertCashDrawerEvent = z.infer<typeof insertCashDrawerEventSchema>;
+
+// --- Balance Schemas
+export const selectCashDrawerBalanceSchema = baseCashDrawerBalanceSchema;
+
+export type SelectCashDrawerBalance = z.infer<
+  typeof selectCashDrawerBalanceSchema
+>;
+
+export const insertCashDrawerBalanceSchema = baseCashDrawerBalanceSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export type InsertCashDrawerBalance = z.infer<
+  typeof insertCashDrawerBalanceSchema
+>;
+
+export const updateCashDrawerBalanceSchema =
+  insertCashDrawerBalanceSchema.partial();
+
+export type UpdateCashDrawerBalance = z.infer<
+  typeof updateCashDrawerBalanceSchema
+>;
+
+// -- Shift Schemas
+export const selectShiftSchema = baseShiftSchema;
+
+export type SelectShift = z.infer<typeof selectShiftSchema>;
+
+// ===== Controller Schemas =====
+
+// Intitialize Cash Drawer Balance Controller - Return
+export const initializeCashDrawerBalanceResponseSchema = getBaseReturnSchema(
+  selectCashDrawerBalanceSchema
+);
+
+export type InitializeCashDrawerBalanceResponse = z.infer<
+  typeof initializeCashDrawerBalanceResponseSchema
+>;
+
+// Get Cash Drawer Balance Controller - Return
+export const getCashDrawerBalanceResponseSchema = getBaseReturnSchema(
+  selectCashDrawerBalanceSchema
+);
+
+export type GetCashDrawerBalanceResponse = z.infer<
+  typeof getCashDrawerBalanceResponseSchema
+>;
+
+// Update Cash Drawer Balance Controller - Return
+export const updateCashDrawerBalanceResponseSchema = getBaseReturnSchema(
+  updateCashDrawerBalanceSchema
+);
+
+export type UpdateCashDrawerBalanceResponse = z.infer<
+  typeof updateCashDrawerBalanceResponseSchema
+>;
+
+// Start Shift Controller - Return
+export const startShiftControllerResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type StartShiftControllerResponse = z.infer<
+  typeof startShiftControllerResponseSchema
+>;
+
+export const getActiveShiftResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type GetActiveShiftResponse = z.infer<
+  typeof getActiveShiftResponseSchema
+>;
+
+export const endShiftControllerResponseSchema =
+  getBaseReturnSchema(selectShiftSchema);
+
+export type EndShiftControllerResponse = z.infer<
+  typeof endShiftControllerResponseSchema
+>;
+
+export const insertCashDrawerEventResponseSchema = getBaseReturnSchema(
+  selectCashDrawerEventSchema
+);
+
+export type InsertCashDrawerEventResponse = z.infer<
+  typeof insertCashDrawerEventResponseSchema
+>;
+
+export const getAllShiftsInputSchema = queryParamsSchema;
+
+export type GetAllShiftsInput = z.infer<typeof getAllShiftsInputSchema>;
+
+export const getAllShiftsResponseSchema = getBaseReturnSchema(
+  getPaginatedSchema(z.array(selectShiftSchema))
+);
+
+export type GetAllShiftsResponse = z.infer<typeof getAllShiftsResponseSchema>;
+
+export const getShiftEventsInputSchema = z.object({
+  startedAt: z.date().default(new Date()),
+  endedAt: z.date().nullable().optional()
+});
+
+export type GetShiftEventsInput = z.infer<typeof getShiftEventsInputSchema>;
+
+export const getShiftEventsResponseSchema = getBaseReturnSchema(
+  z.array(selectCashDrawerEventSchema)
+);
+
+export type GetShiftEventsResponse = z.infer<
+  typeof getShiftEventsResponseSchema
+>;

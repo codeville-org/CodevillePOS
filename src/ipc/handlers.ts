@@ -1,5 +1,6 @@
 import { BrowserWindow } from "electron";
 
+import { cashdrawerHandler } from "./cashflow-handler";
 import { categoriesHandler } from "./categories-handler";
 import { customersHandler } from "./customers-handler";
 import { imagesHandler } from "./images-handler";
@@ -25,4 +26,5 @@ export function setupIPCHandlers(mainWindow: BrowserWindow) {
   printerHandler.register();
   reportsHandler.register();
   userHandler.register();
+  cashdrawerHandler.register();
 }

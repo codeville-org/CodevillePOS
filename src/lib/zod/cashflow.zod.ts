@@ -202,15 +202,15 @@ export type GetAllShiftsResponse = z.infer<typeof getAllShiftsResponseSchema>;
 
 export const getShiftEventsInputSchema = z.object({
   startedAt: z.date().default(new Date()),
-  endedAt: z.date()
+  endedAt: z.date().nullable().optional()
 });
 
 export type GetShiftEventsInput = z.infer<typeof getShiftEventsInputSchema>;
 
-export const getShiftEventsResponseSchema = z.array(
-  selectCashDrawerEventSchema
+export const getShiftEventsResponseSchema = getBaseReturnSchema(
+  z.array(selectCashDrawerEventSchema)
 );
 
-export type getShiftEventsResponse = z.infer<
+export type GetShiftEventsResponse = z.infer<
   typeof getShiftEventsResponseSchema
 >;

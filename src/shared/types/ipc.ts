@@ -51,6 +51,8 @@ import {
   GetAllShiftsInput,
   GetAllShiftsResponse,
   GetCashDrawerBalanceResponse,
+  GetShiftEventsInput,
+  GetShiftEventsResponse,
   InitializeCashDrawerBalanceResponse,
   InsertCashDrawerEvent,
   InsertCashDrawerEventResponse,
@@ -240,6 +242,9 @@ export interface CashflowActions {
     values: InsertCashDrawerEvent
   ) => Promise<InsertCashDrawerEventResponse>;
   getAllShifts: (input: GetAllShiftsInput) => Promise<GetAllShiftsResponse>;
+  getShiftEvents: (
+    input: GetShiftEventsInput
+  ) => Promise<GetShiftEventsResponse>;
 }
 
 // Main IPC API interface

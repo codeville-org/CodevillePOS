@@ -102,7 +102,8 @@ const electronAPI: ElectronAPI = {
     getActiveShift: cashflowInvoker("getActiveShift"),
     endShift: cashflowInvoker("endShift"),
     createEvent: cashflowInvoker("createEvent"),
-    getAllShifts: cashflowInvoker("getAllShifts")
+    getAllShifts: cashflowInvoker("getAllShifts"),
+    getShiftEvents: cashflowInvoker("getShiftEvents")
   }
 };
 

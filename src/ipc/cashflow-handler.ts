@@ -4,6 +4,7 @@ import {
   getActiveShiftController,
   getAllShiftsController,
   getCashDrawerBalanceController,
+  getShiftEventsController,
   initializeCashDrawerBalanceController,
   startShiftController,
   updateCashDrawerBalanceController
@@ -22,5 +23,6 @@ export const cashdrawerHandler = {
     handler.handle("endShift", endShiftController);
     handler.handle("createEvent", createCashDrawerEventController);
     handler.handle("getAllShifts", getAllShiftsController);
+    handler.handle("getShiftEvents", getShiftEventsController);
   }
 };

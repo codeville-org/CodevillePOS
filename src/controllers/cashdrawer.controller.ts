@@ -11,6 +11,8 @@ import {
   GetAllShiftsInput,
   GetAllShiftsResponse,
   GetCashDrawerBalanceResponse,
+  GetShiftEventsInput,
+  GetShiftEventsResponse,
   InitializeCashDrawerBalanceResponse,
   InsertCashDrawerEvent,
   InsertCashDrawerEventResponse,
@@ -501,6 +503,45 @@ export async function getAllShiftsController(
   } catch (error) {
     return {
       error: (error as Error).message || "Failed to get all shifts",
+      success: false,
+      data: null
+    };
+  }
+}
+
+// 9. Get all events for a shift controller
+export async function getShiftEventsController(
+  input: GetShiftEventsInput
+): Promise<GetShiftEventsResponse> {
+  try {
+    const { startedAt, endedAt } = input;
+    const db = getDB();
+
+    // If endedAt is null or not provided, it means it's an active shift
+    // Get events from startedAt to now
+    const whereCondition = endedAt
+      ? (table: any, { and, gte, lte }: any) =>
+          and(gte(table.createdAt, startedAt), lte(table.createdAt, endedAt))
+      : (table: any, { gte }: any) => gte(table.createdAt, startedAt);
+
+    // Get all cash drawer events within the shift period
+    const shiftEvents = await db.query.cashDrawerEvents.findMany({
+      where: whereCondition,
+      orderBy: (table, { asc }) => [asc(table.createdAt)],
+      with: {
+        user: true,
+        transaction: true
+      }
+    });
+
+    return {
+      success: true,
+      error: null,
+      data: shiftEvents as any
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to get shift events",
       success: false,
       data: null
     };

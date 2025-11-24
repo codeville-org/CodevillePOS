@@ -7,6 +7,7 @@ type Props = {
   totalPages: number;
   onPageChange: (page: number) => void;
   entityName: string;
+  showText?: boolean;
 };
 
 export function Pagination({
@@ -15,15 +16,18 @@ export function Pagination({
   totalCount,
   totalPages,
   onPageChange,
-  entityName
+  entityName,
+  showText = true
 }: Props) {
   return (
     <div className="flex items-center justify-between p-4 border-t border-foreground/5 flex-shrink-0">
-      <div className="text-sm text-muted-foreground">
-        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-        {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{" "}
-        {entityName}
-      </div>
+      {showText && (
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{" "}
+          {entityName}
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Button

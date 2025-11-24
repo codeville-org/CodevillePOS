@@ -282,18 +282,22 @@ export async function getActiveShiftController(): Promise<GetActiveShiftResponse
 
     const latestStartedShiftEvent = await db.query.cashDrawerEvents.findMany({
       limit: 1,
-      where: (table, { eq, and, gte }) =>
-        and(
-          eq(table.eventType, "opening_balance"),
-          gte(table.createdAt, today)
-        ),
+      where: (table, { eq }) =>
+        // NOTE: Uncomment to limit one shift per day
+        // and(
+        //   eq(table.eventType, "opening_balance"),
+        //   gte(table.createdAt, today)
+        // ),
+        eq(table.eventType, "opening_balance"),
       orderBy: (table, { desc }) => [desc(table.createdAt)]
     });
 
     const latestEndShiftEvent = await db.query.cashDrawerEvents.findMany({
       limit: 1,
-      where: (table, { eq, and, gte }) =>
-        and(eq(table.eventType, "shift_end"), gte(table.createdAt, today)),
+      where: (table, { eq }) =>
+        // NOTE: Uncomment to limit one shift per day
+        // and(eq(table.eventType, "shift_end"), gte(table.createdAt, today)),
+        eq(table.eventType, "shift_end"),
       orderBy: (table, { desc }) => [desc(table.createdAt)]
     });
 

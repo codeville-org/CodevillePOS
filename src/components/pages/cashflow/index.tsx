@@ -4,6 +4,7 @@ import { TEXTS } from "@/lib/language";
 import { formatPrice } from "@/lib/utils";
 import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { CashflowListing } from "@/modules/cashflow/components/cashflow-listing";
 import { CashflowTabBar } from "@/modules/cashflow/components/cashflow-tab-bar";
 
 type Props = {};
@@ -28,7 +29,11 @@ export function CashflowPage({}: Props) {
           }
         />
 
-        <CashflowTabBar />
+        <div className="flex-1 flex flex-col gap-2">
+          <CashflowTabBar />
+
+          <CashflowListing className="flex-1" />
+        </div>
       </div>
     </PageContainer>
   );

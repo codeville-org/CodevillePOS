@@ -15,6 +15,8 @@ export const useCashflow = create<CashflowStoreInterface>()(
       fetchingActiveShift:
         false as CashflowStoreInterface["fetchingActiveShift"],
 
+      activeListingShift: null as CashflowStoreInterface["activeListingShift"],
+
       setActiveShift: (shift) => set({ activeShift: shift }),
       getActiveShift: async () => {
         const { activeShift } = get();
@@ -26,7 +28,9 @@ export const useCashflow = create<CashflowStoreInterface>()(
         const res = await fetchActiveShift();
 
         set({ activeShift: res, fetchingActiveShift: false });
-      }
+      },
+
+      setActiveListingShift: (shift) => set({ activeListingShift: shift })
     }),
     {
       name: "cashflow-store",

@@ -12,7 +12,7 @@ type Props = {};
 
 export function CashflowTabBar({}: Props) {
   return (
-    <div className="min-h-12 flex items-center gap-2 py-2 px-0 w-full border-y border-secondary/50 bg-secondary/10">
+    <div className="min-h-12 flex items-center gap-2 py-2 px-2 w-full border-y border-secondary/50 bg-primary/5">
       <CashflowModal>
         <Button
           variant="default"
@@ -27,7 +27,7 @@ export function CashflowTabBar({}: Props) {
         <Button
           icon={<BanknoteArrowDownIcon />}
           variant="secondary"
-          className="shadow-none"
+          className="shadow-none bg-primary/0 dark:bg-primary/10 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary border border-primary"
         >
           Add Cash
         </Button>
@@ -37,7 +37,7 @@ export function CashflowTabBar({}: Props) {
         <Button
           icon={<BanknoteArrowUpIcon />}
           variant="secondary"
-          className="shadow-none"
+          className="shadow-none bg-primary/0 dark:bg-primary/10 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary border border-primary"
         >
           Remove Cash
         </Button>

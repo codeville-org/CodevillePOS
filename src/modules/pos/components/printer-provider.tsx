@@ -101,6 +101,7 @@ export function PrinterProvider({}: Props) {
       const savedBillImage = await electronAPI.images.saveImageFromBase64(
         dataUrl,
         true,
+        false,
         transactionData?.transactionNumber
       );
 

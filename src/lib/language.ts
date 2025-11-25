@@ -99,7 +99,8 @@ export const TEXTS = {
         },
         reset: { en: "Reset", si: "නැවත සකසන්න" },
         create: { en: "Create Product", si: "භාණ්ඩයක් සාදන්න" },
-        edit: { en: "Edit Product", si: "භාණ්ඩයක් යාවත්කාලීන කරන්න" }
+        edit: { en: "Edit Product", si: "භාණ්ඩයක් යාවත්කාලීන කරන්න" },
+        printLabel: { en: "Print Label", si: "ලේබලය මුද්‍රණය කරන්න" }
       }
     }
   },

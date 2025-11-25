@@ -21,6 +21,7 @@ import {
   CreateProductResponse,
   DeleteProductResponse,
   ExportProductsResponse,
+  GenerateBarcodeResponse,
   GetAllProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
@@ -130,6 +131,7 @@ export interface ProductsActions {
   import: (payload: ImportProductsSchema) => Promise<ImportProductsResponse>;
   export: () => Promise<ExportProductsResponse>;
   selectImportFile: () => Promise<SelectImportFileType>;
+  generateBarcode: () => Promise<GenerateBarcodeResponse>;
 }
 
 export interface ImagesActions {
@@ -137,6 +139,7 @@ export interface ImagesActions {
   saveImageFromBase64: (
     base64Data: string,
     billImage?: boolean,
+    labelImage?: boolean,
     transactionNumber?: string
   ) => Promise<string>;
   saveImageFromPath: (sourceImagePath: string) => Promise<string>;
@@ -206,6 +209,10 @@ export interface PrinterActions {
     useDithering?: boolean
   ) => Promise<VoidDataResponseT>;
   printImageBill: (
+    imagePath: string,
+    useDithering?: boolean
+  ) => Promise<VoidDataResponseT>;
+  printImageLabel: (
     imagePath: string,
     useDithering?: boolean
   ) => Promise<VoidDataResponseT>;

@@ -2,6 +2,7 @@ import {
   createNewProductController,
   deleteProductController,
   exportProductsController,
+  generateBarcodeController,
   getAllProductsController,
   getProductByBarcodeController,
   getProductByIDController,
@@ -24,5 +25,6 @@ export const productsHandler = {
     handler.handle("import", importProductsController);
     handler.handle("export", exportProductsController);
     handler.handle("selectImportFile", selectImportFileController);
+    handler.handle("generateBarcode", generateBarcodeController);
   }
 };

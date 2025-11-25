@@ -42,6 +42,22 @@ export function getBillsImageDirectory(): string {
   }
 }
 
+export function getLabelsImageDirectory(): string {
+  let baseDir: string;
+
+  if (!app.isReady()) {
+    return path.join(process.cwd(), "images");
+  }
+
+  if (app.isPackaged) {
+    baseDir = app.getPath("documents");
+    return path.join(baseDir, "CodeVille POS", "labels");
+  } else {
+    baseDir = process.cwd();
+    return path.join(baseDir, "labels");
+  }
+}
+
 // This function ensures image extension is valid
 export function isValidImageExtension(extension: string): boolean {
   const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
@@ -52,6 +68,7 @@ export function isValidImageExtension(extension: string): boolean {
 export async function saveImageFromBase64Controller(
   base64Data: string,
   billImage?: boolean,
+  labelImage?: boolean,
   transactionNumber?: string
 ): Promise<string> {
   try {
@@ -81,10 +98,16 @@ export async function saveImageFromBase64Controller(
       filename = `bill_${transactionNumber}${extension}`;
     }
 
+    if (labelImage) {
+      filename = `label_${fileId}${extension}`;
+    }
+
     let imagesDirectory;
 
     if (billImage) {
       imagesDirectory = getBillsImageDirectory();
+    } else if (labelImage) {
+      imagesDirectory = getLabelsImageDirectory();
     } else imagesDirectory = getImagesDirectory();
 
     await fs.mkdir(imagesDirectory, { recursive: true });

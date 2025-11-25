@@ -117,3 +117,13 @@ export type ImportProductsResponse = z.infer<typeof importProductsResponse>;
 export const exportProductsResponse = getBaseReturnSchema(z.object({}));
 
 export type ExportProductsResponse = z.infer<typeof exportProductsResponse>;
+
+const generateBarcodeResponseSchema = getBaseReturnSchema(
+  z.object({
+    barcode: z.string()
+  })
+);
+
+export type GenerateBarcodeResponse = z.infer<
+  typeof generateBarcodeResponseSchema
+>;

@@ -38,7 +38,8 @@ const electronAPI: ElectronAPI = {
     delete: productsInvoker("delete"),
     import: productsInvoker("import"),
     export: productsInvoker("export"),
-    selectImportFile: productsInvoker("selectImportFile")
+    selectImportFile: productsInvoker("selectImportFile"),
+    generateBarcode: productsInvoker("generateBarcode")
   },
   images: {
     getImagesDirectory: imagesInvoker("getImagesDirectory"),
@@ -82,6 +83,7 @@ const electronAPI: ElectronAPI = {
     savePrinterSettings: printInvoker("savePrinterSettings"),
     printImage: printInvoker("printImage"),
     printImageBill: printInvoker("printImageBill"),
+    printImageLabel: printInvoker("printImageLabel"),
     selectImageFile: printInvoker("selectImageFile")
   },
   reports: {

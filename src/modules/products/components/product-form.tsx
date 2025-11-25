@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EditIcon, PlusCircleIcon, PrinterIcon, TrashIcon } from "lucide-react";
+import { EditIcon, PlusCircleIcon, PrinterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -31,10 +31,10 @@ import { usePersistStore } from "@/lib/zustand/persist-store";
 import { CategoryDropdown } from "@/modules/categories/components/category-dropdown";
 import { ImageUploader } from "@/modules/image-manager/components/image-uploader";
 import { useCreateProduct } from "../queries/use-create";
-import { useDeleteProduct } from "../queries/use-delete";
 import { useGetProductByIdMutated } from "../queries/use-mutated-get-by-id";
 import { useUpdateProduct } from "../queries/use-update";
 // import { GenerateLabelDialog } from "./generate-label";
+import DeleteProductButton from "./delete-product-button";
 import { GenerateLabelDialog } from "./generate-label";
 import { UnitsDropdown } from "./units-dropdown";
 
@@ -58,8 +58,6 @@ export function ProductForm({ className, mode, productId }: Props) {
     useUpdateProduct(productId || currentProduct?.id || "");
   const { mutateAsync: getProductById, isPending: fetchingProduct } =
     useGetProductByIdMutated();
-  const { mutateAsync: deleteProduct, isPending: deletingProduct } =
-    useDeleteProduct(productId || currentProduct?.id);
 
   const form = useForm<InsertProductSchema>({
     resolver: zodResolver(insertProductSchema),
@@ -127,10 +125,6 @@ export function ProductForm({ className, mode, productId }: Props) {
     form.reset();
     setFormMode("create");
     setCurrentProduct(null);
-  };
-
-  const handleDeleteProduct = async () => {
-    await deleteProduct();
   };
 
   // Prevent accidental form submission from barcode scanner Enter key
@@ -573,15 +567,7 @@ export function ProductForm({ className, mode, productId }: Props) {
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="destructive"
-                    type="button"
-                    loading={deletingProduct}
-                    icon={<TrashIcon />}
-                    onClick={handleDeleteProduct}
-                  >
-                    {TEXTS.actions.delete[language]}
-                  </Button>
+                  <DeleteProductButton product={currentProduct} />
 
                   <GenerateLabelDialog formValues={form.getValues()}>
                     <Button

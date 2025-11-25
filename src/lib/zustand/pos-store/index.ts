@@ -15,6 +15,9 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
   listingView: "listing",
   setListingView: (view) => set({ listingView: view }),
 
+  listingMode: "grid",
+  setListingMode: (mode) => set({ listingMode: mode }),
+
   searchTerm: null,
   setSearchTerm: (term) => set({ searchTerm: term }),
   resetSearch: () => set({ searchTerm: null }),

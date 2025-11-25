@@ -6,6 +6,8 @@ export type SearchMode = "barcode" | "manual";
 
 export type FilterType = "featured" | "all" | SelectCategory;
 
+export type ListingMode = "grid" | "list";
+
 export type POSListingView = "listing" | "billing";
 
 export type ScannedProduct = {
@@ -26,6 +28,9 @@ export interface PosStoreInterface {
   // Listing View
   listingView: POSListingView;
   setListingView: (view: POSListingView) => void;
+
+  listingMode: ListingMode;
+  setListingMode: (mode: ListingMode) => void;
 
   searchTerm: string | null;
   setSearchTerm: (term: string) => void;

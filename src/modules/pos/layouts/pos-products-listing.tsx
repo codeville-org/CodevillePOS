@@ -16,8 +16,13 @@ export function PosProductsListing({ className }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
 
-  const { filter, searchTerm, addTransactionItem, activeTransaction } =
-    usePosStore();
+  const {
+    filter,
+    searchTerm,
+    addTransactionItem,
+    activeTransaction,
+    listingMode
+  } = usePosStore();
 
   const filterCategory = typeof filter === "string" ? null : filter.id;
 
@@ -72,7 +77,11 @@ export function PosProductsListing({ className }: Props) {
     >
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-4">
+          <div
+            className={cn("p-4", {
+              "p-0 px-2": listingMode === "list"
+            })}
+          >
             {isLoading && (
               <div className="flex items-center justify-center min-h-[400px]">
                 <div className="p-3 rounded-full bg-secondary/20 text-secondary-foreground">
@@ -104,12 +113,17 @@ export function PosProductsListing({ className }: Props) {
             )}
 
             {data && data.data.length > 0 && (
-              <div className="grid grid-cols-4 gap-4">
+              <div
+                className={cn({
+                  "grid grid-cols-4 gap-4": listingMode === "grid",
+                  "flex flex-col gap-0": listingMode === "list"
+                })}
+              >
                 {data.data.map((product) => (
                   <ProductItem
                     product={product}
                     page="pos"
-                    view="grid"
+                    view={listingMode}
                     onClick={() => handleAddToCart(product)}
                   />
                 ))}

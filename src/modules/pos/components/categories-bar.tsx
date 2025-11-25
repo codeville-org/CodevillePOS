@@ -1,7 +1,14 @@
-import { SearchIcon, XCircleIcon, ZapIcon } from "lucide-react";
+import {
+  LayoutGridIcon,
+  LayoutListIcon,
+  SearchIcon,
+  XCircleIcon,
+  ZapIcon
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SelectCategory } from "@/lib/zod/categories.zod";
@@ -15,7 +22,7 @@ export function CategoriesBar({}: Props) {
   const [categorySearchTermDebounce, setCategorySearchTermDebounce] = useState<
     string | null
   >(null);
-  const { filter, setFilter } = usePosStore();
+  const { filter, setFilter, listingMode, setListingMode } = usePosStore();
 
   const { data, isPending, error } = useGetAllCategories({
     page: "1",
@@ -50,6 +57,22 @@ export function CategoriesBar({}: Props) {
   return (
     <ScrollArea className="flex items-center whitespace-nowrap w-full max-w-[calc(100vw-435px)]">
       <div className="flex items-center gap-2 p-4">
+        <Button
+          variant={"outline"}
+          className="rounded-full hover:shadow ease-in-out h-10 w-10 transition-all duration-150 cursor-pointer"
+          onClick={() =>
+            listingMode === "grid"
+              ? setListingMode("list")
+              : setListingMode("grid")
+          }
+        >
+          {listingMode === "grid" ? (
+            <LayoutListIcon className="size-4" />
+          ) : (
+            <LayoutGridIcon className="size-4" />
+          )}
+        </Button>
+
         <Badge
           variant={filter === "featured" ? "default" : "secondary"}
           className="rounded-full hover:shadow hover:-translate-y-0.5 ease-in-out h-10 px-4 text-sm transition-all duration-150 cursor-pointer"

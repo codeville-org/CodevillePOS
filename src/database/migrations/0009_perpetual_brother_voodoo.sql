@@ -1,0 +1,1 @@
+ALTER TABLE `purchases` ADD `purchase_status` text DEFAULT 'active' NOT NULL;

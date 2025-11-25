@@ -37,7 +37,7 @@ export const denominationsSchema = z.object({
 
 export type Denominations = z.infer<typeof denominationsSchema>;
 
-const baseCashDrawerEventSchema = z.object({
+export const baseCashDrawerEventSchema = z.object({
   id: z.string(),
 
   eventType: cashDrawerEventTypeSchema,

@@ -16,6 +16,7 @@ const printInvoker = createInvoker("print");
 const reportsInvoker = createInvoker("reports");
 const userInvoker = createInvoker("user");
 const cashflowInvoker = createInvoker("cashflow");
+const vendorInvoker = createInvoker("vendor");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -106,6 +107,12 @@ const electronAPI: ElectronAPI = {
     createEvent: cashflowInvoker("createEvent"),
     getAllShifts: cashflowInvoker("getAllShifts"),
     getShiftEvents: cashflowInvoker("getShiftEvents")
+  },
+  vendor: {
+    getAll: vendorInvoker("getAll"),
+    create: vendorInvoker("create"),
+    delete: vendorInvoker("delete"),
+    update: vendorInvoker("update")
   }
 };
 

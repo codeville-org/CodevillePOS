@@ -11,6 +11,7 @@ import { securityHandler } from "./security-handler";
 import { appSettingsHandler } from "./settings-handler";
 import { transactionsHandler } from "./transactions-handler";
 import { userHandler } from "./user-handler";
+import { vendorHandler } from "./vendor-handler";
 import { windowHandlers } from "./window-handler";
 
 export function setupIPCHandlers(mainWindow: BrowserWindow) {
@@ -27,4 +28,5 @@ export function setupIPCHandlers(mainWindow: BrowserWindow) {
   reportsHandler.register();
   userHandler.register();
   cashdrawerHandler.register();
+  vendorHandler.register();
 }

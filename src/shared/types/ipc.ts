@@ -90,6 +90,13 @@ import {
   ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
 import {
+  GetAllVendorsResponseSchema,
+  InsertVendorResponseSchema,
+  InsertVendorSchema,
+  UpdateVendorResponseSchema,
+  UpdateVendorSchema
+} from "@/lib/zod/supplier.zod";
+import {
   GetAllUsersResponseT,
   GetUserResponseT,
   InsertUserSchema,
@@ -254,6 +261,13 @@ export interface CashflowActions {
   ) => Promise<GetShiftEventsResponse>;
 }
 
+export interface VendorActions {
+  getAll: (query: QueryParamsSchema) => Promise<GetAllVendorsResponseSchema>;
+  create: (input: InsertVendorSchema) => Promise<InsertVendorResponseSchema>;
+  update: (input: UpdateVendorSchema) => Promise<UpdateVendorResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -268,4 +282,5 @@ export interface ElectronAPI {
   reports: ReportsActions;
   user: UserActions;
   cashflow: CashflowActions;
+  vendor: VendorActions;
 }

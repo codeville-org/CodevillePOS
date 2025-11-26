@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { baseCashDrawerEventSchema } from "./cashflow.zod";
-import { getBaseReturnSchema, getPaginatedSchema } from "./helpers";
+import {
+  getBaseReturnSchema,
+  getPaginatedSchema,
+  queryParamsSchema
+} from "./helpers";
 import { selectProductSchema } from "./products.zod";
 
 // Base Schemas
@@ -46,6 +50,21 @@ export const basePurchaseItemSchema = z.object({
 
   createdAt: z.date(),
   updatedAt: z.date()
+});
+
+// Item Schemas for Avoid circular dependancy errors
+
+export const purchaseListItemSchema = basePurchaseSchema.extend({
+  // Include only essential vendor info for lists
+  vendor: baseVendorSchema
+    .pick({
+      id: true,
+      name: true
+    })
+    .optional(),
+
+  // Include summary info instead of full items
+  totalItems: z.number().optional()
 });
 
 // Select Schemas (avoiding circular references)
@@ -99,9 +118,13 @@ export const updateVendorResponseSchema = getBaseReturnSchema(baseVendorSchema);
 // 1.8. Delete vendor controller -> response = messageSchema
 
 // 2.1 select all purchases controller -> input = queryParamsSchema + optional vendorId filter
+export const getAllPurchasesQuerySchema = queryParamsSchema.extend({
+  vendorId: z.string().optional()
+});
+
 // 2.2 select all purchases controller -> response
 export const getAllPurchasesResponseSchema = getBaseReturnSchema(
-  getPaginatedSchema(z.array(basePurchaseSchema))
+  getPaginatedSchema(z.array(purchaseListItemSchema))
 );
 
 // 2.3 Select purchase by ID controller -> input = purchaseId param
@@ -165,10 +188,15 @@ export const updatePurchaseItemResponseSchema = getBaseReturnSchema(
 // 3.5 Delete purchase item controller -> input = purchaseItemId param
 // 3.6 Delete purchase item controller -> response = messageSchema
 
+// 4.1 Update stock levels controller -> input = purchaseId param
+// 4.2 Update stock levels controller -> response = messageSchema
+
 // ================ Types Definitions ================
 export type SelectVendorSchema = z.infer<typeof selectVendorSchema>;
 export type SelectPurchaseItemSchema = z.infer<typeof selectPurchaseItemSchema>;
 export type SelectPurchaseSchema = z.infer<typeof selectPurchaseSchema>;
+
+export type PurchaseListItemSchema = z.infer<typeof purchaseListItemSchema>;
 
 export type GetAllVendorsResponseSchema = z.infer<
   typeof getAllVendorsResponseSchema
@@ -186,6 +214,10 @@ export type InsertVendorResponseSchema = z.infer<
 export type UpdateVendorSchema = z.infer<typeof updateVendorSchema>;
 export type UpdateVendorResponseSchema = z.infer<
   typeof updateVendorResponseSchema
+>;
+
+export type GetAllPurchasesQuerySchema = z.infer<
+  typeof getAllPurchasesQuerySchema
 >;
 
 export type GetAllPurchasesResponseSchema = z.infer<

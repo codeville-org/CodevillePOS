@@ -17,6 +17,7 @@ const reportsInvoker = createInvoker("reports");
 const userInvoker = createInvoker("user");
 const cashflowInvoker = createInvoker("cashflow");
 const vendorInvoker = createInvoker("vendor");
+const purchaseInvoker = createInvoker("purchase");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -114,6 +115,18 @@ const electronAPI: ElectronAPI = {
     delete: vendorInvoker("delete"),
     update: vendorInvoker("update"),
     getById: vendorInvoker("getById")
+  },
+  purchase: {
+    getAll: purchaseInvoker("getAll"),
+    create: purchaseInvoker("create"),
+    getById: purchaseInvoker("getById"),
+    update: purchaseInvoker("update"),
+    delete: purchaseInvoker("delete"),
+    addItem: purchaseInvoker("addItem"),
+    updateItem: purchaseInvoker("updateItem"),
+    deleteItem: purchaseInvoker("deleteItem"),
+    updateStock: purchaseInvoker("updateStock"),
+    history: purchaseInvoker("history")
   }
 };
 

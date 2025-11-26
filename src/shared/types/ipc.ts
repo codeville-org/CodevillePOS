@@ -90,10 +90,22 @@ import {
   ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
 import {
+  AddPurchaseItemResponseSchema,
+  AddPurchaseItemSchema,
+  CreatePurchaseResponseSchema,
+  CreatePurchaseSchema,
+  GetAllPurchasesQuerySchema,
+  GetAllPurchasesResponseSchema,
   GetAllVendorsResponseSchema,
+  GetPurchaseByIdResponseSchema,
+  GetPurchasePaymentHistoryResponseSchema,
   GetVendorByIdResponseSchema,
   InsertVendorResponseSchema,
   InsertVendorSchema,
+  UpdatePurchaseItemResponseSchema,
+  UpdatePurchaseItemSchema,
+  UpdatePurchaseWithPaymentResponseSchema,
+  UpdatePurchaseWithPaymentSchema,
   UpdateVendorResponseSchema,
   UpdateVendorSchema
 } from "@/lib/zod/supplier.zod";
@@ -273,6 +285,33 @@ export interface VendorActions {
   delete: (id: string) => Promise<MessageResponseT>;
 }
 
+export interface PurchasesActions {
+  getAll: (
+    query: GetAllPurchasesQuerySchema
+  ) => Promise<GetAllPurchasesResponseSchema>;
+  create: (
+    values: CreatePurchaseSchema
+  ) => Promise<CreatePurchaseResponseSchema>;
+  getById: (id: string) => Promise<GetPurchaseByIdResponseSchema>;
+  update: (
+    id: string,
+    input: UpdatePurchaseWithPaymentSchema
+  ) => Promise<UpdatePurchaseWithPaymentResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+  addItem: (
+    input: AddPurchaseItemSchema
+  ) => Promise<AddPurchaseItemResponseSchema>;
+  updateItem: (
+    id: string,
+    input: UpdatePurchaseItemSchema
+  ) => Promise<UpdatePurchaseItemResponseSchema>;
+  deleteItem: (id: string) => Promise<MessageResponseT>;
+  updateStock: (purchaseId: string) => Promise<MessageResponseT>;
+  history: (
+    purchaseId: string
+  ) => Promise<GetPurchasePaymentHistoryResponseSchema>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -288,4 +327,5 @@ export interface ElectronAPI {
   user: UserActions;
   cashflow: CashflowActions;
   vendor: VendorActions;
+  purchase: PurchasesActions;
 }

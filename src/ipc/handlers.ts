@@ -6,6 +6,7 @@ import { customersHandler } from "./customers-handler";
 import { imagesHandler } from "./images-handler";
 import { printerHandler } from "./printer-handler";
 import { productsHandler } from "./products-handler";
+import { purchaseHandler } from "./purchase-handler";
 import { reportsHandler } from "./reports-handler";
 import { securityHandler } from "./security-handler";
 import { appSettingsHandler } from "./settings-handler";
@@ -29,4 +30,5 @@ export function setupIPCHandlers(mainWindow: BrowserWindow) {
   userHandler.register();
   cashdrawerHandler.register();
   vendorHandler.register();
+  purchaseHandler.register();
 }

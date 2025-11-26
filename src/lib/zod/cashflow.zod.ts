@@ -5,6 +5,7 @@ import {
   getPaginatedSchema,
   queryParamsSchema
 } from "./helpers";
+import { basePurchaseSchema } from "./supplier.zod";
 import { selectTransactionSchema } from "./transactions.zod";
 import { baseUserSchema } from "./user.zod";
 
@@ -48,6 +49,9 @@ export const baseCashDrawerEventSchema = z.object({
 
   transactionId: z.string().nullable(),
   transaction: selectTransactionSchema.optional(),
+
+  supplierPurchaseId: z.string().nullable(),
+  supplierPurchase: basePurchaseSchema.optional(),
 
   userId: z.string(),
   user: baseUserSchema.optional(),

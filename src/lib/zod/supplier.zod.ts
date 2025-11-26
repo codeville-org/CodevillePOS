@@ -191,6 +191,22 @@ export const updatePurchaseItemResponseSchema = getBaseReturnSchema(
 // 4.1 Update stock levels controller -> input = purchaseId param
 // 4.2 Update stock levels controller -> response = messageSchema
 
+// Enhanced update purchase schema with user tracking
+export const updatePurchaseWithPaymentSchema = updatePurchaseSchema.extend({
+  userId: z.string().optional(), // Required for payment tracking
+  paymentDescription: z.string().optional() // Optional payment notes
+});
+
+// Response schema remains the same
+export const updatePurchaseWithPaymentResponseSchema =
+  updatePurchaseResponseSchema;
+
+// 5.1 Get purchase payment history controller -> input = purchaseId
+// 5.2 Get purchase payment history controller -> response = array of cashDrawerEventSchema
+export const getPurchasePaymentHistoryResponseSchema = getBaseReturnSchema(
+  z.array(baseCashDrawerEventSchema)
+);
+
 // ================ Types Definitions ================
 export type SelectVendorSchema = z.infer<typeof selectVendorSchema>;
 export type SelectPurchaseItemSchema = z.infer<typeof selectPurchaseItemSchema>;
@@ -248,4 +264,16 @@ export type AddPurchaseItemResponseSchema = z.infer<
 export type UpdatePurchaseItemSchema = z.infer<typeof updatePurchaseItemSchema>;
 export type UpdatePurchaseItemResponseSchema = z.infer<
   typeof updatePurchaseItemResponseSchema
+>;
+
+export type UpdatePurchaseWithPaymentSchema = z.infer<
+  typeof updatePurchaseWithPaymentSchema
+>;
+
+export type UpdatePurchaseWithPaymentResponseSchema = z.infer<
+  typeof updatePurchaseWithPaymentResponseSchema
+>;
+
+export type GetPurchasePaymentHistoryResponseSchema = z.infer<
+  typeof getPurchasePaymentHistoryResponseSchema
 >;

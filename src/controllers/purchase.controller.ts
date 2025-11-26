@@ -1,5 +1,12 @@
 import { getDB } from "@/database";
-import { products, purchaseItems, purchases, vendors } from "@/database/schema";
+import {
+  cashDrawerBalance,
+  cashDrawerEvents,
+  products,
+  purchaseItems,
+  purchases,
+  vendors
+} from "@/database/schema";
 import { MessageResponseT } from "@/lib/zod/helpers";
 import {
   AddPurchaseItemResponseSchema,
@@ -9,11 +16,12 @@ import {
   GetAllPurchasesQuerySchema,
   GetAllPurchasesResponseSchema,
   GetPurchaseByIdResponseSchema,
+  GetPurchasePaymentHistoryResponseSchema,
   PurchaseListItemSchema,
   UpdatePurchaseItemResponseSchema,
   UpdatePurchaseItemSchema,
-  UpdatePurchaseResponseSchema,
-  UpdatePurchaseSchema
+  UpdatePurchaseWithPaymentResponseSchema,
+  UpdatePurchaseWithPaymentSchema
 } from "@/lib/zod/supplier.zod";
 import { and, desc, eq, sql } from "drizzle-orm";
 
@@ -277,11 +285,11 @@ export async function getPurchaseByIdController(
   }
 }
 
-// Update purchase controller with validation and transaction support
+// Enhanced update purchase controller with CASH OUT cash drawer event integration
 export async function updatePurchaseController(
   id: string,
-  input: UpdatePurchaseSchema
-): Promise<UpdatePurchaseResponseSchema> {
+  input: UpdatePurchaseWithPaymentSchema
+): Promise<UpdatePurchaseWithPaymentResponseSchema> {
   const db = getDB();
 
   try {
@@ -301,8 +309,15 @@ export async function updatePurchaseController(
         columns: {
           id: true,
           vendorId: true,
+          status: true,
           totalAmount: true,
-          paidAmount: true
+          paidAmount: true,
+          dueAmount: true
+        },
+        with: {
+          vendor: {
+            columns: { name: true }
+          }
         }
       });
 
@@ -310,8 +325,31 @@ export async function updatePurchaseController(
         throw new Error("Purchase not found");
       }
 
-      // If vendorId is being updated, validate that new vendor exists
+      // Check what can be updated based on purchase status
+      if (existingPurchase.status === "completed") {
+        // For completed purchases, only allow payment-related updates
+        const allowedFieldsForCompleted = ["paidAmount", "dueAmount"];
+        const attemptedFields = Object.keys(input);
+        const restrictedFields = attemptedFields.filter(
+          (field) =>
+            !allowedFieldsForCompleted.includes(field) &&
+            field !== "userId" &&
+            field !== "paymentDescription"
+        );
+
+        if (restrictedFields.length > 0) {
+          throw new Error(
+            `Cannot update ${restrictedFields.join(", ")} for completed purchases. Only payment amounts can be updated.`
+          );
+        }
+      }
+
+      // If vendorId is being updated (only for active purchases), validate that new vendor exists
       if (input.vendorId && input.vendorId !== existingPurchase.vendorId) {
+        if (existingPurchase.status === "completed") {
+          throw new Error("Cannot change vendor for completed purchases");
+        }
+
         const vendorExists = await tx.query.vendors.findFirst({
           where: eq(vendors.id, input.vendorId),
           columns: { id: true }
@@ -324,16 +362,21 @@ export async function updatePurchaseController(
 
       // Calculate amounts if provided
       const totalAmount = input.totalAmount ?? existingPurchase.totalAmount;
-      const paidAmount = input.paidAmount ?? existingPurchase.paidAmount;
+      const newPaidAmount = input.paidAmount ?? existingPurchase.paidAmount;
+      const oldPaidAmount = existingPurchase.paidAmount;
+
+      // CORRECTED: Check if there's a payment increase (CASH OUT event needed)
+      const paymentIncrease = newPaidAmount - oldPaidAmount;
+      const isPaymentMade = paymentIncrease > 0;
 
       // Auto-calculate dueAmount if totalAmount or paidAmount changed
       let dueAmount = input.dueAmount;
       if (input.totalAmount !== undefined || input.paidAmount !== undefined) {
-        dueAmount = Math.max(0, totalAmount - paidAmount);
+        dueAmount = Math.max(0, totalAmount - newPaidAmount);
       }
 
       // Validate amounts
-      if (paidAmount < 0) {
+      if (newPaidAmount < 0) {
         throw new Error("Paid amount cannot be negative");
       }
 
@@ -341,8 +384,30 @@ export async function updatePurchaseController(
         throw new Error("Total amount cannot be negative");
       }
 
-      if (paidAmount > totalAmount) {
+      if (newPaidAmount > totalAmount) {
         throw new Error("Paid amount cannot exceed total amount");
+      }
+
+      // Validate userId for payment events
+      if (isPaymentMade && !input.userId) {
+        throw new Error("User ID is required when making payments");
+      }
+
+      // CORRECTED: Check if cash drawer has enough balance for payment
+      if (isPaymentMade) {
+        const currentBalance = await tx.query.cashDrawerBalance.findFirst({
+          where: eq(cashDrawerBalance.isActive, true)
+        });
+
+        if (!currentBalance) {
+          throw new Error("No active cash drawer balance found");
+        }
+
+        if (currentBalance.totalAmount < paymentIncrease) {
+          throw new Error(
+            `Insufficient cash in drawer. Available: ${currentBalance.totalAmount}, Required: ${paymentIncrease}`
+          );
+        }
       }
 
       // Prepare update data
@@ -351,13 +416,17 @@ export async function updatePurchaseController(
         ...(dueAmount !== undefined && { dueAmount })
       };
 
+      // Remove non-database fields
+      delete updateData.userId;
+      delete updateData.paymentDescription;
+
       // Remove undefined values
       const cleanUpdateData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       );
 
       // If no data to update
-      if (Object.keys(cleanUpdateData).length === 0) {
+      if (Object.keys(cleanUpdateData).length === 0 && !isPaymentMade) {
         return existingPurchase;
       }
 
@@ -367,6 +436,52 @@ export async function updatePurchaseController(
         .set(cleanUpdateData)
         .where(eq(purchases.id, id))
         .returning();
+
+      // Create CASH OUT event if payment was made to supplier
+      if (isPaymentMade && input.userId) {
+        const currentBalance = await tx.query.cashDrawerBalance.findFirst({
+          where: eq(cashDrawerBalance.isActive, true)
+        });
+
+        if (currentBalance) {
+          const previousBalance = currentBalance.totalAmount;
+          const newBalance = previousBalance - paymentIncrease; // SUBTRACT payment
+
+          // Create CASH OUT event for supplier payment
+          await tx.insert(cashDrawerEvents).values({
+            eventType: "cash_out", // Money paid OUT to supplier
+            totalAmount: paymentIncrease,
+            userId: input.userId,
+            description:
+              input.paymentDescription ||
+              `Payment made to supplier: ${existingPurchase.vendor?.name || "Vendor"} - Amount: ${paymentIncrease}`,
+            previousBalance: previousBalance,
+            newBalance: newBalance,
+            notes_5000: 0,
+            notes_2000: 0,
+            notes_1000: 0,
+            notes_500: 0,
+            notes_100: 0,
+            notes_50: 0,
+            notes_20: 0,
+            coins_10: 0,
+            coins_5: 0,
+            coins_2: 0,
+            coins_1: 0,
+
+            // Purchase ID linkage
+            supplierPurchaseId: updatedPurchase.id
+          });
+
+          await tx
+            .update(cashDrawerBalance)
+            .set({
+              totalAmount: newBalance,
+              lastUpdatedBy: input.userId
+            })
+            .where(eq(cashDrawerBalance.isActive, true));
+        }
+      }
 
       return updatedPurchase;
     });
@@ -397,6 +512,44 @@ export async function updatePurchaseController(
       if (error.message === "Vendor not found") {
         return {
           error: "The specified vendor does not exist",
+          success: false
+        };
+      }
+
+      if (error.message === "User ID is required when making payments") {
+        return {
+          error: "User ID is required when making payments",
+          success: false
+        };
+      }
+
+      if (error.message === "No active cash drawer balance found") {
+        return {
+          error:
+            "No active cash drawer found. Please initialize cash drawer first.",
+          success: false
+        };
+      }
+
+      if (error.message.includes("Insufficient cash in drawer")) {
+        return {
+          error: error.message,
+          success: false
+        };
+      }
+
+      if (
+        error.message.includes("Cannot change vendor for completed purchases")
+      ) {
+        return {
+          error: "Cannot change vendor for completed purchases",
+          success: false
+        };
+      }
+
+      if (error.message.includes("Only payment amounts can be updated")) {
+        return {
+          error: error.message,
           success: false
         };
       }
@@ -955,7 +1108,7 @@ export async function deletePurchaseItemController(
   }
 }
 
-// Update stock levels according to purchases controller
+// Update stock levels according to purchases controller - ONLY for completed purchases
 export async function updateStockLevelsController(
   purchaseId: string
 ): Promise<MessageResponseT> {
@@ -972,7 +1125,7 @@ export async function updateStockLevelsController(
 
     // Use transaction for data consistency
     const result = await db.transaction(async (tx) => {
-      // Check if purchase exists
+      // Check if purchase exists and is completed
       const existingPurchase = await tx.query.purchases.findFirst({
         where: eq(purchases.id, purchaseId),
         columns: { id: true, status: true },
@@ -998,6 +1151,13 @@ export async function updateStockLevelsController(
 
       if (!existingPurchase) {
         throw new Error("Purchase not found");
+      }
+
+      // Restrict stock updates to completed purchases only
+      if (existingPurchase.status !== "completed") {
+        throw new Error(
+          "Stock can only be updated for completed purchases. Please complete the purchase first."
+        );
       }
 
       // Filter items that have valid products (exclude items without productId)
@@ -1058,6 +1218,18 @@ export async function updateStockLevelsController(
       }
 
       if (
+        error.message.includes(
+          "Stock can only be updated for completed purchases"
+        )
+      ) {
+        return {
+          error:
+            "Stock can only be updated for completed purchases. Please complete the purchase first.",
+          success: false
+        };
+      }
+
+      if (
         error.message === "No products found in this purchase to update stock"
       ) {
         return {
@@ -1076,6 +1248,40 @@ export async function updateStockLevelsController(
 
     return {
       error: (error as Error).message || "Failed to update stock levels",
+      success: false
+    };
+  }
+}
+
+// Get purchase payment history controller
+export async function getPurchasePaymentHistory(
+  purchaseId: string
+): Promise<GetPurchasePaymentHistoryResponseSchema> {
+  try {
+    const db = getDB();
+
+    // Validate input
+    if (!purchaseId || typeof purchaseId !== "string") {
+      return {
+        error: "Invalid purchase ID provided",
+        success: false
+      };
+    }
+
+    // Get purchase with its cash out events (payments made to supplier)
+    const cashDrawerEvents = await db.query.cashDrawerEvents.findMany({
+      where: (fields, { eq }) => eq(fields.supplierPurchaseId, purchaseId),
+      orderBy: (fields, { desc }) => [desc(fields.createdAt)]
+    });
+
+    return {
+      data: cashDrawerEvents,
+      success: true
+    };
+  } catch (error) {
+    return {
+      error:
+        (error as Error).message || "Failed to fetch purchase payment history",
       success: false
     };
   }

@@ -8,6 +8,7 @@ import {
   text
 } from "drizzle-orm/sqlite-core";
 import { timestamps } from "./helpers";
+import { purchases } from "./supplier.schemas";
 import { transactions } from "./transaction.schema";
 import { users } from "./user.schema";
 
@@ -52,6 +53,12 @@ export const cashDrawerEvents = sqliteTable(
     transactionId: text("transaction_id").references(() => transactions.id, {
       onDelete: "set null"
     }),
+
+    supplierPurchaseId: text("supplier_purchase_id").references(
+      () => purchases.id,
+      { onDelete: "set null" }
+    ),
+
     userId: text("user_id")
       .references(() => users.id)
       .notNull(),

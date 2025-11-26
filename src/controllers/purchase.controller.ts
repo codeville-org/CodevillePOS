@@ -1160,9 +1160,10 @@ export async function updateStockLevelsController(
         );
       }
 
-      // Filter items that have valid products (exclude items without productId)
+      // FIXED: Add explicit type annotation for the filter callback
       const itemsWithProducts = existingPurchase.purchaseItems.filter(
-        (item) => item.productId && item.product
+        (item: (typeof existingPurchase.purchaseItems)[0]) =>
+          item.productId && item.product
       );
 
       if (itemsWithProducts.length === 0) {

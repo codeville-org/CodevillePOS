@@ -257,8 +257,11 @@ export function PrinterProvider({}: Props) {
                         <div className="flex-1 w-full px-6 text-center">
                           {TEXTS.bill.qty[language]}
                         </div>
-                        <div className="flex-1 w-full px-6 text-center border-x-2 border-black">
+                        <div className="flex-1 w-full px-6 text-center border-l-2 border-black">
                           {TEXTS.bill.unitPrice[language]}
+                        </div>
+                        <div className="flex-1 w-full px-6 text-center border-x-2 border-black">
+                          {TEXTS.bill.ourPrice[language]}
                         </div>
                         <div className="flex-1 w-full px-6 text-right">
                           {TEXTS.bill.total[language]}
@@ -287,6 +290,9 @@ export function PrinterProvider({}: Props) {
                             </div>
                             <div className="flex-1 w-full px-6 text-center border-x-2 border-gray-400">
                               {formatPrice(item.unitPrice, language)}
+                            </div>
+                            <div className="flex-1 w-full px-6 text-center border-x-2 border-gray-400">
+                              {formatPrice(item.ourPrice, language)}
                             </div>
                             <div className="flex-1 w-full px-6 text-right">
                               {formatPrice(item.totalAmount, language)}

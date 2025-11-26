@@ -275,6 +275,7 @@ export const TEXTS = {
   bill: {
     qty: { en: "Qty.", si: "ප්‍රමාණය" },
     unitPrice: { en: "Unit Price", si: "සදහන් මිල" },
+    ourPrice: { en: "Our Price", si: "අපේ මිල" },
     total: { en: "Total", si: "එකතුව" },
     subtotal: { en: "Sub Total", si: "මුළු මුදල" },
     discount: { en: "Discount", si: "වට්ටම" },

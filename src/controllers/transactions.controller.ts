@@ -247,6 +247,7 @@ export async function addNewTransactionItemController(
             transactionId: transactionId,
             productName: item.productName!,
             unitPrice: item.unitPrice!,
+            ourPrice: item.ourPrice!,
             unitAmount: item.unitAmount!,
             unit: item.unit!,
             quantity: item?.quantity || 1,

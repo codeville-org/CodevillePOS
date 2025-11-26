@@ -20,6 +20,8 @@ export type ScannedProduct = {
 export type AmountOverview = {
   subtotal: number;
   tax: number;
+  productDiscount: number;
+  additionalDiscount: number;
   discount: number;
   total: number;
 };

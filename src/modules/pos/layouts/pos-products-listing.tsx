@@ -51,10 +51,11 @@ export function PosProductsListing({ className }: Props) {
       productId: product.id,
       productName: product.name,
       productBarcode: product.barcode || "",
-      unitPrice:
-        product.discountedPrice > 0
-          ? product.discountedPrice
-          : product.unitPrice,
+      unitPrice: product.unitPrice,
+      ourPrice:
+        product.discountedPrice > product?.unitPrice
+          ? product.unitPrice
+          : product.discountedPrice,
       quantity: product.unitAmount,
       unit: product.unit,
       unitAmount: product.unitAmount,
@@ -62,7 +63,10 @@ export function PosProductsListing({ className }: Props) {
         product.discountedPrice > 0
           ? product.discountedPrice
           : product.unitPrice,
-      discountAmount: 0
+      discountAmount:
+        product.unitPrice > product.discountedPrice
+          ? product.unitPrice - product.discountedPrice
+          : 0
     };
 
     addTransactionItem(item);

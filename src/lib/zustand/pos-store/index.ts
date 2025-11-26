@@ -55,7 +55,8 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       const updatedItem: UninitializedTransactionItem = {
         ...existingItem,
         quantity: newQuantity,
-        totalAmount: getProductAmount(existingItem, newQuantity)
+        totalAmount: getProductAmount(existingItem, newQuantity),
+        discountAmount: (item.unitPrice - item.ourPrice) * newQuantity
       };
 
       const preparedArray = transactionItems.filter(
@@ -94,7 +95,9 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       const updatedItem: UninitializedTransactionItem = {
         ...existingItem,
         quantity,
-        totalAmount: getProductAmount(existingItem, quantity)
+        totalAmount: getProductAmount(existingItem, quantity),
+        discountAmount:
+          (existingItem.unitPrice - existingItem.ourPrice) * quantity
       };
 
       const preparedArray = transactionItems.filter(
@@ -161,14 +164,27 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       0
     );
 
+    const discountByProducts = transactionItems.reduce(
+      (acc, item) => acc + item.discountAmount,
+      0
+    );
+
+    const totalDiscount =
+      activeTransaction.discountAmount +
+      transactionItems.reduce((acc, item) => acc + item.discountAmount, 0);
+
+    const additionalDiscount = totalDiscount - discountByProducts;
+
     const tax = activeTransaction?.taxAmount || 0;
-    const discount = activeTransaction?.discountAmount || 0;
+    const discount = totalDiscount || 0;
     const total = subtotal + tax - discount;
 
     return {
       subtotal,
       tax,
-      discount,
+      additionalDiscount,
+      productDiscount: discountByProducts,
+      discount: totalDiscount,
       total
     };
   },

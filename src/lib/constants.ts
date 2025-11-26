@@ -53,7 +53,7 @@ export const CONSTANTS = {
       text: { en: "Supplier Management", si: "සැපයුම් කළමනාකරණය" },
       items: {
         vendors: { en: "Vendors", si: "සැපයුම්කරුවන්" },
-        purchases: { en: "Purchases", si: "ගැණුම්" },
+        purchases: { en: "Purchases", si: "මිලදී ගැනීම්" },
         newPurchase: { en: "New Purchase", si: "නව ගැණුමක් අරඹන්න" }
       }
     },

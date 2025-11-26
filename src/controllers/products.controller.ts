@@ -40,7 +40,8 @@ export async function getAllProductsController(
 
     if (search) {
       whereConditions.push(
-        sql`LOWER(${products.name}) LIKE LOWER(${`%${search}%`})`
+        sql`LOWER(${products.name}) LIKE LOWER(${`%${search}%`})`,
+        sql`LOWER(${products.barcode}) LIKE LOWER(${`%${search}%`})`
       );
     }
 

@@ -126,6 +126,10 @@ export const cashDrawerEventsRelations = relations(
       fields: [cashDrawerEvents.transactionId],
       references: [transactions.id]
     }),
+    supplierPurchase: one(purchases, {
+      fields: [cashDrawerEvents.supplierPurchaseId],
+      references: [purchases.id]
+    }),
     user: one(users, {
       fields: [cashDrawerEvents.userId],
       references: [users.id]

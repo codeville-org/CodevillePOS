@@ -7,6 +7,7 @@ export const searchParams = {
   sort: parseAsString,
   update: parseAsString,
   category: parseAsString,
+  vendorId: parseAsString,
 
   search: parseAsString,
   status: parseAsString

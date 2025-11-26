@@ -29,8 +29,6 @@ export default function VendorsTable() {
     return <DataTableError error={error} />;
   }
 
-  console.log("Vendors Table Data:", data);
-
   return (
     <DataTable
       columns={columns as any}

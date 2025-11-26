@@ -105,6 +105,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 title:
                   CONSTANTS.SIDEBAR.supplierManagement.items.vendors[language],
                 url: "/supplier-management/vendors"
+              },
+              {
+                title:
+                  CONSTANTS.SIDEBAR.supplierManagement.items.purchases[
+                    language
+                  ],
+                url: "/supplier-management/purchases"
               }
               // {
               //   title:
@@ -113,13 +120,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               //     ],
               //   url: "/supplier-management/purchases"
               // },
-              // {
-              //   title:
-              //     CONSTANTS.SIDEBAR.supplierManagement.items.newPurchase[
-              //       language
-              //     ],
-              //   url: "/supplier-management/purchases/new"
-              // }
             ]
           },
           {

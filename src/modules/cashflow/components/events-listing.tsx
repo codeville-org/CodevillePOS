@@ -30,6 +30,24 @@ export function EventsListing({ className }: Props) {
 
   const { data, error, isFetching } = useGetShiftEvents();
 
+  const calculateTotalCashInOut = () => {
+    let cashIn = 0;
+    let cashOut = 0;
+
+    data?.forEach((event) => {
+      if (event.eventType === "cash_in" || event.eventType === "manual_add") {
+        cashIn += event.totalAmount;
+      } else if (
+        event.eventType === "cash_out" ||
+        event.eventType === "manual_remove"
+      ) {
+        cashOut += event.totalAmount;
+      }
+    });
+    setTotalCashIn(cashIn);
+    setTotalCashOut(cashOut);
+  };
+
   // Real-time elapsed time calculation for active shift
   useEffect(() => {
     if (!activeListingShift) {
@@ -75,24 +93,6 @@ export function EventsListing({ className }: Props) {
       </Card>
     );
   }
-
-  const calculateTotalCashInOut = () => {
-    let cashIn = 0;
-    let cashOut = 0;
-
-    data?.forEach((event) => {
-      if (event.eventType === "cash_in" || event.eventType === "manual_add") {
-        cashIn += event.totalAmount;
-      } else if (
-        event.eventType === "cash_out" ||
-        event.eventType === "manual_remove"
-      ) {
-        cashOut += event.totalAmount;
-      }
-    });
-    setTotalCashIn(cashIn);
-    setTotalCashOut(cashOut);
-  };
 
   return (
     <Card className={cn("p-0 flex flex-col gap-0 overflow-hidden", className)}>

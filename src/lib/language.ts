@@ -341,6 +341,13 @@ export const TEXTS = {
         en: "Manage your vendors here",
         si: "ඔබේ සැපයුම්කරුවන් මෙහිදී කළමනාකරණය කරන්න"
       }
+    },
+    purchases: {
+      title: { en: "Purchases", si: "මිලදී ගැනීම්" },
+      subtitle: {
+        en: "Manage your purchases here",
+        si: "සැපයුම් දාමයට අදාල මිලදී ගැනීම් මෙහිදී කළමනාකරණය කරන්න"
+      }
     }
   }
 };

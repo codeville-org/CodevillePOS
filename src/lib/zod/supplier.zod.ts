@@ -1,86 +1,57 @@
 import { z } from "zod";
-import { baseCashDrawerEventSchema } from "./cashflow.zod";
 import {
   getBaseReturnSchema,
   getPaginatedSchema,
   queryParamsSchema
 } from "./helpers";
 import { selectProductSchema } from "./products.zod";
+import { baseCashDrawerEventSchema, basePurchaseSchema } from "./shared.zod"; // Import from shared file
 
-// Base Schemas
-
-// 1. Base Vendor Schema
+// Base Vendor Schema
 export const baseVendorSchema = z.object({
   id: z.string(),
-
   name: z.string(),
   description: z.string().nullable(),
-
   createdAt: z.date(),
   updatedAt: z.date()
 });
 
-// 2. Base Purchase Schema
-export const basePurchaseSchema = z.object({
-  id: z.string(),
-
-  vendorId: z.string(),
-
-  purchaseDescription: z.string().nullable(),
-
-  totalAmount: z.number(),
-  paidAmount: z.number(),
-  dueAmount: z.number(),
-  status: z.enum(["active", "completed"]).default("active"),
-
-  createdAt: z.date(),
-  updatedAt: z.date()
-});
-
-// 3. Base Purchase Item Schema
+// Base Purchase Item Schema
 export const basePurchaseItemSchema = z.object({
   id: z.string(),
-
   purchaseId: z.string(),
   productId: z.string().nullable(),
-
   quantity: z.number().int().positive(),
   unitPrice: z.number().positive(),
   totalPrice: z.number().positive(),
-
   createdAt: z.date(),
   updatedAt: z.date()
 });
 
-// Item Schemas for Avoid circular dependancy errors
+// Export base purchase schema for compatibility
+export { basePurchaseSchema };
 
+// Item Schemas for avoiding circular dependency errors
 export const purchaseListItemSchema = basePurchaseSchema.extend({
-  // Include only essential vendor info for lists
   vendor: baseVendorSchema
     .pick({
       id: true,
       name: true
     })
     .optional(),
-
-  // Include summary info instead of full items
   totalItems: z.number().optional()
 });
 
-// Select Schemas (avoiding circular references)
-
-// 1. Select Vendor Schema
+// Select Schemas (with relations)
 export const selectVendorSchema = baseVendorSchema.extend({
   purchases: z.array(basePurchaseSchema).optional()
 });
 
-// 2. Select Purchase Item Schema
 export const selectPurchaseItemSchema = basePurchaseItemSchema.extend({
   purchase: basePurchaseSchema.optional(),
   product: selectProductSchema.nullable().optional()
 });
 
-// 3. Select Purchase Schema
 export const selectPurchaseSchema = basePurchaseSchema.extend({
   vendor: baseVendorSchema.optional(),
   purchaseItems: z.array(basePurchaseItemSchema).optional(),

@@ -123,45 +123,42 @@ export async function getAllPurchasesController(
   }
 }
 
-// Create new purchase controller with transaction support
+// Create new purchase controller with traditional approach
 export async function createPurchaseController(
   input: CreatePurchaseSchema
 ): Promise<CreatePurchaseResponseSchema> {
   const db = getDB();
 
   try {
-    // Use transaction for data consistency
-    const result = await db.transaction(async (tx) => {
-      // Amount data aren't providing when creation
-      const totalAmount = 0;
-      const paidAmount = 0;
-      const dueAmount = 0;
+    // Amount data aren't providing when creation
+    const totalAmount = 0;
+    const paidAmount = 0;
+    const dueAmount = 0;
 
-      // Validate that vendor exists
-      const vendorExists = await tx.query.vendors.findFirst({
-        where: eq(vendors.id, input.vendorId),
-        columns: { id: true, name: true }
-      });
-
-      if (!vendorExists) {
-        throw new Error("Vendor not found");
-      }
-
-      // Create the purchase
-      const [newPurchase] = await tx
-        .insert(purchases)
-        .values({
-          vendorId: input.vendorId,
-          purchaseDescription: input.purchaseDescription,
-          totalAmount,
-          paidAmount,
-          dueAmount,
-          status: input.status ?? "active"
-        })
-        .returning();
-
-      return newPurchase;
+    // Validate that vendor exists
+    const vendorExists = await db.query.vendors.findFirst({
+      where: eq(vendors.id, input.vendorId),
+      columns: { id: true, name: true }
     });
+
+    if (!vendorExists) {
+      throw new Error("Vendor not found");
+    }
+
+    // Create the purchase
+    const [newPurchase] = await db
+      .insert(purchases)
+      .values({
+        vendorId: input.vendorId,
+        purchaseDescription: input.purchaseDescription,
+        totalAmount,
+        paidAmount,
+        dueAmount,
+        status: input.status ?? "active"
+      })
+      .returning();
+
+    const result = newPurchase;
 
     return {
       data: result,
@@ -301,190 +298,190 @@ export async function updatePurchaseController(
       };
     }
 
-    // Use transaction for data consistency
-    const result = await db.transaction(async (tx) => {
-      // Check if purchase exists
-      const existingPurchase = await tx.query.purchases.findFirst({
-        where: eq(purchases.id, id),
-        columns: {
-          id: true,
-          vendorId: true,
-          status: true,
-          totalAmount: true,
-          paidAmount: true,
-          dueAmount: true
-        },
-        with: {
-          vendor: {
-            columns: { name: true }
-          }
-        }
-      });
-
-      if (!existingPurchase) {
-        throw new Error("Purchase not found");
-      }
-
-      // Check what can be updated based on purchase status
-      if (existingPurchase.status === "completed") {
-        // For completed purchases, only allow payment-related updates
-        const allowedFieldsForCompleted = ["paidAmount", "dueAmount"];
-        const attemptedFields = Object.keys(input);
-        const restrictedFields = attemptedFields.filter(
-          (field) =>
-            !allowedFieldsForCompleted.includes(field) &&
-            field !== "userId" &&
-            field !== "paymentDescription"
-        );
-
-        if (restrictedFields.length > 0) {
-          throw new Error(
-            `Cannot update ${restrictedFields.join(", ")} for completed purchases. Only payment amounts can be updated.`
-          );
+    // Check if purchase exists
+    const existingPurchase = await db.query.purchases.findFirst({
+      where: eq(purchases.id, id),
+      columns: {
+        id: true,
+        vendorId: true,
+        status: true,
+        totalAmount: true,
+        paidAmount: true,
+        dueAmount: true
+      },
+      with: {
+        vendor: {
+          columns: { name: true }
         }
       }
+    });
 
-      // If vendorId is being updated (only for active purchases), validate that new vendor exists
-      if (input.vendorId && input.vendorId !== existingPurchase.vendorId) {
-        if (existingPurchase.status === "completed") {
-          throw new Error("Cannot change vendor for completed purchases");
-        }
+    if (!existingPurchase) {
+      throw new Error("Purchase not found");
+    }
 
-        const vendorExists = await tx.query.vendors.findFirst({
-          where: eq(vendors.id, input.vendorId),
-          columns: { id: true }
-        });
-
-        if (!vendorExists) {
-          throw new Error("Vendor not found");
-        }
-      }
-
-      // Calculate amounts if provided
-      const totalAmount = input.totalAmount ?? existingPurchase.totalAmount;
-      const newPaidAmount = input.paidAmount ?? existingPurchase.paidAmount;
-      const oldPaidAmount = existingPurchase.paidAmount;
-
-      // CORRECTED: Check if there's a payment increase (CASH OUT event needed)
-      const paymentIncrease = newPaidAmount - oldPaidAmount;
-      const isPaymentMade = paymentIncrease > 0;
-
-      // Auto-calculate dueAmount if totalAmount or paidAmount changed
-      let dueAmount = input.dueAmount;
-      if (input.totalAmount !== undefined || input.paidAmount !== undefined) {
-        dueAmount = Math.max(0, totalAmount - newPaidAmount);
-      }
-
-      // Validate amounts
-      if (newPaidAmount < 0) {
-        throw new Error("Paid amount cannot be negative");
-      }
-
-      if (totalAmount < 0) {
-        throw new Error("Total amount cannot be negative");
-      }
-
-      if (newPaidAmount > totalAmount) {
-        throw new Error("Paid amount cannot exceed total amount");
-      }
-
-      // Validate userId for payment events
-      if (isPaymentMade && !input.userId) {
-        throw new Error("User ID is required when making payments");
-      }
-
-      // CORRECTED: Check if cash drawer has enough balance for payment
-      if (isPaymentMade) {
-        const currentBalance = await tx.query.cashDrawerBalance.findFirst({
-          where: eq(cashDrawerBalance.isActive, true)
-        });
-
-        if (!currentBalance) {
-          throw new Error("No active cash drawer balance found");
-        }
-
-        if (currentBalance.totalAmount < paymentIncrease) {
-          throw new Error(
-            `Insufficient cash in drawer. Available: ${currentBalance.totalAmount}, Required: ${paymentIncrease}`
-          );
-        }
-      }
-
-      // Prepare update data
-      const updateData = {
-        ...input,
-        ...(dueAmount !== undefined && { dueAmount })
-      };
-
-      // Remove non-database fields
-      delete updateData.userId;
-      delete updateData.paymentDescription;
-
-      // Remove undefined values
-      const cleanUpdateData = Object.fromEntries(
-        Object.entries(updateData).filter(([_, value]) => value !== undefined)
+    // Check what can be updated based on purchase status
+    if (existingPurchase.status === "completed") {
+      // For completed purchases, only allow payment-related updates
+      const allowedFieldsForCompleted = ["paidAmount", "dueAmount"];
+      const attemptedFields = Object.keys(input);
+      const restrictedFields = attemptedFields.filter(
+        (field) =>
+          !allowedFieldsForCompleted.includes(field) &&
+          field !== "userId" &&
+          field !== "paymentDescription"
       );
 
-      // If no data to update
-      if (Object.keys(cleanUpdateData).length === 0 && !isPaymentMade) {
-        return existingPurchase;
+      if (restrictedFields.length > 0) {
+        throw new Error(
+          `Cannot update ${restrictedFields.join(", ")} for completed purchases. Only payment amounts can be updated.`
+        );
+      }
+    }
+
+    // If vendorId is being updated (only for active purchases), validate that new vendor exists
+    if (input.vendorId && input.vendorId !== existingPurchase.vendorId) {
+      if (existingPurchase.status === "completed") {
+        throw new Error("Cannot change vendor for completed purchases");
       }
 
-      // Update the purchase
-      const [updatedPurchase] = await tx
-        .update(purchases)
-        .set(cleanUpdateData)
-        .where(eq(purchases.id, id))
-        .returning();
+      const vendorExists = await db.query.vendors.findFirst({
+        where: eq(vendors.id, input.vendorId),
+        columns: { id: true }
+      });
 
-      // Create CASH OUT event if payment was made to supplier
-      if (isPaymentMade && input.userId) {
-        const currentBalance = await tx.query.cashDrawerBalance.findFirst({
-          where: eq(cashDrawerBalance.isActive, true)
+      if (!vendorExists) {
+        throw new Error("Vendor not found");
+      }
+    }
+
+    // Calculate amounts if provided
+    const totalAmount = input.totalAmount ?? existingPurchase.totalAmount;
+    const newPaidAmount = input.paidAmount ?? existingPurchase.paidAmount;
+    const oldPaidAmount = existingPurchase.paidAmount;
+
+    // CORRECTED: Check if there's a payment increase (CASH OUT event needed)
+    const paymentIncrease = newPaidAmount - oldPaidAmount;
+    const isPaymentMade = paymentIncrease > 0;
+
+    // Auto-calculate dueAmount if totalAmount or paidAmount changed
+    let dueAmount = input.dueAmount;
+    if (input.totalAmount !== undefined || input.paidAmount !== undefined) {
+      dueAmount = Math.max(0, totalAmount - newPaidAmount);
+    }
+
+    // Validate amounts
+    if (newPaidAmount < 0) {
+      throw new Error("Paid amount cannot be negative");
+    }
+
+    if (totalAmount < 0) {
+      throw new Error("Total amount cannot be negative");
+    }
+
+    if (newPaidAmount > totalAmount) {
+      throw new Error("Paid amount cannot exceed total amount");
+    }
+
+    // Validate userId for payment events
+    if (isPaymentMade && !input.userId) {
+      throw new Error("User ID is required when making payments");
+    }
+
+    // CORRECTED: Check if cash drawer has enough balance for payment
+    if (isPaymentMade) {
+      const currentBalance = await db.query.cashDrawerBalance.findFirst({
+        where: eq(cashDrawerBalance.isActive, true)
+      });
+
+      if (!currentBalance) {
+        throw new Error("No active cash drawer balance found");
+      }
+
+      if (currentBalance.totalAmount < paymentIncrease) {
+        throw new Error(
+          `Insufficient cash in drawer. Available: ${currentBalance.totalAmount}, Required: ${paymentIncrease}`
+        );
+      }
+    }
+
+    // Prepare update data
+    const updateData = {
+      ...input,
+      ...(dueAmount !== undefined && { dueAmount })
+    };
+
+    // Remove non-database fields
+    delete updateData.userId;
+    delete updateData.paymentDescription;
+
+    // Remove undefined values
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, value]) => value !== undefined)
+    );
+
+    // If no data to update
+    if (Object.keys(cleanUpdateData).length === 0 && !isPaymentMade) {
+      return {
+        data: existingPurchase,
+        success: true
+      };
+    }
+
+    // Update the purchase
+    const [updatedPurchase] = await db
+      .update(purchases)
+      .set(cleanUpdateData)
+      .where(eq(purchases.id, id))
+      .returning();
+
+    // Create CASH OUT event if payment was made to supplier
+    if (isPaymentMade && input.userId) {
+      const currentBalance = await db.query.cashDrawerBalance.findFirst({
+        where: eq(cashDrawerBalance.isActive, true)
+      });
+
+      if (currentBalance) {
+        const previousBalance = currentBalance.totalAmount;
+        const newBalance = previousBalance - paymentIncrease; // SUBTRACT payment
+
+        // Create CASH OUT event for supplier payment
+        await db.insert(cashDrawerEvents).values({
+          eventType: "cash_out", // Money paid OUT to supplier
+          totalAmount: paymentIncrease,
+          userId: input.userId,
+          description:
+            input.paymentDescription ||
+            `Payment made to supplier: ${existingPurchase.vendor?.name || "Vendor"} - Amount: ${paymentIncrease}`,
+          previousBalance: previousBalance,
+          newBalance: newBalance,
+          notes_5000: 0,
+          notes_2000: 0,
+          notes_1000: 0,
+          notes_500: 0,
+          notes_100: 0,
+          notes_50: 0,
+          notes_20: 0,
+          coins_10: 0,
+          coins_5: 0,
+          coins_2: 0,
+          coins_1: 0,
+
+          // Purchase ID linkage
+          supplierPurchaseId: updatedPurchase.id
         });
 
-        if (currentBalance) {
-          const previousBalance = currentBalance.totalAmount;
-          const newBalance = previousBalance - paymentIncrease; // SUBTRACT payment
-
-          // Create CASH OUT event for supplier payment
-          await tx.insert(cashDrawerEvents).values({
-            eventType: "cash_out", // Money paid OUT to supplier
-            totalAmount: paymentIncrease,
-            userId: input.userId,
-            description:
-              input.paymentDescription ||
-              `Payment made to supplier: ${existingPurchase.vendor?.name || "Vendor"} - Amount: ${paymentIncrease}`,
-            previousBalance: previousBalance,
-            newBalance: newBalance,
-            notes_5000: 0,
-            notes_2000: 0,
-            notes_1000: 0,
-            notes_500: 0,
-            notes_100: 0,
-            notes_50: 0,
-            notes_20: 0,
-            coins_10: 0,
-            coins_5: 0,
-            coins_2: 0,
-            coins_1: 0,
-
-            // Purchase ID linkage
-            supplierPurchaseId: updatedPurchase.id
-          });
-
-          await tx
-            .update(cashDrawerBalance)
-            .set({
-              totalAmount: newBalance,
-              lastUpdatedBy: input.userId
-            })
-            .where(eq(cashDrawerBalance.isActive, true));
-        }
+        await db
+          .update(cashDrawerBalance)
+          .set({
+            totalAmount: newBalance,
+            lastUpdatedBy: input.userId
+          })
+          .where(eq(cashDrawerBalance.isActive, true));
       }
+    }
 
-      return updatedPurchase;
-    });
+    const result = updatedPurchase;
 
     return {
       data: result,
@@ -585,48 +582,41 @@ export async function deletePurchaseController(
       };
     }
 
-    // Use transaction for data consistency
-    await db.transaction(async (tx) => {
-      // Check if purchase exists
-      const existingPurchase = await tx.query.purchases.findFirst({
-        where: eq(purchases.id, id),
-        columns: { id: true, status: true },
-        with: {
-          purchaseItems: {
-            columns: { id: true }
-          },
-          cashDrawerEvents: {
-            columns: { id: true }
-          }
+    // Check if purchase exists
+    const existingPurchase = await db.query.purchases.findFirst({
+      where: eq(purchases.id, id),
+      columns: { id: true, status: true },
+      with: {
+        purchaseItems: {
+          columns: { id: true }
+        },
+        cashDrawerEvents: {
+          columns: { id: true }
         }
-      });
-
-      if (!existingPurchase) {
-        throw new Error("Purchase not found");
       }
-
-      // Check if purchase can be deleted (business rule)
-      if (existingPurchase.status === "completed") {
-        throw new Error("Cannot delete completed purchase");
-      }
-
-      // Check if there are associated cash drawer events
-      if (
-        existingPurchase.cashDrawerEvents &&
-        existingPurchase.cashDrawerEvents.length > 0
-      ) {
-        throw new Error(
-          "Cannot delete purchase with associated cash drawer transactions"
-        );
-      }
-
-      // Delete the purchase (cascade will handle purchase items)
-      const deleteResult = await tx
-        .delete(purchases)
-        .where(eq(purchases.id, id));
-
-      return deleteResult;
     });
+
+    if (!existingPurchase) {
+      throw new Error("Purchase not found");
+    }
+
+    // Check if purchase can be deleted (business rule)
+    if (existingPurchase.status === "completed") {
+      throw new Error("Cannot delete completed purchase");
+    }
+
+    // Check if there are associated cash drawer events
+    if (
+      existingPurchase.cashDrawerEvents &&
+      existingPurchase.cashDrawerEvents.length > 0
+    ) {
+      throw new Error(
+        "Cannot delete purchase with associated cash drawer transactions"
+      );
+    }
+
+    // Delete the purchase (cascade will handle purchase items)
+    await db.delete(purchases).where(eq(purchases.id, id));
 
     return {
       data: { message: "Purchase deleted successfully" },
@@ -681,86 +671,113 @@ export async function addPurchaseItemController(
   const db = getDB();
 
   try {
-    // Use transaction for data consistency
-    const result = await db.transaction(async (tx) => {
-      // Validate that purchase exists and is active
-      const existingPurchase = await tx.query.purchases.findFirst({
-        where: eq(purchases.id, input.purchaseId),
-        columns: {
-          id: true,
-          status: true,
-          totalAmount: true,
-          paidAmount: true,
-          dueAmount: true
-        }
+    // Validate that purchase exists and is active
+    const existingPurchase = await db.query.purchases.findFirst({
+      where: eq(purchases.id, input.purchaseId),
+      columns: {
+        id: true,
+        status: true,
+        totalAmount: true,
+        paidAmount: true,
+        dueAmount: true
+      }
+    });
+
+    if (!existingPurchase) {
+      throw new Error("Purchase not found");
+    }
+
+    if (existingPurchase.status === "completed") {
+      throw new Error("Cannot add items to completed purchase");
+    }
+
+    // Validate product exists if productId is provided
+    if (input.productId) {
+      const productExists = await db.query.products.findFirst({
+        where: eq(products.id, input.productId),
+        columns: { id: true, name: true, unitPrice: true }
       });
 
-      if (!existingPurchase) {
-        throw new Error("Purchase not found");
+      if (!productExists) {
+        throw new Error("Product not found");
       }
+    }
 
-      if (existingPurchase.status === "completed") {
-        throw new Error("Cannot add items to completed purchase");
+    // Validate current purchase's purchase items list have the same productId
+    // Then increase the quantity instead of adding a new item
+    const existingItem = await db.query.purchaseItems.findFirst({
+      where: and(
+        eq(purchaseItems.purchaseId, input.purchaseId),
+        eq(purchaseItems.productId, input.productId)
+      ),
+      columns: {
+        id: true,
+        quantity: true,
+        unitPrice: true,
+        totalPrice: true
       }
-
-      // Validate product exists if productId is provided
-      if (input.productId) {
-        const productExists = await tx.query.products.findFirst({
-          where: eq(products.id, input.productId),
-          columns: { id: true, name: true, unitPrice: true }
-        });
-
-        if (!productExists) {
-          throw new Error("Product not found");
-        }
-      }
-
-      // Validate input values
-      if (input.quantity <= 0) {
-        throw new Error("Quantity must be greater than zero");
-      }
-
-      if (input.unitPrice <= 0) {
-        throw new Error("Unit price must be greater than zero");
-      }
-
-      // Calculate total price if not provided
-      const totalPrice = input.totalPrice ?? input.quantity * input.unitPrice;
-
-      // Validate calculated total price
-      if (totalPrice !== input.quantity * input.unitPrice) {
-        throw new Error("Total price does not match quantity × unit price");
-      }
-
-      // Create the purchase item
-      const [newPurchaseItem] = await tx
-        .insert(purchaseItems)
-        .values({
-          purchaseId: input.purchaseId,
-          productId: input.productId,
-          quantity: input.quantity,
-          unitPrice: input.unitPrice,
-          totalPrice: totalPrice
-        })
-        .returning();
-
-      // Update purchase totals
-      const newTotalAmount = existingPurchase.totalAmount + totalPrice;
-      const newDueAmount = Math.max(
-        0,
-        newTotalAmount - existingPurchase.paidAmount
-      );
-
-      await tx
-        .update(purchases)
-        .set({
-          totalAmount: newTotalAmount,
-          dueAmount: newDueAmount
-        })
-        .where(eq(purchases.id, input.purchaseId));
-
-      return newPurchaseItem;
     });
+
+    if (existingItem) {
+      const res = await updatePurchaseItemController(existingItem.id, {
+        quantity: existingItem.quantity + input.quantity
+      });
+
+      if (res.success && res.data) {
+        return {
+          data: res.data,
+          success: true
+        };
+      } else {
+        throw new Error(res.error || "Item already exists");
+      }
+    }
+
+    // Validate input values
+    if (input.quantity <= 0) {
+      throw new Error("Quantity must be greater than zero");
+    }
+
+    if (input.unitPrice <= 0) {
+      throw new Error("Unit price must be greater than zero");
+    }
+
+    // Calculate total price if not provided
+    const totalPrice = input.totalPrice ?? input.quantity * input.unitPrice;
+
+    // Validate calculated total price
+    if (totalPrice !== input.quantity * input.unitPrice) {
+      throw new Error("Total price does not match quantity × unit price");
+    }
+
+    // Create the purchase item
+    const [newPurchaseItem] = await db
+      .insert(purchaseItems)
+      .values({
+        purchaseId: input.purchaseId,
+        productId: input.productId,
+        quantity: input.quantity,
+        unitPrice: input.unitPrice,
+        totalPrice: totalPrice
+      })
+      .returning();
+
+    // Update purchase totals
+    const newTotalAmount = existingPurchase.totalAmount + totalPrice;
+    const newDueAmount = Math.max(
+      0,
+      newTotalAmount - existingPurchase.paidAmount
+    );
+
+    await db
+      .update(purchases)
+      .set({
+        totalAmount: newTotalAmount,
+        dueAmount: newDueAmount
+      })
+      .where(eq(purchases.id, input.purchaseId));
+
+    const result = newPurchaseItem;
 
     return {
       data: result,
@@ -834,120 +851,120 @@ export async function updatePurchaseItemController(
       };
     }
 
-    // Use transaction for data consistency
-    const result = await db.transaction(async (tx) => {
-      // Check if purchase item exists
-      const existingItem = await tx.query.purchaseItems.findFirst({
-        where: eq(purchaseItems.id, id),
-        columns: {
-          id: true,
-          purchaseId: true,
-          productId: true,
-          quantity: true,
-          unitPrice: true,
-          totalPrice: true
-        },
-        with: {
-          purchase: {
-            columns: {
-              id: true,
-              status: true,
-              totalAmount: true,
-              paidAmount: true
-            }
+    // Check if purchase item exists
+    const existingItem = await db.query.purchaseItems.findFirst({
+      where: eq(purchaseItems.id, id),
+      columns: {
+        id: true,
+        purchaseId: true,
+        productId: true,
+        quantity: true,
+        unitPrice: true,
+        totalPrice: true
+      },
+      with: {
+        purchase: {
+          columns: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            paidAmount: true
           }
         }
+      }
+    });
+
+    if (!existingItem) {
+      throw new Error("Purchase item not found");
+    }
+
+    if (existingItem.purchase?.status === "completed") {
+      throw new Error("Cannot update items in completed purchase");
+    }
+
+    // If productId is being updated, validate that new product exists
+    if (input.productId && input.productId !== existingItem.productId) {
+      const productExists = await db.query.products.findFirst({
+        where: eq(products.id, input.productId),
+        columns: { id: true }
       });
 
-      if (!existingItem) {
-        throw new Error("Purchase item not found");
+      if (!productExists) {
+        throw new Error("Product not found");
       }
+    }
 
-      if (existingItem.purchase?.status === "completed") {
-        throw new Error("Cannot update items in completed purchase");
-      }
+    // Calculate new values
+    const newQuantity = input.quantity ?? existingItem.quantity;
+    const newUnitPrice = input.unitPrice ?? existingItem.unitPrice;
 
-      // If productId is being updated, validate that new product exists
-      if (input.productId && input.productId !== existingItem.productId) {
-        const productExists = await tx.query.products.findFirst({
-          where: eq(products.id, input.productId),
-          columns: { id: true }
-        });
+    // Validate input values
+    if (newQuantity <= 0) {
+      throw new Error("Quantity must be greater than zero");
+    }
 
-        if (!productExists) {
-          throw new Error("Product not found");
-        }
-      }
+    if (newUnitPrice <= 0) {
+      throw new Error("Unit price must be greater than zero");
+    }
 
-      // Calculate new values
-      const newQuantity = input.quantity ?? existingItem.quantity;
-      const newUnitPrice = input.unitPrice ?? existingItem.unitPrice;
+    // Calculate new total price
+    const newTotalPrice = input.totalPrice ?? newQuantity * newUnitPrice;
 
-      // Validate input values
-      if (newQuantity <= 0) {
-        throw new Error("Quantity must be greater than zero");
-      }
+    // Validate calculated total price
+    if (newTotalPrice !== newQuantity * newUnitPrice) {
+      throw new Error("Total price does not match quantity × unit price");
+    }
 
-      if (newUnitPrice <= 0) {
-        throw new Error("Unit price must be greater than zero");
-      }
+    // Prepare update data
+    const updateData = {
+      ...input,
+      totalPrice: newTotalPrice
+    };
 
-      // Calculate new total price
-      const newTotalPrice = input.totalPrice ?? newQuantity * newUnitPrice;
+    // Remove undefined values
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, value]) => value !== undefined)
+    );
 
-      // Validate calculated total price
-      if (newTotalPrice !== newQuantity * newUnitPrice) {
-        throw new Error("Total price does not match quantity × unit price");
-      }
-
-      // Prepare update data
-      const updateData = {
-        ...input,
-        totalPrice: newTotalPrice
+    // If no data to update
+    if (Object.keys(cleanUpdateData).length === 0) {
+      return {
+        data: existingItem,
+        success: true
       };
+    }
 
-      // Remove undefined values
-      const cleanUpdateData = Object.fromEntries(
-        Object.entries(updateData).filter(([_, value]) => value !== undefined)
+    // Update the purchase item
+    const [updatedItem] = await db
+      .update(purchaseItems)
+      .set(cleanUpdateData)
+      .where(eq(purchaseItems.id, id))
+      .returning();
+
+    // Update purchase totals if amounts changed
+    if (
+      input.quantity !== undefined ||
+      input.unitPrice !== undefined ||
+      input.totalPrice !== undefined
+    ) {
+      const priceDifference = newTotalPrice - existingItem.totalPrice;
+      const newPurchaseTotalAmount =
+        (existingItem.purchase?.totalAmount ?? 0) + priceDifference;
+      const newDueAmount = Math.max(
+        0,
+        newPurchaseTotalAmount - (existingItem.purchase?.paidAmount ?? 0)
       );
 
-      // If no data to update
-      if (Object.keys(cleanUpdateData).length === 0) {
-        return existingItem;
-      }
+      await db
+        .update(purchases)
+        .set({
+          totalAmount: newPurchaseTotalAmount,
+          dueAmount: newDueAmount
+        })
+        .where(eq(purchases.id, existingItem.purchaseId));
+    }
 
-      // Update the purchase item
-      const [updatedItem] = await tx
-        .update(purchaseItems)
-        .set(cleanUpdateData)
-        .where(eq(purchaseItems.id, id))
-        .returning();
-
-      // Update purchase totals if amounts changed
-      if (
-        input.quantity !== undefined ||
-        input.unitPrice !== undefined ||
-        input.totalPrice !== undefined
-      ) {
-        const priceDifference = newTotalPrice - existingItem.totalPrice;
-        const newPurchaseTotalAmount =
-          (existingItem.purchase?.totalAmount ?? 0) + priceDifference;
-        const newDueAmount = Math.max(
-          0,
-          newPurchaseTotalAmount - (existingItem.purchase?.paidAmount ?? 0)
-        );
-
-        await tx
-          .update(purchases)
-          .set({
-            totalAmount: newPurchaseTotalAmount,
-            dueAmount: newDueAmount
-          })
-          .where(eq(purchases.id, existingItem.purchaseId));
-      }
-
-      return updatedItem;
-    });
+    const result = updatedItem;
 
     return {
       data: result,
@@ -1020,55 +1037,52 @@ export async function deletePurchaseItemController(
       };
     }
 
-    // Use transaction for data consistency
-    await db.transaction(async (tx) => {
-      // Check if purchase item exists
-      const existingItem = await tx.query.purchaseItems.findFirst({
-        where: eq(purchaseItems.id, id),
-        columns: {
-          id: true,
-          purchaseId: true,
-          totalPrice: true
-        },
-        with: {
-          purchase: {
-            columns: {
-              id: true,
-              status: true,
-              totalAmount: true,
-              paidAmount: true
-            }
+    // Check if purchase item exists
+    const existingItem = await db.query.purchaseItems.findFirst({
+      where: eq(purchaseItems.id, id),
+      columns: {
+        id: true,
+        purchaseId: true,
+        totalPrice: true
+      },
+      with: {
+        purchase: {
+          columns: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            paidAmount: true
           }
         }
-      });
-
-      if (!existingItem) {
-        throw new Error("Purchase item not found");
       }
-
-      if (existingItem.purchase?.status === "completed") {
-        throw new Error("Cannot delete items from completed purchase");
-      }
-
-      // Delete the purchase item
-      await tx.delete(purchaseItems).where(eq(purchaseItems.id, id));
-
-      // Update purchase totals
-      const newPurchaseTotalAmount =
-        (existingItem.purchase?.totalAmount ?? 0) - existingItem.totalPrice;
-      const newDueAmount = Math.max(
-        0,
-        newPurchaseTotalAmount - (existingItem.purchase?.paidAmount ?? 0)
-      );
-
-      await tx
-        .update(purchases)
-        .set({
-          totalAmount: Math.max(0, newPurchaseTotalAmount), // Ensure non-negative
-          dueAmount: newDueAmount
-        })
-        .where(eq(purchases.id, existingItem.purchaseId));
     });
+
+    if (!existingItem) {
+      throw new Error("Purchase item not found");
+    }
+
+    if (existingItem.purchase?.status === "completed") {
+      throw new Error("Cannot delete items from completed purchase");
+    }
+
+    // Delete the purchase item
+    await db.delete(purchaseItems).where(eq(purchaseItems.id, id));
+
+    // Update purchase totals
+    const newPurchaseTotalAmount =
+      (existingItem.purchase?.totalAmount ?? 0) - existingItem.totalPrice;
+    const newDueAmount = Math.max(
+      0,
+      newPurchaseTotalAmount - (existingItem.purchase?.paidAmount ?? 0)
+    );
+
+    await db
+      .update(purchases)
+      .set({
+        totalAmount: Math.max(0, newPurchaseTotalAmount), // Ensure non-negative
+        dueAmount: newDueAmount
+      })
+      .where(eq(purchases.id, existingItem.purchaseId));
 
     return {
       data: { message: "Purchase item deleted successfully" },
@@ -1123,82 +1137,79 @@ export async function updateStockLevelsController(
       };
     }
 
-    // Use transaction for data consistency
-    const result = await db.transaction(async (tx) => {
-      // Check if purchase exists and is completed
-      const existingPurchase = await tx.query.purchases.findFirst({
-        where: eq(purchases.id, purchaseId),
-        columns: { id: true, status: true },
-        with: {
-          purchaseItems: {
-            columns: {
-              id: true,
-              productId: true,
-              quantity: true
-            },
-            with: {
-              product: {
-                columns: {
-                  id: true,
-                  name: true,
-                  stockQuantity: true
-                }
+    // Check if purchase exists and is completed
+    const existingPurchase = await db.query.purchases.findFirst({
+      where: eq(purchases.id, purchaseId),
+      columns: { id: true, status: true },
+      with: {
+        purchaseItems: {
+          columns: {
+            id: true,
+            productId: true,
+            quantity: true
+          },
+          with: {
+            product: {
+              columns: {
+                id: true,
+                name: true,
+                stockQuantity: true
               }
             }
           }
         }
-      });
-
-      if (!existingPurchase) {
-        throw new Error("Purchase not found");
       }
+    });
 
-      // Restrict stock updates to completed purchases only
-      if (existingPurchase.status !== "completed") {
-        throw new Error(
-          "Stock can only be updated for completed purchases. Please complete the purchase first."
+    if (!existingPurchase) {
+      throw new Error("Purchase not found");
+    }
+
+    // Restrict stock updates to completed purchases only
+    if (existingPurchase.status !== "completed") {
+      throw new Error(
+        "Stock can only be updated for completed purchases. Please complete the purchase first."
+      );
+    }
+
+    // FIXED: Add explicit type annotation for the filter callback
+    const itemsWithProducts = existingPurchase.purchaseItems.filter(
+      (item: (typeof existingPurchase.purchaseItems)[0]) =>
+        item.productId && item.product
+    );
+
+    if (itemsWithProducts.length === 0) {
+      throw new Error("No products found in this purchase to update stock");
+    }
+
+    let updatedProductsCount = 0;
+    const updateResults: string[] = [];
+
+    // Update stock for each product
+    for (const item of itemsWithProducts) {
+      if (item.product) {
+        const currentStock = item.product.stockQuantity;
+        const newStock = currentStock + item.quantity;
+
+        // Update the product stock
+        await db
+          .update(products)
+          .set({
+            stockQuantity: newStock
+          })
+          .where(eq(products.id, item.productId!));
+
+        updatedProductsCount++;
+        updateResults.push(
+          `${item.product.name}: ${currentStock} → ${newStock} (+${item.quantity})`
         );
       }
+    }
 
-      // FIXED: Add explicit type annotation for the filter callback
-      const itemsWithProducts = existingPurchase.purchaseItems.filter(
-        (item: (typeof existingPurchase.purchaseItems)[0]) =>
-          item.productId && item.product
-      );
-
-      if (itemsWithProducts.length === 0) {
-        throw new Error("No products found in this purchase to update stock");
-      }
-
-      let updatedProductsCount = 0;
-      const updateResults: string[] = [];
-
-      // Update stock for each product
-      for (const item of itemsWithProducts) {
-        if (item.product) {
-          const currentStock = item.product.stockQuantity;
-          const newStock = currentStock + item.quantity;
-
-          // Update the product stock
-          await tx
-            .update(products)
-            .set({
-              stockQuantity: newStock
-            })
-            .where(eq(products.id, item.productId!));
-
-          updatedProductsCount++;
-          updateResults.push(
-            `${item.product.name}: ${currentStock} → ${newStock} (+${item.quantity})`
-          );
-        }
-      }
-
-      return {
-        updatedCount: updatedProductsCount,
-        details: updateResults
-      };
-    });
+    const result = {
+      updatedCount: updatedProductsCount,
+      details: updateResults
+    };
 
     return {
       data: {

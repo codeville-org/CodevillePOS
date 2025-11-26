@@ -9,6 +9,8 @@ import { NewProductPage } from "../pages/products/new-product";
 import { SingleProductPage } from "../pages/products/single-product";
 import { ReportsPage } from "../pages/reports";
 import { SettingsPage } from "../pages/settings";
+import { PurchasesPage } from "../pages/supplier-management/purchases";
+import { SinglePurchasePage } from "../pages/supplier-management/purchases/single";
 import { VendorsPage } from "../pages/supplier-management/vendors";
 import { TransactionsPage } from "../pages/transactions";
 import { UsersPage } from "../pages/users";
@@ -30,6 +32,14 @@ export function AppRouter({}: Props) {
       <Route path="/reports" element={<ReportsPage />} />
       <Route path="/cashflow" element={<CashflowPage />} />
       <Route path="/supplier-management/vendors" element={<VendorsPage />} />
+      <Route
+        path="/supplier-management/purchases"
+        element={<PurchasesPage />}
+      />
+      <Route
+        path="/supplier-management/purchases/:id"
+        element={<SinglePurchasePage />}
+      />
       <Route path="/settings" element={<SettingsPage />} />
 
       {/* Fallback */}

@@ -1,12 +1,11 @@
 import { useElectronAPI } from "@/hooks/use-electron-api";
 import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { useId } from "react";
 import { toast } from "sonner";
 
 export const useInitializeBalance = () => {
-  const { setActiveBalance } = useCashflow();
+  const { setActiveBalance, resetCashflowState } = useCashflow();
   const queryClient = useQueryClient();
   const toastId = useId();
 
@@ -14,29 +13,38 @@ export const useInitializeBalance = () => {
     mutationFn: async () => {
       const api = useElectronAPI();
 
-      const response = await api.cashflow.initializeBalance();
+      try {
+        const response = await api.cashflow.initializeBalance();
 
-      if (!response.data || response.error) {
-        throw new Error(response.error || "Failed to initialize balance");
+        console.log({ initializeBalanceRes: response });
+
+        if (!response.success || response.error || !response.data) {
+          throw new Error(response.error || "Failed to initialize balance");
+        }
+
+        return response.data;
+      } catch (error) {
+        // Reset state on initialization failure
+        resetCashflowState();
+        throw error;
       }
-
-      const data = response.data;
-
+    },
+    onSuccess: (data) => {
       setActiveBalance(data);
 
-      return data;
-    },
-    onMutate: () => {
-      //   toast.loading("Initializing Balance...", { id: toastId });
-    },
-    onSuccess: () => {
-      //   toast.success("Balance initialized successfully!", { id: toastId });
-      queryClient.invalidateQueries({ queryKey: ["cashflow"] });
+      // Invalidate and refetch balance query
+      queryClient.invalidateQueries({ queryKey: ["cashflow", "balance"] });
+
+      console.log("Balance initialized successfully:", data);
     },
     onError: (error) => {
+      console.error("Initialize balance error:", error);
       toast.error(error.message || "Failed to initialize balance", {
         id: toastId
       });
+
+      // Reset state on error
+      resetCashflowState();
     }
   });
 

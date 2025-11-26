@@ -3,6 +3,7 @@ import { vendors } from "@/database/schema";
 import { MessageResponseT, QueryParamsSchema } from "@/lib/zod/helpers";
 import {
   GetAllVendorsResponseSchema,
+  GetVendorByIdResponseSchema,
   InsertVendorResponseSchema,
   InsertVendorSchema,
   UpdateVendorResponseSchema,
@@ -82,6 +83,28 @@ export async function getAllVendorsController(
   }
 }
 
+export async function getVendorByIdController(
+  id: string
+): Promise<GetVendorByIdResponseSchema> {
+  try {
+    const db = getDB();
+
+    const vendor = await db.query.vendors.findFirst({
+      where: (fields, { eq }) => eq(fields.id, id)
+    });
+
+    return {
+      data: vendor,
+      success: true
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to fetch vendor",
+      success: false
+    };
+  }
+}
+
 // Create vendor controller
 export async function createVendorController(
   input: InsertVendorSchema
@@ -108,12 +131,17 @@ export async function createVendorController(
 
 // Update vendor controller
 export async function updateVendorController(
+  id: string,
   input: UpdateVendorSchema
 ): Promise<UpdateVendorResponseSchema> {
   try {
     const db = getDB();
 
-    const [updatedVendor] = await db.update(vendors).set(input).returning();
+    const [updatedVendor] = await db
+      .update(vendors)
+      .set(input)
+      .where(eq(vendors.id, id))
+      .returning();
 
     return {
       data: updatedVendor,

@@ -112,7 +112,8 @@ const electronAPI: ElectronAPI = {
     getAll: vendorInvoker("getAll"),
     create: vendorInvoker("create"),
     delete: vendorInvoker("delete"),
-    update: vendorInvoker("update")
+    update: vendorInvoker("update"),
+    getById: vendorInvoker("getById")
   }
 };
 

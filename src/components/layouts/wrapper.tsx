@@ -36,8 +36,8 @@ export function Wrapper() {
     useCashflow();
   const { mutate: initializeBalance, isPending: balanceInitializing } =
     useInitializeBalance();
-
-  const { isPending: balanceLoading } = useGetCashflowBalance();
+  const { isPending: balanceLoading, error: balanceError } =
+    useGetCashflowBalance();
 
   // Update persisted store settings from database
   useEffect(() => {
@@ -48,20 +48,27 @@ export function Wrapper() {
     }
   }, [data, error]);
 
-  // Validate cash drawer balance status
+  // Initialize balance only on mount or error
   useEffect(() => {
-    handleInitializeBalance();
-  }, [activeBalance]);
+    const shouldInitialize =
+      !activeBalance && // No active balance
+      !balanceLoading && // Not currently loading
+      !balanceInitializing && // Not currently initializing
+      !fetchingActiveShift; // Not fetching shift
 
-  const handleInitializeBalance = () => {
-    if (!activeBalance) {
+    if (shouldInitialize || balanceError) {
+      console.log("Initializing balance...", {
+        shouldInitialize,
+        balanceError: !!balanceError
+      });
+
       initializeBalance(undefined, {
         onSuccess: () => {
           getActiveShift();
         }
       });
     }
-  };
+  }, [balanceError]); // Only re-run on balance error changes
 
   return (
     <main

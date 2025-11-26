@@ -5,71 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1756550894209,
-      "tag": "0000_huge_doctor_strange",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1757279243638,
-      "tag": "0001_small_blink",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1757829352718,
-      "tag": "0002_curvy_wolf_cub",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1757857105368,
-      "tag": "0003_smooth_shiva",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1763608814137,
-      "tag": "0004_cheerful_pandemic",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1763830364588,
-      "tag": "0005_watery_zaran",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1763830826126,
-      "tag": "0006_majestic_wendell_vaughn",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1764074959802,
-      "tag": "0007_robust_northstar",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1764076552750,
-      "tag": "0008_heavy_the_stranger",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "6",
-      "when": 1764076843183,
-      "tag": "0009_perpetual_brother_voodoo",
+      "when": 1764094729235,
+      "tag": "0000_gifted_thunderbolt_ross",
       "breakpoints": true
     }
   ]

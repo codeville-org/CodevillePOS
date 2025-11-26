@@ -1,5 +1,4 @@
 import { create } from "zustand";
-
 import { createJSONStorage, persist } from "zustand/middleware";
 import { electronStorage } from "../local-storage";
 import { fetchActiveShift } from "./actions";
@@ -25,16 +24,43 @@ export const useCashflow = create<CashflowStoreInterface>()(
 
         set({ fetchingActiveShift: true });
 
-        const res = await fetchActiveShift();
-
-        set({ activeShift: res, fetchingActiveShift: false });
+        try {
+          const res = await fetchActiveShift();
+          set({ activeShift: res, fetchingActiveShift: false });
+        } catch (error) {
+          console.error("Failed to fetch active shift:", error);
+          set({ activeShift: null, fetchingActiveShift: false });
+        }
       },
 
-      setActiveListingShift: (shift) => set({ activeListingShift: shift })
+      setActiveListingShift: (shift) => set({ activeListingShift: shift }),
+
+      // Reset all cashflow state
+      resetCashflowState: () =>
+        set({
+          activeBalance: null,
+          activeShift: null,
+          fetchingActiveShift: false,
+          activeListingShift: null
+        })
     }),
     {
       name: "cashflow-store",
-      storage: createJSONStorage(() => electronStorage)
+      storage: createJSONStorage(() => electronStorage),
+      // Add version for migration if needed
+      version: 1,
+      migrate: (persistedState, version) => {
+        // Reset state if version mismatch (useful after DB resets)
+        if (version < 1) {
+          return {
+            activeBalance: null,
+            activeShift: null,
+            fetchingActiveShift: false,
+            activeListingShift: null
+          };
+        }
+        return persistedState;
+      }
     }
   )
 );

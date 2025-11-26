@@ -91,6 +91,7 @@ import {
 } from "@/lib/zod/settings.zod";
 import {
   GetAllVendorsResponseSchema,
+  GetVendorByIdResponseSchema,
   InsertVendorResponseSchema,
   InsertVendorSchema,
   UpdateVendorResponseSchema,
@@ -263,8 +264,12 @@ export interface CashflowActions {
 
 export interface VendorActions {
   getAll: (query: QueryParamsSchema) => Promise<GetAllVendorsResponseSchema>;
+  getById: (id: string) => Promise<GetVendorByIdResponseSchema>;
   create: (input: InsertVendorSchema) => Promise<InsertVendorResponseSchema>;
-  update: (input: UpdateVendorSchema) => Promise<UpdateVendorResponseSchema>;
+  update: (
+    id: string,
+    input: UpdateVendorSchema
+  ) => Promise<UpdateVendorResponseSchema>;
   delete: (id: string) => Promise<MessageResponseT>;
 }
 

@@ -5,6 +5,7 @@ import {
   BarChart3,
   CodeSquareIcon,
   NotebookPen,
+  PackageIcon,
   Settings,
   ShoppingCart,
   UserCircle2Icon,
@@ -77,22 +78,49 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ...(isAdmin
       ? [
           {
-            key: "users",
-            title: CONSTANTS.SIDEBAR.users.text[language],
-            url: "/users",
-            icon: UserCircle2Icon
-          },
-          {
             key: "reports",
             title: CONSTANTS.SIDEBAR.reports.text[language],
             url: "/reports",
             icon: BarChart3
           },
           {
+            key: "users",
+            title: CONSTANTS.SIDEBAR.users.text[language],
+            url: "/users",
+            icon: UserCircle2Icon
+          },
+          {
             key: "cashflow",
             title: CONSTANTS.SIDEBAR.cashflow.text[language],
             url: "/cashflow",
             icon: BanknoteIcon
+          },
+          {
+            key: "supplier_management",
+            title: CONSTANTS.SIDEBAR.supplierManagement.text[language],
+            url: "/supplier-management/vendors",
+            icon: PackageIcon,
+            items: [
+              {
+                title:
+                  CONSTANTS.SIDEBAR.supplierManagement.items.vendors[language],
+                url: "/supplier-management/vendors"
+              }
+              // {
+              //   title:
+              //     CONSTANTS.SIDEBAR.supplierManagement.items.newPurchase[
+              //       language
+              //     ],
+              //   url: "/supplier-management/purchases"
+              // },
+              // {
+              //   title:
+              //     CONSTANTS.SIDEBAR.supplierManagement.items.newPurchase[
+              //       language
+              //     ],
+              //   url: "/supplier-management/purchases/new"
+              // }
+            ]
           },
           {
             key: "settings",

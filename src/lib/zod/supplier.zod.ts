@@ -76,6 +76,9 @@ export const getAllVendorsResponseSchema = getBaseReturnSchema(
   getPaginatedSchema(z.array(baseVendorSchema))
 );
 
+export const getVenderByIdResponseSchema =
+  getBaseReturnSchema(selectVendorSchema);
+
 // 1.3. Insert vendor controller -> input
 export const insertVendorSchema = baseVendorSchema.omit({
   createdAt: true,
@@ -169,6 +172,10 @@ export type SelectPurchaseSchema = z.infer<typeof selectPurchaseSchema>;
 
 export type GetAllVendorsResponseSchema = z.infer<
   typeof getAllVendorsResponseSchema
+>;
+
+export type GetVendorByIdResponseSchema = z.infer<
+  typeof getVenderByIdResponseSchema
 >;
 
 export type InsertVendorSchema = z.infer<typeof insertVendorSchema>;

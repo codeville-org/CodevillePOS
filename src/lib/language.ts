@@ -333,5 +333,14 @@ export const TEXTS = {
       en: "Monitor and manage your cashflow here",
       si: "ඔබේ මුදල් ප්‍රවාහය මෙහිදී නිරීක්ෂණය සහ කළමනාකරණය කලහැක"
     }
+  },
+  supplierManagement: {
+    vendors: {
+      title: { en: "Vendors", si: "සැපයුම්කරුවන්" },
+      subtitle: {
+        en: "Manage your vendors here",
+        si: "ඔබේ සැපයුම්කරුවන් මෙහිදී කළමනාකරණය කරන්න"
+      }
+    }
   }
 };

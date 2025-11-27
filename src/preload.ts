@@ -16,6 +16,8 @@ const printInvoker = createInvoker("print");
 const reportsInvoker = createInvoker("reports");
 const userInvoker = createInvoker("user");
 const cashflowInvoker = createInvoker("cashflow");
+const vendorInvoker = createInvoker("vendor");
+const purchaseInvoker = createInvoker("purchase");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -38,7 +40,8 @@ const electronAPI: ElectronAPI = {
     delete: productsInvoker("delete"),
     import: productsInvoker("import"),
     export: productsInvoker("export"),
-    selectImportFile: productsInvoker("selectImportFile")
+    selectImportFile: productsInvoker("selectImportFile"),
+    generateBarcode: productsInvoker("generateBarcode")
   },
   images: {
     getImagesDirectory: imagesInvoker("getImagesDirectory"),
@@ -82,6 +85,7 @@ const electronAPI: ElectronAPI = {
     savePrinterSettings: printInvoker("savePrinterSettings"),
     printImage: printInvoker("printImage"),
     printImageBill: printInvoker("printImageBill"),
+    printImageLabel: printInvoker("printImageLabel"),
     selectImageFile: printInvoker("selectImageFile")
   },
   reports: {
@@ -104,6 +108,25 @@ const electronAPI: ElectronAPI = {
     createEvent: cashflowInvoker("createEvent"),
     getAllShifts: cashflowInvoker("getAllShifts"),
     getShiftEvents: cashflowInvoker("getShiftEvents")
+  },
+  vendor: {
+    getAll: vendorInvoker("getAll"),
+    create: vendorInvoker("create"),
+    delete: vendorInvoker("delete"),
+    update: vendorInvoker("update"),
+    getById: vendorInvoker("getById")
+  },
+  purchase: {
+    getAll: purchaseInvoker("getAll"),
+    create: purchaseInvoker("create"),
+    getById: purchaseInvoker("getById"),
+    update: purchaseInvoker("update"),
+    delete: purchaseInvoker("delete"),
+    addItem: purchaseInvoker("addItem"),
+    updateItem: purchaseInvoker("updateItem"),
+    deleteItem: purchaseInvoker("deleteItem"),
+    updateStock: purchaseInvoker("updateStock"),
+    history: purchaseInvoker("history")
   }
 };
 

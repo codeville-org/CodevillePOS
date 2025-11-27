@@ -14,6 +14,7 @@ export type StoreSettingsT = z.infer<typeof storeSettingsSchema>;
 // Key-Value Mapper for App Settings
 export const appSettingsMap = z.object({
   defaultPrinter: z.string().optional(),
+  defaultLabelPrinter: z.string().optional(),
 
   availablePaymentMethods: z.array(z.nativeEnum(PaymentMethod)).optional(),
 

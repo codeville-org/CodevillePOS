@@ -1,3 +1,4 @@
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 
@@ -21,14 +22,16 @@ const root = createRoot(document.body);
 
 root.render(
   <ThemeProvider defaultTheme="system">
-    <QueryProvider>
-      <AuthLayout>
-        <MemoryRouter initialEntries={["/"]} initialIndex={0}>
-          <Wrapper />
-        </MemoryRouter>
-      </AuthLayout>
+    <NuqsAdapter>
+      <QueryProvider>
+        <AuthLayout>
+          <MemoryRouter initialEntries={["/"]} initialIndex={0}>
+            <Wrapper />
+          </MemoryRouter>
+        </AuthLayout>
 
-      <Toaster position="bottom-center" />
-    </QueryProvider>
+        <Toaster position="bottom-center" />
+      </QueryProvider>
+    </NuqsAdapter>
   </ThemeProvider>
 );

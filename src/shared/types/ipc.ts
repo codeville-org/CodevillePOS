@@ -21,6 +21,7 @@ import {
   CreateProductResponse,
   DeleteProductResponse,
   ExportProductsResponse,
+  GenerateBarcodeResponse,
   GetAllProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
@@ -89,6 +90,26 @@ import {
   ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
 import {
+  AddPurchaseItemResponseSchema,
+  AddPurchaseItemSchema,
+  CreatePurchaseResponseSchema,
+  CreatePurchaseSchema,
+  GetAllPurchasesQuerySchema,
+  GetAllPurchasesResponseSchema,
+  GetAllVendorsResponseSchema,
+  GetPurchaseByIdResponseSchema,
+  GetPurchasePaymentHistoryResponseSchema,
+  GetVendorByIdResponseSchema,
+  InsertVendorResponseSchema,
+  InsertVendorSchema,
+  UpdatePurchaseItemResponseSchema,
+  UpdatePurchaseItemSchema,
+  UpdatePurchaseWithPaymentResponseSchema,
+  UpdatePurchaseWithPaymentSchema,
+  UpdateVendorResponseSchema,
+  UpdateVendorSchema
+} from "@/lib/zod/supplier.zod";
+import {
   GetAllUsersResponseT,
   GetUserResponseT,
   InsertUserSchema,
@@ -130,6 +151,7 @@ export interface ProductsActions {
   import: (payload: ImportProductsSchema) => Promise<ImportProductsResponse>;
   export: () => Promise<ExportProductsResponse>;
   selectImportFile: () => Promise<SelectImportFileType>;
+  generateBarcode: () => Promise<GenerateBarcodeResponse>;
 }
 
 export interface ImagesActions {
@@ -137,6 +159,7 @@ export interface ImagesActions {
   saveImageFromBase64: (
     base64Data: string,
     billImage?: boolean,
+    labelImage?: boolean,
     transactionNumber?: string
   ) => Promise<string>;
   saveImageFromPath: (sourceImagePath: string) => Promise<string>;
@@ -209,6 +232,10 @@ export interface PrinterActions {
     imagePath: string,
     useDithering?: boolean
   ) => Promise<VoidDataResponseT>;
+  printImageLabel: (
+    imagePath: string,
+    useDithering?: boolean
+  ) => Promise<VoidDataResponseT>;
   selectImageFile: () => Promise<string | null>;
 }
 
@@ -247,6 +274,44 @@ export interface CashflowActions {
   ) => Promise<GetShiftEventsResponse>;
 }
 
+export interface VendorActions {
+  getAll: (query: QueryParamsSchema) => Promise<GetAllVendorsResponseSchema>;
+  getById: (id: string) => Promise<GetVendorByIdResponseSchema>;
+  create: (input: InsertVendorSchema) => Promise<InsertVendorResponseSchema>;
+  update: (
+    id: string,
+    input: UpdateVendorSchema
+  ) => Promise<UpdateVendorResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+}
+
+export interface PurchasesActions {
+  getAll: (
+    query: GetAllPurchasesQuerySchema
+  ) => Promise<GetAllPurchasesResponseSchema>;
+  create: (
+    values: CreatePurchaseSchema
+  ) => Promise<CreatePurchaseResponseSchema>;
+  getById: (id: string) => Promise<GetPurchaseByIdResponseSchema>;
+  update: (
+    id: string,
+    input: UpdatePurchaseWithPaymentSchema
+  ) => Promise<UpdatePurchaseWithPaymentResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+  addItem: (
+    input: AddPurchaseItemSchema
+  ) => Promise<AddPurchaseItemResponseSchema>;
+  updateItem: (
+    id: string,
+    input: UpdatePurchaseItemSchema
+  ) => Promise<UpdatePurchaseItemResponseSchema>;
+  deleteItem: (id: string) => Promise<MessageResponseT>;
+  updateStock: (purchaseId: string) => Promise<MessageResponseT>;
+  history: (
+    purchaseId: string
+  ) => Promise<GetPurchasePaymentHistoryResponseSchema>;
+}
+
 // Main IPC API interface
 export interface ElectronAPI {
   window: WindowActions;
@@ -261,4 +326,6 @@ export interface ElectronAPI {
   reports: ReportsActions;
   user: UserActions;
   cashflow: CashflowActions;
+  vendor: VendorActions;
+  purchase: PurchasesActions;
 }

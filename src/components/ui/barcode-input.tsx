@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { useBarcodeReader } from "@/hooks/use-barcode-reader";
+import { useElectronAPI } from "@/hooks/use-electron-api";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -25,8 +26,6 @@ export interface BarcodeInputProps {
   showScanButton?: boolean;
   showGenerateButton?: boolean;
   showStatusIndicator?: boolean;
-  generatePrefix?: string;
-  generateLength?: number;
 }
 
 export function BarcodeInput({
@@ -40,11 +39,12 @@ export function BarcodeInput({
   enableScanning = true,
   enableSimulation = true,
   simulationShortcut = { ctrl: true, shift: true, key: "B" },
-  showGenerateButton = true,
-  generatePrefix = "",
-  generateLength = 12
+  showGenerateButton = true
   // showStatusIndicator = true
 }: BarcodeInputProps) {
+  const api = useElectronAPI();
+  const [generating, setGenerating] = useState(false);
+
   const [isFocused, setIsFocused] = useState(false);
   const [recentlyScanned, setRecentlyScanned] = useState(false);
   const [recentlyGenerated, setRecentlyGenerated] = useState(false);
@@ -86,34 +86,21 @@ export function BarcodeInput({
     }
   };
 
-  const generateBarcode = () => {
-    // Generate a unique barcode
-    const timestamp = Date.now().toString();
-    const randomSuffix = Math.floor(Math.random() * 1000000)
-      .toString()
-      .padStart(6, "0");
+  const generateBarcode = async () => {
+    setGenerating(true);
+    const generatedBarcodeRes = await api.products.generateBarcode();
 
-    let generatedBarcode: string;
-
-    if (generatePrefix) {
-      // Use prefix + timestamp + random suffix, truncated to desired length
-      const baseCode = `${generatePrefix}${timestamp}${randomSuffix}`;
-      generatedBarcode = baseCode.substring(0, generateLength);
-    } else {
-      // Generate EAN-13 like barcode (without check digit for simplicity)
-      const countryCode = "123"; // Fake country code for internal use
-      const manufacturerCode = timestamp.substring(0, 5);
-      const productCode = randomSuffix.substring(0, 4);
-      generatedBarcode = `${countryCode}${manufacturerCode}${productCode}`;
+    if (!generatedBarcodeRes.success || !generatedBarcodeRes?.data) {
+      console.error("Failed to generate barcode:", generatedBarcodeRes?.error);
+      return;
     }
 
-    // Pad with zeros if needed
-    if (generatedBarcode.length < generateLength) {
-      generatedBarcode = generatedBarcode.padEnd(generateLength, "0");
-    }
+    const generatedBarcode = generatedBarcodeRes?.data?.barcode;
 
     onChange?.(generatedBarcode);
     onGenerate?.(generatedBarcode);
+
+    setGenerating(false);
 
     // Show feedback
     setRecentlyGenerated(true);
@@ -178,8 +165,9 @@ export function BarcodeInput({
               variant="secondary"
               icon={<BarcodeIcon />}
               onClick={generateBarcode}
-              disabled={disabled}
+              disabled={disabled || generating}
               title="Generate unique barcode"
+              loading={generating}
             >
               Generate
             </Button>

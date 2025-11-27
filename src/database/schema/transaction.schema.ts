@@ -65,6 +65,7 @@ export const transactionItems = sqliteTable(
     productName: text("product_name").notNull(), // Snapshot at time of sale
     productBarcode: text("product_barcode"), // Snapshot at time of sale
     unitPrice: real("unit_price").notNull(),
+    ourPrice: real("our_price"),
     unitAmount: integer("unit_amount").default(1),
     unit: text("unit").default("pcs"), // pcs, kg, liter, etc.
     quantity: real("quantity").notNull(),

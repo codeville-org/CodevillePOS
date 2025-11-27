@@ -22,6 +22,7 @@ import path from "path";
 function prepareSettingsMap(allValues: any[]): AppSettingsMapT {
   let settingsMap: AppSettingsMapT = {
     defaultPrinter: "",
+    defaultLabelPrinter: "",
     storeLogo: "",
     storeName: "",
     address: "",
@@ -34,6 +35,9 @@ function prepareSettingsMap(allValues: any[]): AppSettingsMapT {
     switch (setting.key) {
       case "defaultPrinter":
         settingsMap.defaultPrinter = (setting?.value as string) || "";
+        break;
+      case "defaultLabelPrinter":
+        settingsMap.defaultLabelPrinter = (setting?.value as string) || "";
         break;
       case "storeLogo":
         settingsMap.storeLogo = (setting?.value as string) || "";

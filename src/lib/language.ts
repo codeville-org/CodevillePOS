@@ -99,7 +99,8 @@ export const TEXTS = {
         },
         reset: { en: "Reset", si: "නැවත සකසන්න" },
         create: { en: "Create Product", si: "භාණ්ඩයක් සාදන්න" },
-        edit: { en: "Edit Product", si: "භාණ්ඩයක් යාවත්කාලීන කරන්න" }
+        edit: { en: "Edit Product", si: "භාණ්ඩයක් යාවත්කාලීන කරන්න" },
+        printLabel: { en: "Print Label", si: "ලේබලය මුද්‍රණය කරන්න" }
       }
     }
   },
@@ -274,6 +275,7 @@ export const TEXTS = {
   bill: {
     qty: { en: "Qty.", si: "ප්‍රමාණය" },
     unitPrice: { en: "Unit Price", si: "සදහන් මිල" },
+    ourPrice: { en: "Our Price", si: "අපේ මිල" },
     total: { en: "Total", si: "එකතුව" },
     subtotal: { en: "Sub Total", si: "මුළු මුදල" },
     discount: { en: "Discount", si: "වට්ටම" },
@@ -331,6 +333,22 @@ export const TEXTS = {
     subtitle: {
       en: "Monitor and manage your cashflow here",
       si: "ඔබේ මුදල් ප්‍රවාහය මෙහිදී නිරීක්ෂණය සහ කළමනාකරණය කලහැක"
+    }
+  },
+  supplierManagement: {
+    vendors: {
+      title: { en: "Vendors", si: "සැපයුම්කරුවන්" },
+      subtitle: {
+        en: "Manage your vendors here",
+        si: "ඔබේ සැපයුම්කරුවන් මෙහිදී කළමනාකරණය කරන්න"
+      }
+    },
+    purchases: {
+      title: { en: "Purchases", si: "මිලදී ගැනීම්" },
+      subtitle: {
+        en: "Manage your purchases here",
+        si: "සැපයුම් දාමයට අදාල මිලදී ගැනීම් මෙහිදී කළමනාකරණය කරන්න"
+      }
     }
   }
 };

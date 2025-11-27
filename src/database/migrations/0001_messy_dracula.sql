@@ -1,0 +1,1 @@
+ALTER TABLE `cash_drawer_events` ADD `supplier_purchase_id` text REFERENCES purchases(id);

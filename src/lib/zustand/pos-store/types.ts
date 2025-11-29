@@ -55,6 +55,7 @@ export interface PosStoreInterface {
   setActiveTransaction: (transaction: BaseTransactionSchema | null) => void;
 
   transactionItems: UninitializedTransactionItem[];
+  setTransactionItems: (items: UninitializedTransactionItem[]) => void;
   addTransactionItem: (item: UninitializedTransactionItem) => void;
 
   changeTransactionItemQuantity: (id: string, quantity: number) => void;

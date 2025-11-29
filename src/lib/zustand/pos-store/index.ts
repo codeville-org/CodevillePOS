@@ -35,6 +35,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
     set({ activeTransaction: transaction }),
 
   transactionItems: [],
+  setTransactionItems: (items) => set({ transactionItems: items }),
 
   /**
    * Add new Product to Active Transaction

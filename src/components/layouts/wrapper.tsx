@@ -9,12 +9,14 @@ import { useEffect } from "react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { usePosStore } from "@/lib/zustand/pos-store";
 import { useSecurityStore } from "@/lib/zustand/security-store";
 import { LogoutBadge } from "@/modules/auth/logout-badge";
 import { CashflowModal } from "@/modules/cashflow/components/cashflow-modal";
 import { useGetCashflowBalance } from "@/modules/cashflow/queries/use-get-balance";
 import { useInitializeBalance } from "@/modules/cashflow/queries/use-initialize-balance";
 import { RealtimeClock } from "@/modules/pos/components/clock";
+import { HoldQueue } from "@/modules/pos/components/hold-queue";
 import { useGetSettings } from "@/modules/settings/query/use-get";
 import { CircleDollarSignIcon, Loader2 } from "lucide-react";
 import { LanguageSelector } from "../elements/language-selector";
@@ -31,6 +33,7 @@ export function Wrapper() {
     setImagesEnabled
   } = usePersistStore();
   const { user } = useSecurityStore();
+  const { holdQueue } = usePosStore();
 
   const { activeBalance, getActiveShift, fetchingActiveShift, activeShift } =
     useCashflow();
@@ -92,7 +95,7 @@ export function Wrapper() {
 
               <div className="h-full w-full flex items-center justify-between">
                 {/* NOTE: Add "app-dragger" if dragging feature needed */}
-                <div className="flex-1 ">
+                <div className="flex-1 flex items-center gap-2 h-full">
                   <h2 className="font-semibold text-foreground/80 text-sm">
                     <span
                       className={
@@ -104,6 +107,24 @@ export function Wrapper() {
                     </span>
                     <span className="font-thin">POS</span>
                   </h2>
+
+                  {holdQueue.length > 0 && (
+                    <>
+                      <Separator
+                        className="mx-2 ml-4 data-[orientation=vertical]:h-4"
+                        orientation="vertical"
+                      />
+
+                      <HoldQueue>
+                        <div className="text-xs flex items-center gap-2 cursor-pointer hover:underline text-red-500 bg-red-500/10 p-1 px-3 border border-red-500 rounded-full animate-pulse">
+                          <p>
+                            {holdQueue.length} Sale
+                            {holdQueue.length > 1 ? "s" : ""} on Queue
+                          </p>
+                        </div>
+                      </HoldQueue>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 h-full">

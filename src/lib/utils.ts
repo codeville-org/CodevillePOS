@@ -69,8 +69,6 @@ export function getProductAmount(
    */
   const microUnitPrice = item.unitPrice / item.unitAmount;
 
-  console.log(`Total: LKR ${microUnitPrice * quantity}`);
-
   return microUnitPrice * quantity;
 }
 

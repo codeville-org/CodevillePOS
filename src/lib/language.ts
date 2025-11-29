@@ -323,7 +323,8 @@ export const TEXTS = {
     },
     complete: { en: "Complete Purchase", si: "ගණුදෙනුව අවසන් කරන්න" },
     clear: { en: "Clear", si: "හිස් කරන්න" },
-    cancel: { en: "Cancel", si: "අවලංගු කරන්න" }
+    cancel: { en: "Cancel", si: "අවලංගු කරන්න" },
+    hold: { en: "Hold", si: "රඳවා තබන්න" }
   },
   cashflow: {
     title: {

@@ -35,6 +35,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
     set({ activeTransaction: transaction }),
 
   transactionItems: [],
+  setTransactionItems: (items) => set({ transactionItems: items }),
 
   /**
    * Add new Product to Active Transaction
@@ -209,5 +210,28 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       ...activeTransaction,
       taxAmount: tax
     });
+  },
+
+  // Hold Queue
+  holdQueue: [],
+  setHoldQueue: (queue) => set({ holdQueue: queue }),
+  addToHoldQueue: (transaction) => {
+    const { holdQueue } = get();
+
+    const existingItem = holdQueue.find((item) => item.id === transaction.id);
+
+    if (existingItem) {
+      // If item with same ID exists, we can choose to update it or ignore
+      return;
+    }
+
+    set({ holdQueue: [...holdQueue, transaction] });
+  },
+  removeFromHoldQueue: (id) => {
+    const { holdQueue } = get();
+
+    const updatedQueue = holdQueue.filter((item) => item.id !== id);
+
+    set({ holdQueue: updatedQueue });
   }
 }));

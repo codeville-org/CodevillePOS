@@ -3,10 +3,12 @@ import {
   CreditCardIcon,
   EraserIcon,
   HandCoinsIcon,
+  PauseCircleIcon,
   PrinterCheckIcon,
   TrashIcon
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -16,7 +18,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +30,7 @@ import { cn, formatPrice } from "@/lib/utils";
 import { PaymentMethod } from "@/lib/zod/transactions.zod";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
+import { addTransactionToHoldQueue } from "@/lib/zustand/pos-store/actions";
 import { useCompleteTransaction } from "../queries/use-complete-transaction";
 
 type Props = {
@@ -39,16 +43,12 @@ export function PosSidebarFooter({ className }: Props) {
 
   const { language, availablePaymentMethods } = usePersistStore();
 
-  // Debug logging
-  console.log(
-    "[POS-FOOTER] Available payment methods:",
-    availablePaymentMethods
-  );
   const { mutate: completePurchase, isPending: completingPurchase } =
     useCompleteTransaction();
   const {
     getTransactionAmountOverview,
     activeTransaction,
+    transactionItems,
     clearTransactionItems,
     setActiveTransaction
   } = usePosStore();
@@ -98,6 +98,20 @@ export function PosSidebarFooter({ className }: Props) {
 
     // Then, call mutate to complete the transaction
     completePurchase();
+  };
+
+  const handleHoldTransaction = () => {
+    const addedToHold = addTransactionToHoldQueue({
+      transaction: activeTransaction,
+      items: transactionItems
+    });
+
+    if (addedToHold) {
+      toast.success("Transaction put on hold successfully.");
+      // Clear current transaction
+      setActiveTransaction(null);
+      clearTransactionItems();
+    }
   };
 
   return (
@@ -297,6 +311,34 @@ export function PosSidebarFooter({ className }: Props) {
           >
             {TEXTS.posSidebar.complete[language]}
           </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full shadow-none"
+                icon={<PauseCircleIcon />}
+                autoBlur
+                disabled={!activeTransaction || amountOverview.total <= 0}
+              >
+                {TEXTS.posSidebar.hold[language]}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Need to hold ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will put the current transaction on hold.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleHoldTransaction}>
+                  Hold
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <div className="flex items-center gap-2">
             <Button

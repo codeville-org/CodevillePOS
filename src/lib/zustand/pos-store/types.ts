@@ -26,6 +26,10 @@ export type AmountOverview = {
   total: number;
 };
 
+export interface HoldQueueItem extends BaseTransactionSchema {
+  items: UninitializedTransactionItem[];
+}
+
 export interface PosStoreInterface {
   // Listing View
   listingView: POSListingView;
@@ -68,4 +72,10 @@ export interface PosStoreInterface {
   clearTransactionItems: () => void;
 
   getTransactionAmountOverview: () => AmountOverview;
+
+  // Hold Queue
+  holdQueue: HoldQueueItem[];
+  setHoldQueue: (queue: HoldQueueItem[]) => void;
+  addToHoldQueue: (transaction: HoldQueueItem) => void;
+  removeFromHoldQueue: (id: string) => void;
 }

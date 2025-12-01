@@ -135,8 +135,8 @@ function updateLoadingState(state: LoadingState) {
 
 function createLoadingWindow(): BrowserWindow {
   loadingWindow = new BrowserWindow({
-    width: 500,
-    height: 400,
+    width: 800,
+    height: 554,
     frame: false,
     resizable: false,
     minimizable: false,

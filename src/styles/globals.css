@@ -48,6 +48,15 @@
   --sidebar: oklch(0.9904 0.0148 151.7795);
   --sidebar-foreground: oklch(0.3717 0.0392 257.287);
   --sidebar-primary: oklch(0.7697 0.2227 145.6886);
+}
+
+/* Electron drag regions */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
   --sidebar-primary-foreground: oklch(0.9904 0.0148 151.7795);
   --sidebar-accent: oklch(0.9288 0.0126 255.5078);
   --sidebar-accent-foreground: oklch(0.2077 0.0398 265.7549);

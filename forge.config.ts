@@ -67,6 +67,14 @@ const config: ForgeConfig = {
             preload: {
               js: "./src/activation/activation-preload.ts"
             }
+          },
+          {
+            html: "./src/loading/loading.html",
+            js: "./src/loading/loading-renderer.ts",
+            name: "loading_window",
+            preload: {
+              js: "./src/loading/loading-preload.ts"
+            }
           }
         ]
       }

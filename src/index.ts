@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -14,6 +14,8 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 declare const ACTIVATION_WINDOW_WEBPACK_ENTRY: string;
 declare const ACTIVATION_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+declare const LOADING_WINDOW_WEBPACK_ENTRY: string;
+declare const LOADING_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -116,6 +118,50 @@ function setupLogging() {
 
 let mainWindow: BrowserWindow;
 let activationWindow: BrowserWindow | null = null;
+let loadingWindow: BrowserWindow | null = null;
+
+// Loading state interface
+interface LoadingState {
+  step: string;
+  progress: number;
+  details?: string;
+}
+
+function updateLoadingState(state: LoadingState) {
+  if (loadingWindow && !loadingWindow.isDestroyed()) {
+    loadingWindow.webContents.send("loading:update", state);
+  }
+}
+
+function createLoadingWindow(): BrowserWindow {
+  loadingWindow = new BrowserWindow({
+    width: 500,
+    height: 400,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    center: true,
+    show: false,
+    webPreferences: {
+      preload: LOADING_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+
+  loadingWindow.loadURL(LOADING_WINDOW_WEBPACK_ENTRY);
+
+  loadingWindow.once("ready-to-show", () => {
+    if (loadingWindow && !loadingWindow.isDestroyed()) {
+      loadingWindow.show();
+    }
+  });
+
+  return loadingWindow;
+}
 
 export const createWindow = async (): Promise<void> => {
   // Initialize database before creating window
@@ -138,6 +184,7 @@ export const createWindow = async (): Promise<void> => {
     height: 600,
     width: 800,
     frame: false,
+    show: false, // Don't show immediately
     webPreferences: {
       sandbox: true,
       contextIsolation: true,
@@ -149,16 +196,17 @@ export const createWindow = async (): Promise<void> => {
   // Setup IPC handlers FIRST, before loading the window
   setupIPCHandlers(mainWindow);
 
-  // Maximize the window immediately
-  mainWindow.maximize();
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+    mainWindow.maximize();
+  });
 
   // Prevent the window from being unmaximized
   mainWindow.on("unmaximize", () => {
     mainWindow.maximize();
   });
-
-  // and load the index.html of the app.
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 };
 
 function createActivationWindow(): void {
@@ -169,6 +217,7 @@ function createActivationWindow(): void {
     minimizable: true,
     maximizable: false,
     frame: false,
+    show: false, // Don't show immediately
     webPreferences: {
       preload: ACTIVATION_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,
@@ -182,6 +231,12 @@ function createActivationWindow(): void {
 
   activationWindow.loadURL(ACTIVATION_WINDOW_WEBPACK_ENTRY);
 
+  activationWindow.once("ready-to-show", () => {
+    if (activationWindow) {
+      activationWindow.show();
+    }
+  });
+
   activationWindow.on("closed", () => {
     activationWindow = null;
     // If activation window closed without activating, quit app
@@ -191,35 +246,130 @@ function createActivationWindow(): void {
   });
 }
 
+async function startInitializationProcess() {
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Initial delay for smooth experience
+
+    // Step 1: Initialize Database
+    updateLoadingState({
+      step: "Initializing Database...",
+      progress: 15,
+      details: "Setting up local database connection"
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    await databaseManager.initialize();
+    console.log("Database initialized successfully");
+
+    updateLoadingState({
+      step: "Database Ready",
+      progress: 35
+    });
+
+    // Step 2: Initialize Image Manager
+    updateLoadingState({
+      step: "Loading Image Manager...",
+      progress: 45,
+      details: "Preparing image processing capabilities"
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await imageManager.initialize();
+    console.log("Image manager initialized successfully");
+
+    updateLoadingState({
+      step: "Image Manager Ready",
+      progress: 60
+    });
+
+    // Step 3: Check License
+    updateLoadingState({
+      step: "Verifying License...",
+      progress: 70,
+      details: "Checking license status and validity"
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    const licenseStatus = await licenseManager.checkLicense();
+
+    updateLoadingState({
+      step: "License Check Complete",
+      progress: 85
+    });
+
+    // Step 4: Finalize Setup
+    if (licenseStatus.licensed) {
+      updateLoadingState({
+        step: "Setting up Application...",
+        progress: 95,
+        details: "Preparing main application window"
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const logFile = setupLogging();
+      if (logFile) {
+        console.log("Logging initialized for packaged app");
+      }
+    }
+
+    // Step 5: Complete initialization
+    updateLoadingState({
+      step: "Ready!",
+      progress: 100
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // Close loading window and show appropriate next window
+    if (loadingWindow && !loadingWindow.isDestroyed()) {
+      loadingWindow.close();
+      loadingWindow = null;
+    }
+
+    if (licenseStatus.licensed) {
+      await createWindow();
+    } else {
+      createActivationWindow();
+
+      if (licenseStatus.error && licenseStatus.error !== "NO_LICENSE") {
+        const errorMessage = getLicenseErrorMessage(licenseStatus.error);
+        dialog.showErrorBox(
+          "License Error",
+          typeof errorMessage === "string"
+            ? errorMessage
+            : errorMessage.title || "License validation failed"
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Initialization failed:", error);
+    updateLoadingState({
+      step: "Initialization Failed",
+      progress: 100,
+      details: "An error occurred during startup"
+    });
+
+    setTimeout(() => {
+      dialog.showErrorBox(
+        "Initialization Error",
+        "Failed to initialize the application. Please try again."
+      );
+      app.quit();
+    }, 2000);
+  }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 async function initializeApp(): Promise<void> {
-  const licenseStatus = await licenseManager.checkLicense();
+  // Show loading window immediately
+  createLoadingWindow();
 
-  if (licenseStatus.licensed) {
-    // Valid license - launch main app
-    //  --------- Setup Logging ---------
-    const logFile = setupLogging();
-
-    if (logFile) {
-      console.log("Logging initialized for packaged app");
-    }
-
-    //  --------- Create main Window ---------
-    createWindow();
-  } else {
-    // No valid license - show activation window
-    createActivationWindow();
-
-    if (licenseStatus.error && licenseStatus.error !== "NO_LICENSE") {
-      // Show error for specific issues
-      dialog.showErrorBox(
-        "License Error",
-        getLicenseErrorMessage(licenseStatus.error).title
-      );
-    }
-  }
+  // Setup IPC handler for loading initialization
+  ipcMain.on("loading:start-initialization", () => {
+    startInitializationProcess();
+  });
 }
 
 app.whenReady().then(initializeApp);

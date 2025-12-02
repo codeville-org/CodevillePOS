@@ -1,8 +1,22 @@
 import { BrowserWindow, ipcMain } from "electron";
-import { licenseManager } from "../lib/license/client";
+import { licenseManager } from "../../lib/license/client";
+
+import { createWindow } from "@/index";
+
+let activationWindow: BrowserWindow;
 
 export const licenseHandler = {
-  register(): void {
+  register(window: BrowserWindow): void {
+    activationWindow = window;
+
+    ipcMain.handle("licenseWindow:minimize", async () => {
+      activationWindow.minimize();
+    });
+
+    ipcMain.handle("licenseWindow:close", async () => {
+      activationWindow.close();
+    });
+
     // License activation handler
     ipcMain.handle("license:activate", async (event, serialKey: string) => {
       try {
@@ -14,19 +28,7 @@ export const licenseHandler = {
           if (activationWindow) {
             activationWindow.close();
           }
-
-          // Import createWindow dynamically to avoid circular dependency
-          setTimeout(async () => {
-            try {
-              const { createWindow } = await import("../index");
-              await createWindow();
-            } catch (error) {
-              console.error(
-                "Failed to create main window after activation:",
-                error
-              );
-            }
-          }, 100);
+          createWindow();
         }
 
         return result;

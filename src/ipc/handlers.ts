@@ -4,7 +4,6 @@ import { cashdrawerHandler } from "./cashflow-handler";
 import { categoriesHandler } from "./categories-handler";
 import { customersHandler } from "./customers-handler";
 import { imagesHandler } from "./images-handler";
-import { licenseHandler } from "./license-handler";
 import { printerHandler } from "./printer-handler";
 import { productsHandler } from "./products-handler";
 import { purchaseHandler } from "./purchase-handler";
@@ -19,9 +18,6 @@ import { windowHandlers } from "./window-handler";
 export function setupIPCHandlers(window: BrowserWindow) {
   // Window management
   windowHandlers.register(window);
-
-  // License management
-  licenseHandler.register();
 
   // Application handlers
   categoriesHandler.register();

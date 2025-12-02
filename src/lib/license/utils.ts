@@ -9,6 +9,10 @@ export function getLicenseErrorMessage(error: string): LicenseErrorMessages {
       title: "Your hardware has changed.",
       description: "Please reactivate your license."
     },
+    ALREADY_ACTIVATED: {
+      title: "This license is already activated.",
+      description: "Please use a different license key."
+    },
     LICENSE_EXPIRED: {
       title: "Your license has expired."
     },
@@ -30,6 +34,10 @@ export function getLicenseErrorMessage(error: string): LicenseErrorMessages {
     NO_LICENSE: {
       title: "No license found.",
       description: "Please activate your license."
+    },
+    INVALID_KEY: {
+      title: "Invalid Serial Key",
+      description: "Please check your serial key and try again."
     },
     HARDWARE_MISMATCH: {
       title: "Your hardware has changed.",

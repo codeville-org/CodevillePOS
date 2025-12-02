@@ -60,6 +60,8 @@ export function ActivationWindow() {
         console.log("Activation successful");
         toast.success("License activated successfully!");
       } else {
+        console.log(result);
+
         setError(
           getLicenseErrorMessage(result?.error) || {
             title: "Activation failed",

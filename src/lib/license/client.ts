@@ -13,7 +13,8 @@ import { generateFingerprint } from "./hardware-fingerprint";
 
 // ========= Configurations =========
 const CONFIG = {
-  LICENSE_SERVER_URL: "https://your-license-server.com/api",
+  LICENSE_SERVER_URL:
+    "https://codeville-pos-licensing-worker.vihangarashansilva.workers.dev/api",
   APP_SALT: "com.codeville.pos",
   VALIDATION_INTERVAL_DAYS: 30, // Re-validate every 30 days
   GRACE_PERIOD_DAYS: 365 // 365 days grace period after license expiry

@@ -1,3 +1,10 @@
+import appLogo from "@/assets/app-logo.png";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  getLicenseErrorMessage,
+  LicenseErrorMessages
+} from "@/lib/license/utils";
 import {
   AlertCircleIcon,
   KeyRoundIcon,
@@ -6,14 +13,7 @@ import {
   XIcon
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-
-import appLogo from "@/assets/app-logo.png";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import {
-  getLicenseErrorMessage,
-  LicenseErrorMessages
-} from "@/lib/license/utils";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -58,8 +58,10 @@ export function ActivationWindow() {
 
       if (result?.success) {
         console.log("Activation successful");
-        // The main process will handle closing this window and opening the main app
+        toast.success("License activated successfully!");
       } else {
+        console.log(result);
+
         setError(
           getLicenseErrorMessage(result?.error) || {
             title: "Activation failed",
@@ -79,11 +81,11 @@ export function ActivationWindow() {
   };
 
   const handleClose = () => {
-    window.activationAPI?.window?.close?.();
+    window.activationAPI.window.close();
   };
 
   const handleMinimize = () => {
-    window.activationAPI?.window?.minimize?.();
+    window.activationAPI.window.minimize();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

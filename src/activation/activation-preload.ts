@@ -6,8 +6,8 @@ export interface ActivationAPI {
     getHardwareId: () => Promise<string>;
   };
   window: {
-    close: () => Promise<void>;
     minimize: () => Promise<void>;
+    close: () => Promise<void>;
   };
 }
 
@@ -18,8 +18,8 @@ const activationAPI: ActivationAPI = {
     getHardwareId: () => ipcRenderer.invoke("license:getHardwareId")
   },
   window: {
-    close: () => ipcRenderer.invoke("window:close"),
-    minimize: () => ipcRenderer.invoke("window:minimize")
+    minimize: () => ipcRenderer.invoke("licenseWindow:minimize"),
+    close: () => ipcRenderer.invoke("licenseWindow:close")
   }
 };
 

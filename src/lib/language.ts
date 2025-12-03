@@ -372,6 +372,29 @@ export const TEXTS = {
           hold: { en: "Yes, Hold now", si: "ඔව්, රඳවා තබන්න" }
         }
       }
+    },
+    billingView: {
+      discount: {
+        label: { en: "Bill Discount", si: "බිල්පතේ වට්ටම" },
+        placeholder: {
+          en: "Enter discount here...",
+          si: "වට්ටම් මුදල ඇතුලත් කරන්න..."
+        }
+      },
+      tax: {
+        label: { en: "Tax Amount", si: "බදු අයකිරීම්" },
+        placeholder: {
+          en: "Enter tax amount here...",
+          si: "බදු මුදල ඇතුලත් කරන්න..."
+        }
+      },
+      table: {
+        product: { en: "Product", si: "භාණ්ඩය" },
+        unitPrice: { en: "Unit Price", si: "සදහන් මිල" },
+        quantity: { en: "Quantity", si: "ප්‍රමාණය" },
+        amount: { en: "Amount", si: "මුදල" },
+        actions: { en: "Actions", si: "ක්‍රියාමාර්ග" }
+      }
     }
   },
   posSidebar: {

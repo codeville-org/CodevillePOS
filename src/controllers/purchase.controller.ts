@@ -357,8 +357,12 @@ export async function updatePurchaseController(
     }
 
     // Calculate amounts if provided
-    const totalAmount = input.totalAmount ?? existingPurchase.totalAmount;
-    const newPaidAmount = input.paidAmount ?? existingPurchase.paidAmount;
+    const totalAmount = existingPurchase.totalAmount;
+
+    const newPaidAmount =
+      input.paidAmount > 0
+        ? input.paidAmount + existingPurchase.paidAmount
+        : existingPurchase.paidAmount;
     const oldPaidAmount = existingPurchase.paidAmount;
 
     // CORRECTED: Check if there's a payment increase (CASH OUT event needed)
@@ -366,7 +370,8 @@ export async function updatePurchaseController(
     const isPaymentMade = paymentIncrease > 0;
 
     // Auto-calculate dueAmount if totalAmount or paidAmount changed
-    let dueAmount = input.dueAmount;
+    let dueAmount = totalAmount - newPaidAmount;
+
     if (input.totalAmount !== undefined || input.paidAmount !== undefined) {
       dueAmount = Math.max(0, totalAmount - newPaidAmount);
     }
@@ -409,7 +414,9 @@ export async function updatePurchaseController(
     // Prepare update data
     const updateData = {
       ...input,
-      ...(dueAmount !== undefined && { dueAmount })
+      ...(dueAmount !== undefined && { dueAmount }),
+      // Override with accumulated paidAmount instead of incremental input.paidAmount
+      ...(isPaymentMade && { paidAmount: newPaidAmount })
     };
 
     // Remove non-database fields

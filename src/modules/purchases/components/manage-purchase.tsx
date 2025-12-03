@@ -1,7 +1,8 @@
 import {
   BanknoteArrowDown,
   BanknoteArrowUp,
-  BanknoteArrowUpIcon
+  BanknoteArrowUpIcon,
+  ShoppingCartIcon
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -21,11 +22,22 @@ export function ManagePurchase({ purchase, className }: Props) {
       <Card className={cn("flex flex-col gap-2 flex-1/2 p-2", className)}>
         <div className="flex-1 h-full">
           <ScrollArea className="h-[calc(100dvh-17rem)]">
-            <div className="flex flex-col gap-3">
-              {purchase.purchaseItems?.map((item) => (
-                <PurchaseItem key={item.id} item={item} />
-              ))}
-            </div>
+            {purchase.purchaseItems && purchase.purchaseItems.length === 0 ? (
+              <div className="min-h-[calc(100dvh-17rem)] h-full flex items-center justify-center gap-2 flex-col">
+                <div className="mt-4 bg-primary/10 p-2 rounded-full">
+                  <ShoppingCartIcon className="size-8 text-foreground/50" />
+                </div>
+                <p className="text-center text-sm text-foreground/60 mt-1">
+                  No purchase items added yet.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {purchase.purchaseItems?.map((item) => (
+                  <PurchaseItem key={item.id} item={item} />
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </div>
       </Card>

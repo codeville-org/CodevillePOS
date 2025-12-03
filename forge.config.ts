@@ -44,6 +44,18 @@ const config: ForgeConfig = {
     new MakerRpm({}),
     new MakerDeb({})
   ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "codeville-org",
+          name: "CodeVille-POS"
+        },
+        prerelease: true
+      }
+    }
+  ],
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({

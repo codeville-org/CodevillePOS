@@ -426,7 +426,7 @@ export function PosSidebarFooter({ className }: Props) {
                 }, 100);
               }}
             >
-              {TEXTS.pos.cancel.alert.actions.cancel[language]}
+              {TEXTS.pos.cancel.alert.actions.cancelTransaction[language]}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

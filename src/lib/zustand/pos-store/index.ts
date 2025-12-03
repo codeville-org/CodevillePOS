@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { getProductAmount } from "@/lib/utils";
+import { getProductAmount, getProductDiscountedAmount } from "@/lib/utils";
 import type { UninitializedTransactionItem } from "@/lib/zod/transactions.zod";
 import type { PosStoreInterface } from "./types";
 
@@ -12,10 +12,10 @@ function sortTransactionItems(
 }
 
 export const usePosStore = create<PosStoreInterface>()((set, get) => ({
-  listingView: "listing",
+  listingView: "listing" as PosStoreInterface["listingView"],
   setListingView: (view) => set({ listingView: view }),
 
-  listingMode: "grid",
+  listingMode: "grid" as PosStoreInterface["listingMode"],
   setListingMode: (mode) => set({ listingMode: mode }),
 
   searchTerm: null,
@@ -26,7 +26,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
   lastScannedProduct: null,
   setLastScannedProduct: (product) => set({ lastScannedProduct: product }),
 
-  filter: "featured",
+  filter: "featured" as PosStoreInterface["filter"],
   setFilter: (filter) => set({ filter }),
 
   // Transaction Related
@@ -57,7 +57,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
         ...existingItem,
         quantity: newQuantity,
         totalAmount: getProductAmount(existingItem, newQuantity),
-        discountAmount: (item.unitPrice - item.ourPrice) * newQuantity
+        discountAmount: getProductDiscountedAmount(existingItem, newQuantity)
       };
 
       const preparedArray = transactionItems.filter(
@@ -97,8 +97,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
         ...existingItem,
         quantity,
         totalAmount: getProductAmount(existingItem, quantity),
-        discountAmount:
-          (existingItem.unitPrice - existingItem.ourPrice) * quantity
+        discountAmount: getProductDiscountedAmount(existingItem, quantity)
       };
 
       const preparedArray = transactionItems.filter(

@@ -72,6 +72,30 @@ export function getProductAmount(
   return microUnitPrice * quantity;
 }
 
+export function getProductDiscountedAmount(
+  item: UninitializedTransactionItem,
+  quantity: number
+) {
+  /**
+   * Assume unitAmount is 250 (g) and unit price is 100, discounted price (ourPrice) is 80,
+   * Then it means it cost 80 amount per 250g from discount value
+   * Therefore, for 1g it will cost,
+   * - Without discount: 100/250 = 0.4
+   * - With discount: 80/250 = 0.32
+   * - Discount per 1g: 0.4 - 0.32 = 0.08
+   *
+   * It used to calculate total amount based on unit amount and unit price
+   */
+
+  const microUnitPrice = item.unitPrice / item.unitAmount;
+  const microDiscountedPrice = item.ourPrice / item.unitAmount;
+  const microDiscount = microUnitPrice - microDiscountedPrice;
+
+  const totalDiscount = microDiscount * quantity;
+
+  return totalDiscount;
+}
+
 export function playBeep(frequency: number, duration: number) {
   try {
     const audioContext = new (window.AudioContext ||

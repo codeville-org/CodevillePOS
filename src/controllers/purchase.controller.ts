@@ -250,6 +250,7 @@ export async function getPurchaseByIdController(
               columns: {
                 id: true,
                 name: true,
+                imageFilename: true,
                 barcode: true,
                 unitPrice: true,
                 unit: true

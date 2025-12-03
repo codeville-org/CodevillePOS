@@ -5,6 +5,7 @@ import {
   getLicenseErrorMessage,
   LicenseErrorMessages
 } from "@/lib/license/utils";
+import { cn } from "@/lib/utils";
 import {
   AlertCircleIcon,
   KeyRoundIcon,
@@ -103,7 +104,11 @@ export function ActivationWindow() {
               <Button
                 variant="default"
                 size="icon"
-                className="size-6 bg-background rounded-full hover:bg-secondary/40 hover:text-secondary-foreground"
+                className={cn(
+                  "size-6  rounded-full  ",
+                  "dark:bg-background dark:hover:bg-secondary/40 dark:hover:text-secondary-foreground",
+                  "bg-foreground/5 hover:bg-foreground/10 text-foreground hover:text-foreground"
+                )}
                 onClick={handleMinimize}
               >
                 <MinusIcon className="size-3" />
@@ -111,7 +116,11 @@ export function ActivationWindow() {
               <Button
                 variant="default"
                 size="icon"
-                className="size-6 bg-background rounded-full hover:bg-red-500 hover:text-white"
+                className={cn(
+                  "size-6 rounded-full",
+                  "dark:bg-background dark:hover:bg-red-500 dark:hover:text-white",
+                  "bg-foreground/5 hover:bg-red-500 hover:text-white text-foreground"
+                )}
                 onClick={handleClose}
               >
                 <XIcon className="size-3" />
@@ -153,7 +162,11 @@ export function ActivationWindow() {
             </div>
 
             <Button
-              className="w-full h-11 max-w-80 bg-gradient-to-t from-green-950 to-green-700 text-green-50 hover:from-green-900 hover:to-green-600 transition-all ease-in-out duration-100 mt-3"
+              className={cn(
+                "w-full h-11 max-w-80 bg-gradient-to-t   text-green-50   transition-all ease-in-out duration-100 mt-3",
+                "dark:from-green-950 dark:to-green-700 dark:hover:from-green-900 dark:hover:to-green-600",
+                "from-green-800 to-green-600 hover:from-green-700 hover:to-green-500"
+              )}
               onClick={handleActivate}
               disabled={isLoading}
               loading={isLoading}

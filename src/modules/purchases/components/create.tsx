@@ -1,4 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +28,6 @@ import {
   CreatePurchaseSchema
 } from "@/lib/zod/supplier.zod";
 import { VendorSelector } from "@/modules/vendors/components/vendor-selector";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { useCreatePurchase } from "../queries/use-create";
 
 type Props = {
@@ -35,6 +36,7 @@ type Props = {
 
 export function CreateNewPurchase({ children }: Props) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const { mutate, isPending } = useCreatePurchase();
 
   const form = useForm<CreatePurchaseSchema>({
@@ -48,9 +50,10 @@ export function CreateNewPurchase({ children }: Props) {
 
   const onSubmit = (data: CreatePurchaseSchema) => {
     mutate(data, {
-      onSuccess: () => {
+      onSuccess: (created) => {
         form.reset();
         setOpen(false);
+        navigate(`/supplier-management/purchases/${created.id}`);
       }
     });
   };

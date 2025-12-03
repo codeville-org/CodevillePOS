@@ -119,12 +119,14 @@ export function PosProductsListing({ className }: Props) {
             {data && data.data.length > 0 && (
               <div
                 className={cn({
-                  "grid grid-cols-4 gap-4": listingMode === "grid",
+                  "grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4":
+                    listingMode === "grid",
                   "flex flex-col gap-0": listingMode === "list"
                 })}
               >
                 {data.data.map((product) => (
                   <ProductItem
+                    key={product.id}
                     product={product}
                     page="pos"
                     view={listingMode}

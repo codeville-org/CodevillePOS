@@ -1,7 +1,9 @@
 import { CheckCircleIcon, SearchIcon } from "lucide-react";
 import { useEffect } from "react";
 
+import { TEXTS } from "@/lib/language";
 import { cn } from "@/lib/utils";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 
 type Props = {
@@ -9,6 +11,7 @@ type Props = {
 };
 
 export function ProductSearchInput({ className }: Props) {
+  const { language } = usePersistStore();
   const {
     searchTerm,
     setSearchTerm,
@@ -66,7 +69,7 @@ export function ProductSearchInput({ className }: Props) {
     if (isShowingScannedProduct) {
       return "Scanned product - start typing to search manually";
     }
-    return "Search by product name or barcode...";
+    return TEXTS.pos.searchPlaceholder[language];
   };
 
   return (

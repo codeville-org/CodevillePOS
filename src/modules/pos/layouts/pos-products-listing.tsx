@@ -1,5 +1,5 @@
 import { Loader, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Pagination } from "@/components/layouts/dashboard/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,6 +33,10 @@ export function PosProductsListing({ className }: Props) {
     featured: filter === "featured",
     category: filterCategory
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

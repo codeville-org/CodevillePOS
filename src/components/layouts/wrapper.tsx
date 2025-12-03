@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
+import { TEXTS } from "@/lib/language";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCashflow } from "@/lib/zustand/cashflow-store";
 import { usePersistStore } from "@/lib/zustand/persist-store";
@@ -117,10 +118,19 @@ export function Wrapper() {
 
                       <HoldQueue>
                         <div className="text-xs flex items-center gap-2 cursor-pointer hover:underline text-red-500 bg-red-500/10 p-1 px-3 border border-red-500 rounded-full animate-pulse">
-                          <p>
-                            {holdQueue.length} Sale
-                            {holdQueue.length > 1 ? "s" : ""} on Queue
-                          </p>
+                          {language === "en" && (
+                            <p>
+                              {holdQueue.length} Sale
+                              {holdQueue.length > 1 ? "s" : ""} on Queue
+                            </p>
+                          )}
+
+                          {language === "si" && (
+                            <p>
+                              {"ගණුදෙනු"} {holdQueue.length}
+                              {`ක් රදවාගෙන ඇත`}
+                            </p>
+                          )}
                         </div>
                       </HoldQueue>
                     </>
@@ -156,10 +166,12 @@ export function Wrapper() {
 
                           {activeShift ? (
                             <p className={"text-green-600"}>
-                              Work Shift Ongoing
+                              {TEXTS.header.shift.ongoing[language]}
                             </p>
                           ) : (
-                            <p className={"text-amber-500"}>Shift Inactive</p>
+                            <p className={"text-amber-500"}>
+                              {TEXTS.header.shift.inactive[language]}
+                            </p>
                           )}
 
                           {activeShift && activeBalance && (
@@ -181,7 +193,7 @@ export function Wrapper() {
                   <div className="flex items-center gap-3">
                     {user && (
                       <p className="text-xs text-secondary-foreground/70">
-                        Hello, {user.username}
+                        {TEXTS.header.hello[language]}, {user.username}
                       </p>
                     )}
                     <LogoutBadge />

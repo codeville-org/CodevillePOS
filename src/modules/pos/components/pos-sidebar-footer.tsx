@@ -326,15 +326,19 @@ export function PosSidebarFooter({ className }: Props) {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Need to hold ?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {TEXTS.pos.queue.alert.title[language]}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action will put the current transaction on hold.
+                  {TEXTS.pos.queue.alert.description[language]}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>
+                  {TEXTS.pos.queue.alert.actions.cancel[language]}
+                </AlertDialogCancel>
                 <AlertDialogAction onClick={handleHoldTransaction}>
-                  Hold
+                  {TEXTS.pos.queue.alert.actions.hold[language]}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -367,13 +371,17 @@ export function PosSidebarFooter({ className }: Props) {
       <AlertDialog open={isClearModalOpen} onOpenChange={setClearModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {TEXTS.pos.clear.alert.title[language]}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action will clear all items in the cart.
+              {TEXTS.pos.clear.alert.description[language]}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {TEXTS.pos.clear.alert.actions.cancel[language]}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 clearTransactionItems();
@@ -385,7 +393,7 @@ export function PosSidebarFooter({ className }: Props) {
                 }, 100);
               }}
             >
-              Continue
+              {TEXTS.pos.clear.alert.actions.clear[language]}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -395,13 +403,17 @@ export function PosSidebarFooter({ className }: Props) {
       <AlertDialog open={isCancelModalOpen} onOpenChange={setCancelModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {TEXTS.pos.cancel.alert.title[language]}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action will reset the current transaction.
+              {TEXTS.pos.cancel.alert.description[language]}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {TEXTS.pos.cancel.alert.actions.cancel[language]}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setActiveTransaction(null);
@@ -414,7 +426,7 @@ export function PosSidebarFooter({ className }: Props) {
                 }, 100);
               }}
             >
-              Continue
+              {TEXTS.pos.cancel.alert.actions.cancel[language]}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

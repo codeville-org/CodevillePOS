@@ -38,8 +38,8 @@ export function ProductItem({
                 <ImageDisplay
                   alt={product.name}
                   filename={product.imageFilename}
-                  className="w-full h-full aspect-square rounded-xl"
-                  fallbackClassName="w-full h-full aspect-square rounded-xl"
+                  className="w-full h-full object-cover aspect-square rounded-xl"
+                  fallbackClassName="w-full h-full object-cover aspect-square rounded-xl"
                   isProductImage
                 />
                 <Badge
@@ -86,8 +86,8 @@ export function ProductItem({
             <ImageDisplay
               alt={product.name}
               filename={product.imageFilename}
-              className="w-12 h-12 rounded-md"
-              fallbackClassName="w-12 h-12 rounded-md"
+              className="w-12 h-12 object-cover rounded-md aspect-square"
+              fallbackClassName="w-12 h-12 object-cover rounded-md aspect-square"
               isProductImage
             />
           )}
@@ -129,8 +129,8 @@ export function ProductItem({
                 <ImageDisplay
                   alt={product.name}
                   filename={product.imageFilename}
-                  className="w-full h-full aspect-square rounded-xl"
-                  fallbackClassName="w-full h-full aspect-square rounded-xl"
+                  className="w-full h-full object-cover aspect-square rounded-xl"
+                  fallbackClassName="w-full h-full object-cover aspect-square rounded-xl"
                   isProductImage
                 />
                 <Badge
@@ -178,8 +178,8 @@ export function ProductItem({
           <ImageDisplay
             alt={product.name}
             filename={product.imageFilename}
-            className="w-12 h-12 rounded-md"
-            fallbackClassName="w-12 h-12 rounded-md"
+            className="w-12 h-12 object-cover rounded-md aspect-square"
+            fallbackClassName="w-12 h-12 object-cover rounded-md aspect-square"
             isProductImage
           />
         )}

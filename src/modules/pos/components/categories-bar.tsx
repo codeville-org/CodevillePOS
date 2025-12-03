@@ -11,13 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TEXTS } from "@/lib/language";
 import { SelectCategory } from "@/lib/zod/categories.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 import { useGetAllCategories } from "@/modules/categories/queries/use-get-all";
 
 type Props = {};
 
 export function CategoriesBar({}: Props) {
+  const { language } = usePersistStore();
   const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
   const [categorySearchTermDebounce, setCategorySearchTermDebounce] = useState<
     string | null
@@ -26,8 +29,9 @@ export function CategoriesBar({}: Props) {
 
   const { data, isPending, error } = useGetAllCategories({
     page: "1",
-    limit: "6",
-    search: categorySearchTermDebounce || undefined
+    limit: "50",
+    search: categorySearchTermDebounce || undefined,
+    sort: "asc"
   });
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export function CategoriesBar({}: Props) {
           }
         >
           <ZapIcon fill="#fff" />
-          Quick Access
+          {TEXTS.pos.quickAccess[language]}
         </Badge>
 
         <div className="flex items-center gap-2 h-10 max-w-fit px-3 border border-border rounded-full bg-secondary/50 dark:bg-secondary/30">
@@ -89,7 +93,7 @@ export function CategoriesBar({}: Props) {
 
           <input
             className="w-fit text-sm border-none focus:ring-0 focus:outline-none bg-transparent"
-            placeholder="Search Category..."
+            placeholder={TEXTS.pos.categorySearch[language]}
             value={categorySearchTerm}
             onChange={(e) => setCategorySearchTerm(e.target.value)}
           />

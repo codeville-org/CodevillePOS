@@ -290,6 +290,113 @@ export const TEXTS = {
       si: "ස්තූතියි...! නැවත එන්න ✨✨"
     }
   },
+  pagination: {
+    previous: { en: "Previous", si: "පෙර" },
+    next: { en: "Next", si: "ඊළඟ" }
+  },
+  header: {
+    shift: {
+      ongoing: { en: "Work Shift Ongoing", si: "වැඩමුරය ක්‍රියාත්මකයි" },
+      inactive: { en: "Work Shift Inactive", si: "වැඩමුරයක් ක්‍රියාත්මකව නැත" }
+    },
+    hello: {
+      en: "Hello",
+      si: "ආයුබෝවන්"
+    }
+  },
+  pos: {
+    viewSwitch: {
+      toBilling: {
+        en: "Switch to Billing View",
+        si: "බිල්පත් දර්ශනයට මාරු වන්න"
+      },
+      toListing: {
+        en: "Switch to Listing View",
+        si: "ලැයිස්තු දර්ශනයට මාරු වන්න"
+      }
+    },
+    newTransaction: {
+      en: "New Transaction",
+      si: "නව ගනුදෙනුවක් අරබන්න"
+    },
+    searchPlaceholder: {
+      en: "Search by product name or barcode...",
+      si: "බාර්කෝඩ් කේතය / භාණ්ඩයේ නම ඇතුලත් කරන්න..."
+    },
+    quickAccess: { en: "Quick Access", si: "ඉක්මන් ප්‍රවේශ" },
+    categorySearch: { en: "Search Category...", si: "භාණ්ඩ වර්ග සොයන්න..." },
+    clear: {
+      alert: {
+        title: {
+          en: "Clear the current transaction ?",
+          si: "වත්මන් ගනුදෙනුව හිස් කරන්නද?"
+        },
+        description: {
+          en: "This action will remove all items from the current transaction.",
+          si: "මෙමගින් ඔබේ වත්මන් ගනුදෙනුවෙන් සියලුම අයිතම ඉවත් කරයි."
+        },
+        actions: {
+          cancel: { en: "No, Keep Items", si: "නැත, අයිතම තබා ගන්න" },
+          clear: { en: "Yes, Clear Now", si: "ඔව්, හිස් කරන්න" }
+        }
+      }
+    },
+    cancel: {
+      alert: {
+        title: {
+          en: "Cancel the current transaction ?",
+          si: "වත්මන් ගනුදෙනුව අවලංගු කරන්නද?"
+        },
+        description: {
+          en: "This action will cancel the current transaction and remove all items.",
+          si: "මෙමගින් ඔබේ වත්මන් ගනුදෙනුව අවලංගු කරයි සහ සියලුම අයිතම ඉවත් කරයි."
+        },
+        actions: {
+          cancel: { en: "No, Keep Items", si: "නැත, තබා ගන්න" },
+          cancelTransaction: { en: "Yes, Cancel Now", si: "ඔව්, අවලංගු කරන්න" }
+        }
+      }
+    },
+    queue: {
+      alert: {
+        title: {
+          en: "Do you need to hold this transaction ?",
+          si: "ඔබට මෙම ගණුදෙනුව තාවකාලිකව රදවා ගැනීමට අවශ්‍යද?"
+        },
+        description: {
+          en: "You can hold the current transaction and retrieve it later from the queue.",
+          si: "මෙමගින් ගණුදෙනුව තාවකාලිකව රදවාගන්න අතර ඔබට නව ගණුදෙනුවක් ආරම්භ කිරීමට හැකියාව ලැබේ. නැවත මෙම ගණුදෙනුවට ප්‍රවේශ වීමට ඔබට හැකියාව ඇත"
+        },
+        actions: {
+          cancel: { en: "No, Continue", si: "අවශ්‍යය නැත" },
+          hold: { en: "Yes, Hold now", si: "ඔව්, රඳවා තබන්න" }
+        }
+      }
+    },
+    billingView: {
+      discount: {
+        label: { en: "Bill Discount", si: "බිල්පතේ වට්ටම" },
+        placeholder: {
+          en: "Enter discount here...",
+          si: "වට්ටම් මුදල ඇතුලත් කරන්න..."
+        }
+      },
+      tax: {
+        label: { en: "Tax Amount", si: "බදු අයකිරීම්" },
+        placeholder: {
+          en: "Enter tax amount here...",
+          si: "බදු මුදල ඇතුලත් කරන්න..."
+        }
+      },
+      table: {
+        product: { en: "Product", si: "භාණ්ඩය" },
+        unitPrice: { en: "Unit Price", si: "සදහන් මිල" },
+        quantity: { en: "Quantity", si: "ප්‍රමාණය" },
+        amount: { en: "Amount", si: "මුදල" },
+        actions: { en: "Actions", si: "ක්‍රියාමාර්ග" }
+      }
+    }
+  },
   posSidebar: {
     customer: { en: "Customer", si: "පාරිභෝගිකයා තෝරන්න" },
     inactive: {

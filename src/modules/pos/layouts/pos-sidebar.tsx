@@ -1,5 +1,5 @@
 import { ListTodoIcon, ShoppingCartIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,6 +25,12 @@ export function PosSidebar({}: Props) {
 
   const [selectedCustomer, setSelectedCustomer] =
     useState<SelectCustomer | null>(null);
+
+  useEffect(() => {
+    if (!activeTransaction && selectedCustomer) {
+      setSelectedCustomer(null);
+    }
+  }, [selectedCustomer, activeTransaction]);
 
   return (
     <div className="w-full h-full flex flex-col bg-secondary/30 border-l border-sidebar-border overflow-hidden">

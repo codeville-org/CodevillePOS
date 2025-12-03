@@ -1,7 +1,9 @@
 import { CircleDollarSignIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TEXTS } from "@/lib/language";
 import { cn } from "@/lib/utils";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 import { useInitializeTransaction } from "../queries/use-initialize-transaction";
 
@@ -14,6 +16,7 @@ export function InitializeTransaction({
   className,
   variant = "default"
 }: Props) {
+  const { language } = usePersistStore();
   const { activeTransaction } = usePosStore();
   const { mutate, isPending } = useInitializeTransaction();
 
@@ -34,7 +37,7 @@ export function InitializeTransaction({
       })}
       autoBlur
     >
-      New Transaction
+      {TEXTS.pos.newTransaction[language]}
     </Button>
   );
 }

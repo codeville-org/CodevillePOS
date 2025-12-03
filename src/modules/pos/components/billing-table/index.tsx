@@ -16,13 +16,16 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { TEXTS } from "@/lib/language";
 import { UninitializedTransactionItem } from "@/lib/zod/transactions.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 
 type Props = {
   className?: string;
 };
 
 export function BillingTable({ className }: Props) {
+  const { language } = usePersistStore();
   const {
     setListingView,
     transactionItems,
@@ -45,11 +48,21 @@ export function BillingTable({ className }: Props) {
           <Table>
             <TableHeader>
               <TableRow className="border-none bg-secondary/50 dark:bg-secondary/30 text-sm text-foreground/60">
-                <TableHead className="py-3 pl-5">Product</TableHead>
-                <TableHead className="py-3">Unit Price</TableHead>
-                <TableHead className="py-3">Quantity</TableHead>
-                <TableHead className="py-3 text-right">Amount</TableHead>
-                <TableHead className="py-3 text-right pr-5">Actions</TableHead>
+                <TableHead className="py-3 pl-5">
+                  {TEXTS.pos.billingView.table.product[language]}
+                </TableHead>
+                <TableHead className="py-3">
+                  {TEXTS.pos.billingView.table.unitPrice[language]}
+                </TableHead>
+                <TableHead className="py-3">
+                  {TEXTS.pos.billingView.table.quantity[language]}
+                </TableHead>
+                <TableHead className="py-3 text-right">
+                  {TEXTS.pos.billingView.table.amount[language]}
+                </TableHead>
+                <TableHead className="py-3 text-right pr-5">
+                  {TEXTS.pos.billingView.table.actions[language]}
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -66,10 +79,12 @@ export function BillingTable({ className }: Props) {
       <div className="flex-shrink-0 border-t border-border/20 bg-secondary/40 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="space-y-1">
-            <Label className="text-xs text-foreground/80">Discount Price</Label>
+            <Label className="text-xs text-foreground/80">
+              {TEXTS.pos.billingView.discount.label[language]}
+            </Label>
             <Input
               className="h-12 bg-white"
-              placeholder="Bill Discount"
+              placeholder={TEXTS.pos.billingView.discount.placeholder[language]}
               value={activeTransaction?.discountAmount || ""}
               onChange={(e) => {
                 setDiscountAmount(Number(e.target.value));
@@ -77,10 +92,12 @@ export function BillingTable({ className }: Props) {
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-foreground/80">Tax Amount</Label>
+            <Label className="text-xs text-foreground/80">
+              {TEXTS.pos.billingView.tax.label[language]}
+            </Label>
             <Input
               className="h-12 bg-white"
-              placeholder="Tax Amount"
+              placeholder={TEXTS.pos.billingView.tax.placeholder[language]}
               value={activeTransaction?.taxAmount || ""}
               onChange={(e) => {
                 setTaxAmount(Number(e.target.value));

@@ -37,16 +37,16 @@ export function LoadingWindow() {
 
       <div className="absolute right-5 bottom-5 z-50 space-y-2">
         <div className="flex justify-between items-center gap-4 mb-1">
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-sm font-medium text-white">
             {loadingState.step}
           </span>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-white/70">
             {loadingState.progress}%
           </span>
         </div>
 
         {loadingState.details && (
-          <p className="text-xs text-muted-foreground text-end">
+          <p className="text-xs text-white/70 text-end">
             {loadingState.details}
           </p>
         )}

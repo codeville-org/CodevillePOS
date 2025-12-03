@@ -113,7 +113,8 @@ export function ProductsListing({ className }: Props) {
             className={cn(
               "h-full",
               {
-                "grid grid-cols-5 gap-4 p-4": view === "grid",
+                "grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6  gap-4 p-4":
+                  view === "grid",
                 "flex flex-col": view === "list"
               },
               isLoading && "flex items-center justify-center min-h-[400px]",

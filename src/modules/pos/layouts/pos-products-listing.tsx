@@ -1,5 +1,5 @@
 import { Loader, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Pagination } from "@/components/layouts/dashboard/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,6 +33,10 @@ export function PosProductsListing({ className }: Props) {
     featured: filter === "featured",
     category: filterCategory
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -119,12 +123,14 @@ export function PosProductsListing({ className }: Props) {
             {data && data.data.length > 0 && (
               <div
                 className={cn({
-                  "grid grid-cols-4 gap-4": listingMode === "grid",
+                  "grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4":
+                    listingMode === "grid",
                   "flex flex-col gap-0": listingMode === "list"
                 })}
               >
                 {data.data.map((product) => (
                   <ProductItem
+                    key={product.id}
                     product={product}
                     page="pos"
                     view={listingMode}

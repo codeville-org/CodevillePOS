@@ -76,6 +76,8 @@ export function PurchaseItem({ item }: Props) {
     remove(item.id);
   };
 
+  console.log(item);
+
   return (
     <Card className="bg-secondary/60 p-3 shadow-none flex flex-col gap-1 overflow-hidden">
       <div className="flex items-center justify-between">

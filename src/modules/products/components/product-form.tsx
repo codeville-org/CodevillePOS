@@ -89,6 +89,7 @@ export function ProductForm({ className, mode, productId }: Props) {
     if (formMode === "edit" && currentProduct) {
       form.reset({
         ...currentProduct,
+        isFeatured: currentProduct.isFeatured || false,
         categoryId: currentProduct.category.id
       });
     }
@@ -508,6 +509,9 @@ export function ProductForm({ className, mode, productId }: Props) {
                         </div>
                         <FormControl>
                           <Switch
+                            defaultChecked={
+                              currentProduct?.isFeatured ? true : false
+                            }
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />

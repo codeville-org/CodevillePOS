@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { BarcodeInput } from "@/components/ui/barcode-input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
 import {
   Form,
@@ -34,6 +34,7 @@ import { useCreateProduct } from "../queries/use-create";
 import { useGetProductByIdMutated } from "../queries/use-mutated-get-by-id";
 import { useUpdateProduct } from "../queries/use-update";
 // import { GenerateLabelDialog } from "./generate-label";
+import { Card } from "@/components/ui/card";
 import DeleteProductButton from "./delete-product-button";
 import { GenerateLabelDialog } from "./generate-label";
 import { UnitsDropdown } from "./units-dropdown";
@@ -97,12 +98,14 @@ export function ProductForm({ className, mode, productId }: Props) {
 
   // Listen to form -> price value and update discounted price value simultanously
   const priceValue = form.watch("unitPrice");
+  const unitAmountValue = form.watch("unitAmount");
+  const unitValue = form.watch("unit");
 
   useEffect(() => {
     // const discountedPrice = priceValue ? priceValue * 0.8 : 0;
     const discountedPrice = priceValue;
     form.setValue("discountedPrice", discountedPrice);
-  }, [priceValue, form]);
+  }, [priceValue, unitAmountValue, unitValue, form]);
 
   const handleFetchProduct = async (id: string) => {
     const product = await getProductById(id);
@@ -410,6 +413,15 @@ export function ProductForm({ className, mode, productId }: Props) {
                       )}
                     />
                   </div>
+
+                  {/* Pricing Overview */}
+                  <Card className="w-full flex flex-col gap-2 p-3 rounded-md">
+                    <p className="font-semibold text-base">{`Pricing Overview - ${form.getValues("name")}`}</p>
+
+                    <p className="mt-2">
+                      {`${form.getValues("unitAmount")}/${form.getValues("unit")} = ${formatPrice(form.getValues("unitPrice"))}`}
+                    </p>
+                  </Card>
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField

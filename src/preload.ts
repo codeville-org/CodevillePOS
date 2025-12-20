@@ -14,6 +14,10 @@ const settingsInvoker = createInvoker("settings");
 const securityInvoker = createInvoker("security");
 const printInvoker = createInvoker("print");
 const reportsInvoker = createInvoker("reports");
+const userInvoker = createInvoker("user");
+const cashflowInvoker = createInvoker("cashflow");
+const vendorInvoker = createInvoker("vendor");
+const purchaseInvoker = createInvoker("purchase");
 
 const electronAPI: ElectronAPI = {
   window: {
@@ -36,14 +40,18 @@ const electronAPI: ElectronAPI = {
     delete: productsInvoker("delete"),
     import: productsInvoker("import"),
     export: productsInvoker("export"),
-    selectImportFile: productsInvoker("selectImportFile")
+    selectImportFile: productsInvoker("selectImportFile"),
+    generateBarcode: productsInvoker("generateBarcode")
   },
   images: {
     getImagesDirectory: imagesInvoker("getImagesDirectory"),
     getImageAsBase64: imagesInvoker("getImageAsBase64"),
     saveImageFromBase64: imagesInvoker("saveImageFromBase64"),
     saveImageFromPath: imagesInvoker("saveImageFromPath"),
-    deleteImage: imagesInvoker("deleteImage")
+    deleteImage: imagesInvoker("deleteImage"),
+    selectImageDirectory: imagesInvoker("selectImageDirectory"),
+    listImagesInDirectory: imagesInvoker("listImagesInDirectory"),
+    copyImagesFromDirectory: imagesInvoker("copyImagesFromDirectory")
   },
   customers: {
     getAll: customersInvoker("getAll"),
@@ -62,7 +70,8 @@ const electronAPI: ElectronAPI = {
   },
   settings: {
     get: settingsInvoker("get"),
-    upsert: settingsInvoker("upsert")
+    upsert: settingsInvoker("upsert"),
+    reset: settingsInvoker("reset")
   },
   security: {
     login: securityInvoker("login")
@@ -76,10 +85,48 @@ const electronAPI: ElectronAPI = {
     savePrinterSettings: printInvoker("savePrinterSettings"),
     printImage: printInvoker("printImage"),
     printImageBill: printInvoker("printImageBill"),
+    printImageLabel: printInvoker("printImageLabel"),
     selectImageFile: printInvoker("selectImageFile")
   },
   reports: {
     getAnalytics: reportsInvoker("getAnalytics")
+  },
+  user: {
+    getAll: userInvoker("getAll"),
+    get: userInvoker("get"),
+    create: userInvoker("create"),
+    update: userInvoker("update"),
+    delete: userInvoker("delete")
+  },
+  cashflow: {
+    initializeBalance: cashflowInvoker("initializeBalance"),
+    getBalance: cashflowInvoker("getBalance"),
+    updateBalance: cashflowInvoker("updateBalance"),
+    startShift: cashflowInvoker("startShift"),
+    getActiveShift: cashflowInvoker("getActiveShift"),
+    endShift: cashflowInvoker("endShift"),
+    createEvent: cashflowInvoker("createEvent"),
+    getAllShifts: cashflowInvoker("getAllShifts"),
+    getShiftEvents: cashflowInvoker("getShiftEvents")
+  },
+  vendor: {
+    getAll: vendorInvoker("getAll"),
+    create: vendorInvoker("create"),
+    delete: vendorInvoker("delete"),
+    update: vendorInvoker("update"),
+    getById: vendorInvoker("getById")
+  },
+  purchase: {
+    getAll: purchaseInvoker("getAll"),
+    create: purchaseInvoker("create"),
+    getById: purchaseInvoker("getById"),
+    update: purchaseInvoker("update"),
+    delete: purchaseInvoker("delete"),
+    addItem: purchaseInvoker("addItem"),
+    updateItem: purchaseInvoker("updateItem"),
+    deleteItem: purchaseInvoker("deleteItem"),
+    updateStock: purchaseInvoker("updateStock"),
+    history: purchaseInvoker("history")
   }
 };
 

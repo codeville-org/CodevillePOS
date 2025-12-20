@@ -4,6 +4,7 @@ import {
   openCashDrawerController,
   printImageBillController,
   printImageController,
+  printImageLabelController,
   printReceiptController,
   savePrinterSettingsController,
   selectImageFileController,
@@ -20,6 +21,7 @@ export const printerHandler = {
     handler.handle("openCashDrawer", openCashDrawerController);
     handler.handle("printImage", printImageController);
     handler.handle("printImageBill", printImageBillController);
+    handler.handle("printImageLabel", printImageLabelController);
     handler.handle("printReceipt", printReceiptController);
     handler.handle("savePrinterSettings", savePrinterSettingsController);
     handler.handle("testPrinter", testPrinterController);

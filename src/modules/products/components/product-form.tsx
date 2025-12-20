@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EditIcon, PlusCircleIcon, TrashIcon } from "lucide-react";
+import { EditIcon, PlusCircleIcon, PrinterIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -31,9 +31,11 @@ import { usePersistStore } from "@/lib/zustand/persist-store";
 import { CategoryDropdown } from "@/modules/categories/components/category-dropdown";
 import { ImageUploader } from "@/modules/image-manager/components/image-uploader";
 import { useCreateProduct } from "../queries/use-create";
-import { useDeleteProduct } from "../queries/use-delete";
 import { useGetProductByIdMutated } from "../queries/use-mutated-get-by-id";
 import { useUpdateProduct } from "../queries/use-update";
+// import { GenerateLabelDialog } from "./generate-label";
+import DeleteProductButton from "./delete-product-button";
+import { GenerateLabelDialog } from "./generate-label";
 import { UnitsDropdown } from "./units-dropdown";
 
 type FormMode = "create" | "edit";
@@ -56,8 +58,6 @@ export function ProductForm({ className, mode, productId }: Props) {
     useUpdateProduct(productId || currentProduct?.id || "");
   const { mutateAsync: getProductById, isPending: fetchingProduct } =
     useGetProductByIdMutated();
-  const { mutateAsync: deleteProduct, isPending: deletingProduct } =
-    useDeleteProduct(productId || currentProduct?.id);
 
   const form = useForm<InsertProductSchema>({
     resolver: zodResolver(insertProductSchema),
@@ -89,6 +89,7 @@ export function ProductForm({ className, mode, productId }: Props) {
     if (formMode === "edit" && currentProduct) {
       form.reset({
         ...currentProduct,
+        isFeatured: currentProduct.isFeatured || false,
         categoryId: currentProduct.category.id
       });
     }
@@ -125,10 +126,6 @@ export function ProductForm({ className, mode, productId }: Props) {
     form.reset();
     setFormMode("create");
     setCurrentProduct(null);
-  };
-
-  const handleDeleteProduct = async () => {
-    await deleteProduct();
   };
 
   // Prevent accidental form submission from barcode scanner Enter key
@@ -251,6 +248,9 @@ export function ProductForm({ className, mode, productId }: Props) {
                                 <BarcodeInput
                                   value={field.value}
                                   onChange={field.onChange}
+                                  onGenerate={(barcode) => {
+                                    console.log("Generated barcode:", barcode);
+                                  }}
                                   placeholder={
                                     TEXTS.products.addNew.form.barcode
                                       .placeholder[language]
@@ -263,8 +263,7 @@ export function ProductForm({ className, mode, productId }: Props) {
                                     shift: true,
                                     key: "B"
                                   }}
-                                  showScanButton={true}
-                                  showStatusIndicator={true}
+                                  showGenerateButton={true}
                                 />
                               )}
                             </div>
@@ -510,6 +509,9 @@ export function ProductForm({ className, mode, productId }: Props) {
                         </div>
                         <FormControl>
                           <Switch
+                            defaultChecked={
+                              currentProduct?.isFeatured ? true : false
+                            }
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
@@ -568,15 +570,19 @@ export function ProductForm({ className, mode, productId }: Props) {
                   {TEXTS.products.addNew.form.reset[language]}
                 </Button>
               ) : (
-                <Button
-                  variant="destructive"
-                  type="button"
-                  loading={deletingProduct}
-                  icon={<TrashIcon />}
-                  onClick={handleDeleteProduct}
-                >
-                  {TEXTS.actions.delete[language]}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <DeleteProductButton product={currentProduct} />
+
+                  <GenerateLabelDialog formValues={form.getValues()}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      icon={<PrinterIcon />}
+                    >
+                      {TEXTS.products.addNew.form.printLabel[language]}
+                    </Button>
+                  </GenerateLabelDialog>
+                </div>
               )}
 
               <Button

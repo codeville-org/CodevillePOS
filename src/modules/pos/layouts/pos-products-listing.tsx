@@ -1,5 +1,5 @@
 import { Loader, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Pagination } from "@/components/layouts/dashboard/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,10 +18,10 @@ export function PosProductsListing({ className }: Props) {
 
   const {
     filter,
-    searchMode,
     searchTerm,
     addTransactionItem,
-    activeTransaction
+    activeTransaction,
+    listingMode
   } = usePosStore();
 
   const filterCategory = typeof filter === "string" ? null : filter.id;
@@ -29,10 +29,14 @@ export function PosProductsListing({ className }: Props) {
   const { data, isLoading, error } = useGetAllProducts({
     page: currentPage.toString(),
     limit: itemsPerPage.toString(),
-    search: searchMode === "manual" ? searchTerm || "" : undefined,
-    featured: searchMode !== "manual" && filter === "featured",
+    search: searchTerm || "",
+    featured: filter === "featured",
     category: filterCategory
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -44,17 +48,18 @@ export function PosProductsListing({ className }: Props) {
     // Check if product is in stock
     if (product.stockQuantity <= 0) {
       // Could show a toast notification here
-      return;
+      // return;
     }
 
     const item: UninitializedTransactionItem = {
       productId: product.id,
       productName: product.name,
       productBarcode: product.barcode || "",
-      unitPrice:
-        product.discountedPrice > 0
-          ? product.discountedPrice
-          : product.unitPrice,
+      unitPrice: product.unitPrice,
+      ourPrice:
+        product.discountedPrice > product?.unitPrice
+          ? product.unitPrice
+          : product.discountedPrice,
       quantity: product.unitAmount,
       unit: product.unit,
       unitAmount: product.unitAmount,
@@ -62,7 +67,10 @@ export function PosProductsListing({ className }: Props) {
         product.discountedPrice > 0
           ? product.discountedPrice
           : product.unitPrice,
-      discountAmount: 0
+      discountAmount:
+        product.unitPrice > product.discountedPrice
+          ? product.unitPrice - product.discountedPrice
+          : 0
     };
 
     addTransactionItem(item);
@@ -77,7 +85,11 @@ export function PosProductsListing({ className }: Props) {
     >
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-4">
+          <div
+            className={cn("p-4", {
+              "p-0 px-2": listingMode === "list"
+            })}
+          >
             {isLoading && (
               <div className="flex items-center justify-center min-h-[400px]">
                 <div className="p-3 rounded-full bg-secondary/20 text-secondary-foreground">
@@ -109,12 +121,19 @@ export function PosProductsListing({ className }: Props) {
             )}
 
             {data && data.data.length > 0 && (
-              <div className="grid grid-cols-4 gap-4">
+              <div
+                className={cn({
+                  "grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4":
+                    listingMode === "grid",
+                  "flex flex-col gap-0": listingMode === "list"
+                })}
+              >
                 {data.data.map((product) => (
                   <ProductItem
+                    key={product.id}
                     product={product}
                     page="pos"
-                    view="grid"
+                    view={listingMode}
                     onClick={() => handleAddToCart(product)}
                   />
                 ))}

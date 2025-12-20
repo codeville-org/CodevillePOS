@@ -1,4 +1,5 @@
 import {
+  MessageResponseT,
   ProductsQueryParamsSchema,
   QueryParamsSchema,
   TransactionsQueryParamsSchema
@@ -20,6 +21,7 @@ import {
   CreateProductResponse,
   DeleteProductResponse,
   ExportProductsResponse,
+  GenerateBarcodeResponse,
   GetAllProductsResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
@@ -45,6 +47,21 @@ import type {
 
 // Customers Imports
 import {
+  EndShiftControllerResponse,
+  GetActiveShiftResponse,
+  GetAllShiftsInput,
+  GetAllShiftsResponse,
+  GetCashDrawerBalanceResponse,
+  GetShiftEventsInput,
+  GetShiftEventsResponse,
+  InitializeCashDrawerBalanceResponse,
+  InsertCashDrawerEvent,
+  InsertCashDrawerEventResponse,
+  StartShiftControllerResponse,
+  UpdateCashDrawerBalance,
+  UpdateCashDrawerBalanceResponse
+} from "@/lib/zod/cashflow.zod";
+import {
   CreateCustomerResponseSchema,
   CreateCustomerSchema,
   DeleteCustomerResponseSchema,
@@ -53,6 +70,11 @@ import {
   UpdateCustomerResponseSchema,
   UpdateCustomerSchema
 } from "@/lib/zod/customers.zod";
+import {
+  CopyImagesFromDirectoryResponse,
+  ListImagesInDirectoryResponse,
+  SelectImageDirectoryResponse
+} from "@/lib/zod/images.zod";
 import {
   ListPrintersResponseT,
   VoidDataResponseT
@@ -64,8 +86,35 @@ import {
 import { GetSecurityResponseT } from "@/lib/zod/security.zod";
 import {
   AppSettingsMapInsertT,
-  GetAppSettingsResponseT
+  GetAppSettingsResponseT,
+  ResetSystemResponseT
 } from "@/lib/zod/settings.zod";
+import {
+  AddPurchaseItemResponseSchema,
+  AddPurchaseItemSchema,
+  CreatePurchaseResponseSchema,
+  CreatePurchaseSchema,
+  GetAllPurchasesQuerySchema,
+  GetAllPurchasesResponseSchema,
+  GetAllVendorsResponseSchema,
+  GetPurchaseByIdResponseSchema,
+  GetPurchasePaymentHistoryResponseSchema,
+  GetVendorByIdResponseSchema,
+  InsertVendorResponseSchema,
+  InsertVendorSchema,
+  UpdatePurchaseItemResponseSchema,
+  UpdatePurchaseItemSchema,
+  UpdatePurchaseWithPaymentResponseSchema,
+  UpdatePurchaseWithPaymentSchema,
+  UpdateVendorResponseSchema,
+  UpdateVendorSchema
+} from "@/lib/zod/supplier.zod";
+import {
+  GetAllUsersResponseT,
+  GetUserResponseT,
+  InsertUserSchema,
+  UpdateUserSchema
+} from "@/lib/zod/user.zod";
 import {
   ALIGNMENT_OPTIONS,
   PrinterConfig,
@@ -102,6 +151,7 @@ export interface ProductsActions {
   import: (payload: ImportProductsSchema) => Promise<ImportProductsResponse>;
   export: () => Promise<ExportProductsResponse>;
   selectImportFile: () => Promise<SelectImportFileType>;
+  generateBarcode: () => Promise<GenerateBarcodeResponse>;
 }
 
 export interface ImagesActions {
@@ -109,11 +159,19 @@ export interface ImagesActions {
   saveImageFromBase64: (
     base64Data: string,
     billImage?: boolean,
+    labelImage?: boolean,
     transactionNumber?: string
   ) => Promise<string>;
   saveImageFromPath: (sourceImagePath: string) => Promise<string>;
   getImageAsBase64: (filename: string) => Promise<string | null>;
   deleteImage: (filename: string) => Promise<boolean>;
+  selectImageDirectory: () => Promise<SelectImageDirectoryResponse>;
+  listImagesInDirectory: (
+    directoryPath: string
+  ) => Promise<ListImagesInDirectoryResponse>;
+  copyImagesFromDirectory: (
+    sourceDirectoryPath: string
+  ) => Promise<CopyImagesFromDirectoryResponse>;
 }
 
 export interface CustomersActions {
@@ -151,10 +209,11 @@ export interface TransactionsActions {
 export interface SettingsActions {
   get: () => Promise<GetAppSettingsResponseT>;
   upsert: (payload: AppSettingsMapInsertT) => Promise<GetAppSettingsResponseT>;
+  reset: () => Promise<ResetSystemResponseT>;
 }
 
 export interface SecurityActions {
-  login: (password: string) => Promise<GetSecurityResponseT>;
+  login: (username: string, password: string) => Promise<GetSecurityResponseT>;
 }
 
 export interface PrinterActions {
@@ -173,6 +232,10 @@ export interface PrinterActions {
     imagePath: string,
     useDithering?: boolean
   ) => Promise<VoidDataResponseT>;
+  printImageLabel: (
+    imagePath: string,
+    useDithering?: boolean
+  ) => Promise<VoidDataResponseT>;
   selectImageFile: () => Promise<string | null>;
 }
 
@@ -180,6 +243,73 @@ export interface ReportsActions {
   getAnalytics: (
     params?: AnalyticsQueryParamsSchema
   ) => Promise<GetAnalyticsResponse>;
+}
+
+export interface UserActions {
+  getAll: (query: QueryParamsSchema) => Promise<GetAllUsersResponseT>;
+  get: (id: string) => Promise<GetUserResponseT>;
+  create: (body: InsertUserSchema) => Promise<GetUserResponseT>;
+  update: (id: string, body: UpdateUserSchema) => Promise<GetUserResponseT>;
+  delete: (id: string) => Promise<MessageResponseT>;
+}
+
+export interface CashflowActions {
+  // Balance
+  initializeBalance: () => Promise<InitializeCashDrawerBalanceResponse>;
+  getBalance: () => Promise<GetCashDrawerBalanceResponse>;
+  updateBalance: (
+    data: UpdateCashDrawerBalance
+  ) => Promise<UpdateCashDrawerBalanceResponse>;
+
+  // Events
+  startShift: (userId: string) => Promise<StartShiftControllerResponse>;
+  getActiveShift: () => Promise<GetActiveShiftResponse>;
+  endShift: () => Promise<EndShiftControllerResponse>;
+  createEvent: (
+    values: InsertCashDrawerEvent
+  ) => Promise<InsertCashDrawerEventResponse>;
+  getAllShifts: (input: GetAllShiftsInput) => Promise<GetAllShiftsResponse>;
+  getShiftEvents: (
+    input: GetShiftEventsInput
+  ) => Promise<GetShiftEventsResponse>;
+}
+
+export interface VendorActions {
+  getAll: (query: QueryParamsSchema) => Promise<GetAllVendorsResponseSchema>;
+  getById: (id: string) => Promise<GetVendorByIdResponseSchema>;
+  create: (input: InsertVendorSchema) => Promise<InsertVendorResponseSchema>;
+  update: (
+    id: string,
+    input: UpdateVendorSchema
+  ) => Promise<UpdateVendorResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+}
+
+export interface PurchasesActions {
+  getAll: (
+    query: GetAllPurchasesQuerySchema
+  ) => Promise<GetAllPurchasesResponseSchema>;
+  create: (
+    values: CreatePurchaseSchema
+  ) => Promise<CreatePurchaseResponseSchema>;
+  getById: (id: string) => Promise<GetPurchaseByIdResponseSchema>;
+  update: (
+    id: string,
+    input: UpdatePurchaseWithPaymentSchema
+  ) => Promise<UpdatePurchaseWithPaymentResponseSchema>;
+  delete: (id: string) => Promise<MessageResponseT>;
+  addItem: (
+    input: AddPurchaseItemSchema
+  ) => Promise<AddPurchaseItemResponseSchema>;
+  updateItem: (
+    id: string,
+    input: UpdatePurchaseItemSchema
+  ) => Promise<UpdatePurchaseItemResponseSchema>;
+  deleteItem: (id: string) => Promise<MessageResponseT>;
+  updateStock: (purchaseId: string) => Promise<MessageResponseT>;
+  history: (
+    purchaseId: string
+  ) => Promise<GetPurchasePaymentHistoryResponseSchema>;
 }
 
 // Main IPC API interface
@@ -194,4 +324,8 @@ export interface ElectronAPI {
   security: SecurityActions;
   print: PrinterActions;
   reports: ReportsActions;
+  user: UserActions;
+  cashflow: CashflowActions;
+  vendor: VendorActions;
+  purchase: PurchasesActions;
 }

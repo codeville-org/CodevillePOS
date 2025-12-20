@@ -27,7 +27,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useElectronAPI } from "@/hooks/use-electron-api";
 import { TEXTS } from "@/lib/language";
 import { cn, formatDate, formatPrice } from "@/lib/utils";
-import { SelectTransactionSchema } from "@/lib/zod/transactions.zod";
+import {
+  PaymentMethod,
+  SelectTransactionSchema
+} from "@/lib/zod/transactions.zod";
 import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePrinterStore } from "@/lib/zustand/printer-store";
 import ImageDisplay from "@/modules/image-manager/components/image-display";
@@ -62,9 +65,15 @@ export function PrinterProvider({}: Props) {
     setIsFetching(true);
 
     await getTransactionByID(currentItem.transactionId, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setTransactionData(data);
         setIsFetching(false);
+
+        // Open cash drawer after fetching transaction
+        if (data.paymentMethod === PaymentMethod.CASH) {
+          await electronAPI.print.openCashDrawer();
+          toast.success("Cash drawer opened !");
+        }
       },
       onSettled: () => {
         setIsFetching(false);
@@ -92,6 +101,7 @@ export function PrinterProvider({}: Props) {
       const savedBillImage = await electronAPI.images.saveImageFromBase64(
         dataUrl,
         true,
+        false,
         transactionData?.transactionNumber
       );
 
@@ -247,8 +257,11 @@ export function PrinterProvider({}: Props) {
                         <div className="flex-1 w-full px-6 text-center">
                           {TEXTS.bill.qty[language]}
                         </div>
-                        <div className="flex-1 w-full px-6 text-center border-x-2 border-black">
+                        <div className="flex-1 w-full px-6 text-center border-l-2 border-black">
                           {TEXTS.bill.unitPrice[language]}
+                        </div>
+                        <div className="flex-1 w-full px-6 text-center border-x-2 border-black">
+                          {TEXTS.bill.ourPrice[language]}
                         </div>
                         <div className="flex-1 w-full px-6 text-right">
                           {TEXTS.bill.total[language]}
@@ -277,6 +290,9 @@ export function PrinterProvider({}: Props) {
                             </div>
                             <div className="flex-1 w-full px-6 text-center border-x-2 border-gray-400">
                               {formatPrice(item.unitPrice, language)}
+                            </div>
+                            <div className="flex-1 w-full px-6 text-center border-x-2 border-gray-400">
+                              {formatPrice(item.ourPrice, language)}
                             </div>
                             <div className="flex-1 w-full px-6 text-right">
                               {formatPrice(item.totalAmount, language)}
@@ -323,6 +339,24 @@ export function PrinterProvider({}: Props) {
                         </p>
                         <p className="text-4xl font-black">
                           {formatPrice(transactionData.totalAmount, language)}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 border-t border-black py-3 flex items-center justify-between">
+                        <p className="text-xl font-semibold">
+                          {TEXTS.bill.cashGiven[language]} :{" "}
+                          <p className="font-medium">
+                            {formatPrice(
+                              transactionData.cashReceived,
+                              language
+                            )}
+                          </p>
+                        </p>
+                        <p className="text-xl font-semibold">
+                          {TEXTS.bill.balance[language]} :{" "}
+                          <p className="font-medium">
+                            {formatPrice(transactionData.changeGiven, language)}
+                          </p>
                         </p>
                       </div>
                     </div>

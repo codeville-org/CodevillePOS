@@ -1,4 +1,7 @@
-import { getBillsImageDirectory } from "@/controllers/images.controller";
+import {
+  getBillsImageDirectory,
+  getLabelsImageDirectory
+} from "@/controllers/images.controller";
 import * as fs from "fs";
 import sharp from "sharp";
 import { promisify } from "util";
@@ -221,18 +224,39 @@ export class USBPrinter {
     const execAsync = promisify(exec);
 
     try {
-      const { stdout } = await execAsync('cmd /c "wmic printer get name"');
+      const { stdout } = await execAsync('cmd /c "net view \\\\localhost"');
 
-      const printers = stdout
-        .trim()
-        .split("\n")
-        .map((p: string) => p.trim())
-        .splice(1)
-        .filter(Boolean);
+      // Parse the output to extract shared printers
+      const lines = stdout.split("\n");
+      const printers: string[] = [];
+
+      let inShareSection = false;
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+
+        // Look for the separator line that indicates start of shares
+        if (trimmedLine.includes("---------------")) {
+          inShareSection = true;
+          continue;
+        }
+
+        // Skip if we haven't reached the share section yet
+        if (!inShareSection) continue;
+
+        // Empty line typically marks end of shares
+        if (trimmedLine === "") break;
+
+        // Parse each share line
+        const parts = trimmedLine.split(/\s+/);
+        if (parts.length >= 2 && parts[1] === "Print") {
+          // First part is the share name, second part is "Print"
+          printers.push(parts[0]);
+        }
+      }
 
       return printers;
     } catch (error) {
-      console.error("Failed to get printer list:", error);
+      console.error("Failed to get shared printer list:", error);
       return [];
     }
   }
@@ -269,6 +293,79 @@ export class USBPrinter {
   private async prepareBillImage(
     imagePath: string,
     maxWidth: number = 576,
+    useDithering: boolean = true
+  ): Promise<string> {
+    try {
+      console.log(`Preparing image with Sharp: ${imagePath}`);
+
+      if (!fs.existsSync(imagePath)) {
+        console.error(`Image file not found: ${imagePath}`);
+        throw new Error(`Image file not found: ${imagePath}`);
+      }
+
+      // Load and process image with Sharp
+      const image = sharp(imagePath);
+      const metadata = await image.metadata();
+
+      console.log(`Original image: ${metadata.width}x${metadata.height}`);
+
+      // For bills, maintain width at maxWidth and scale height proportionally
+      let width = maxWidth;
+      let height = metadata.height || 100;
+
+      if (metadata.width && metadata.width !== maxWidth) {
+        const ratio = maxWidth / metadata.width;
+        height = Math.floor(height * ratio);
+      }
+
+      // Ensure dimensions are reasonable for thermal printer
+      width = Math.max(1, Math.min(width, 576));
+      height = Math.max(1, height); // No height limit for bills
+
+      console.log(`Processing image at: ${width}x${height}`);
+
+      // Process image: resize without fit constraints to avoid padding
+      const processedImage = await image
+        .resize(width, height, {
+          kernel: sharp.kernel.lanczos3,
+          withoutEnlargement: false
+        })
+        .grayscale()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+
+      const { data: pixelData, info } = processedImage;
+
+      console.log(`Sharp processing complete: ${info.width}x${info.height}`);
+
+      // Convert to monochrome bitmap
+      const bitmapData = this.convertToBitmap(
+        pixelData,
+        info.width,
+        info.height,
+        useDithering
+      );
+
+      console.log(
+        `✓ Bitmap conversion completed, data length: ${bitmapData.length}`
+      );
+
+      return bitmapData;
+    } catch (error) {
+      console.error("Error preparing bill image:", error);
+      throw new Error(
+        `Failed to prepare bill image: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  /**
+   * Prepare bill image for printing using Sharp (converts to ESC/POS bitmap)
+   * Specialized for bill printing to avoid horizontal padding
+   */
+  private async prepareLabelImage(
+    imagePath: string,
+    maxWidth: number = 638,
     useDithering: boolean = true
   ): Promise<string> {
     try {
@@ -574,6 +671,60 @@ export class USBPrinter {
       console.error("Error printing bill image:", error);
       throw new Error(
         `Failed to print bill image: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  async printImageLabel(
+    imagePath: string,
+    useDithering: boolean = true
+  ): Promise<void> {
+    const buffer: string[] = [];
+
+    buffer.push(this.INIT);
+    buffer.push(this.ALIGN_LEFT);
+
+    const fullWidth = 638;
+
+    const path = require("path");
+    let fullLabelImagePath: string;
+
+    if (path.isAbsolute(imagePath)) {
+      fullLabelImagePath = imagePath;
+    } else {
+      fullLabelImagePath = path.join(getLabelsImageDirectory(), imagePath);
+    }
+
+    try {
+      if (!fs.existsSync(fullLabelImagePath)) {
+        throw new Error(`Image file not found at: ${fullLabelImagePath}`);
+      }
+
+      console.log(`Printing bill image: ${fullLabelImagePath}`);
+
+      const imageData = await this.prepareLabelImage(
+        fullLabelImagePath,
+        fullWidth,
+        useDithering
+      );
+
+      if (!imageData || imageData.length === 0) {
+        throw new Error("Failed to generate image data");
+      }
+
+      buffer.push(imageData);
+      buffer.push(this.FEED_LINES(3));
+      buffer.push(this.CUT_PAPER);
+
+      const data = Buffer.from(buffer.join(""), "binary");
+
+      await this.sendToPrinter(data);
+
+      console.log("✓ Label printed successfully");
+    } catch (error) {
+      console.error("Error printing label image:", error);
+      throw new Error(
+        `Failed to print label image: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }

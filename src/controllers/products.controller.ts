@@ -9,6 +9,7 @@ import {
   CreateProductResponse,
   DeleteProductResponse,
   ExportProductsResponse,
+  GenerateBarcodeResponse,
   GetProductByBarcodeResponse,
   GetProductByIDResponse,
   ImportProductsResponse,
@@ -39,7 +40,8 @@ export async function getAllProductsController(
 
     if (search) {
       whereConditions.push(
-        sql`LOWER(${products.name}) LIKE LOWER(${`%${search}%`})`
+        // CHeck if "name" or "barcode" contains the search term (case-insensitive)
+        sql`LOWER(${products.barcode}) LIKE LOWER(${`%${search}%`}) OR LOWER(${products.name}) LIKE LOWER(${`%${search}%`})`
       );
     }
 
@@ -575,6 +577,67 @@ export async function exportProductsController(): Promise<ExportProductsResponse
     return {
       success: false,
       error: (error as Error).message || "Failed to export products !"
+    };
+  }
+}
+
+// Generate Barcode Controller
+function generateEAN13(): string {
+  // Generate 12 random digits
+  let code = "";
+  for (let i = 0; i < 12; i++) {
+    code += Math.floor(Math.random() * 10);
+  }
+
+  // Calculate check digit
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const digit = parseInt(code[i]);
+    sum += i % 2 === 0 ? digit : digit * 3;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+
+  return code + checkDigit;
+}
+
+export async function generateBarcodeController(): Promise<GenerateBarcodeResponse> {
+  try {
+    const db = getDB();
+
+    // Generate a unique barcode in EAN13 format
+    // And validate that it does not exist in the database
+    let newBarcode: string;
+    let isUnique = false;
+    const maxAttempts = 5;
+    let attempts = 0;
+
+    while (!isUnique && attempts < maxAttempts) {
+      newBarcode = generateEAN13();
+
+      const existingProduct = await db.query.products.findFirst({
+        where: (fields, { eq }) => eq(fields.barcode, newBarcode)
+      });
+
+      isUnique = !existingProduct;
+      attempts++;
+    }
+
+    if (!isUnique) {
+      throw new Error(
+        "Failed to generate a unique barcode after multiple attempts."
+      );
+    }
+
+    return {
+      success: true,
+      data: {
+        barcode: newBarcode
+      }
+    };
+  } catch (error) {
+    return {
+      error: (error as Error).message || "Failed to generate barcode !",
+      success: false
     };
   }
 }

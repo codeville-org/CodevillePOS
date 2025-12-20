@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { TEXTS } from "@/lib/language";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 
 type Props = {
   currentPage: number;
@@ -7,6 +9,7 @@ type Props = {
   totalPages: number;
   onPageChange: (page: number) => void;
   entityName: string;
+  showText?: boolean;
 };
 
 export function Pagination({
@@ -15,15 +18,20 @@ export function Pagination({
   totalCount,
   totalPages,
   onPageChange,
-  entityName
+  entityName,
+  showText = true
 }: Props) {
+  const { language } = usePersistStore();
+
   return (
     <div className="flex items-center justify-between p-4 border-t border-foreground/5 flex-shrink-0">
-      <div className="text-sm text-muted-foreground">
-        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-        {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{" "}
-        {entityName}
-      </div>
+      {showText && (
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{" "}
+          {entityName}
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Button
@@ -33,7 +41,7 @@ export function Pagination({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          Previous
+          {TEXTS.pagination.previous[language]}
         </Button>
 
         <div className="flex items-center gap-1">
@@ -70,7 +78,7 @@ export function Pagination({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
-          Next
+          {TEXTS.pagination.next[language]}
         </Button>
       </div>
     </div>

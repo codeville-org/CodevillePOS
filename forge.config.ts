@@ -34,11 +34,27 @@ const config: ForgeConfig = {
   },
   makers: [
     new MakerSquirrel({
-      setupIcon: "./src/assets/app-icon.ico"
+      setupIcon: "./src/assets/app-icon.ico",
+      name: "CodeVille-POS",
+      description: "Point of Sale application for small and medium businesses",
+      authors: "CodeVille",
+      setupExe: "CodeVille_POS_Setup.exe"
     }),
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
     new MakerDeb({})
+  ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "codeville-org",
+          name: "CodeVille-POS"
+        },
+        prerelease: true
+      }
+    }
   ],
   plugins: [
     new AutoUnpackNativesPlugin({}),
@@ -54,6 +70,22 @@ const config: ForgeConfig = {
             name: "main_window",
             preload: {
               js: "./src/preload.ts"
+            }
+          },
+          {
+            html: "./src/activation/activation.html",
+            js: "./src/activation/activation-renderer.ts",
+            name: "activation_window",
+            preload: {
+              js: "./src/activation/activation-preload.ts"
+            }
+          },
+          {
+            html: "./src/loading/loading.html",
+            js: "./src/loading/loading-renderer.ts",
+            name: "loading_window",
+            preload: {
+              js: "./src/loading/loading-preload.ts"
             }
           }
         ]

@@ -13,14 +13,21 @@ import type {
 } from "@/lib/zod/printers.zod";
 import {
   getBillsImageDirectory,
-  getImagesDirectory
+  getImagesDirectory,
+  getLabelsImageDirectory
 } from "./images.controller";
 import { getAppSettingsController } from "./settings.controller";
 
 let printerInstance: USBPrinter | null = null;
+let labelPrinterInstance: USBPrinter | null = null;
 
 let printerSettings: PrinterConfig = {
   printerName: "XP-80C", // Windows
+  devicePath: "/dev/usb/lp0" // Linux/Mac
+};
+
+let labelPrinterSettings: PrinterConfig = {
+  printerName: "XP-420B", // Windows
   devicePath: "/dev/usb/lp0" // Linux/Mac
 };
 
@@ -41,6 +48,24 @@ async function getPrinter(): Promise<USBPrinter> {
   }
 
   return printerInstance;
+}
+
+async function getLabelPrinter(): Promise<USBPrinter> {
+  if (!labelPrinterInstance) {
+    let defaultLabelPrinter = "XP-420B"; // Fallback printer name is set to "XP-420B"
+    const res = await getAppSettingsController();
+
+    if (res.data && res.success) {
+      defaultLabelPrinter = res.data.defaultLabelPrinter;
+    }
+
+    labelPrinterInstance = new USBPrinter({
+      ...labelPrinterSettings,
+      printerName: defaultLabelPrinter
+    });
+  }
+
+  return labelPrinterInstance;
 }
 
 // Controllers
@@ -221,6 +246,43 @@ export async function printImageBillController(
       error:
         (error as Error).message ||
         "An unknown error occurred while printing the bill image.",
+      success: false
+    };
+  }
+}
+
+export async function printImageLabelController(
+  imagePath: string,
+  useDithering?: boolean
+): Promise<VoidDataResponseT> {
+  try {
+    const printer = await getLabelPrinter();
+
+    // If imagePath is just a filename, resolve it to full path
+    // For bill images, check bills directory first, then images directory
+    let fullImagePath = imagePath;
+    if (!path.isAbsolute(imagePath)) {
+      // Try bills directory first (for bill images)
+      const labelsPath = path.join(getLabelsImageDirectory(), imagePath);
+      const imageDirPath = path.join(getImagesDirectory(), imagePath);
+
+      // Use bills directory if file starts with "bill_", otherwise use images directory
+      fullImagePath = imagePath.startsWith("label_")
+        ? labelsPath
+        : imageDirPath;
+    }
+
+    console.log(`Attempting to print label image from: ${fullImagePath}`);
+
+    await printer.printImageLabel(fullImagePath, useDithering);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Print image label error:", error);
+    return {
+      error:
+        (error as Error).message ||
+        "An unknown error occurred while printing the label image.",
       success: false
     };
   }

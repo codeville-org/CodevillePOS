@@ -1,11 +1,14 @@
 "use client";
 
 import {
+  BanknoteIcon,
   BarChart3,
   CodeSquareIcon,
   NotebookPen,
+  PackageIcon,
   Settings,
   ShoppingCart,
+  UserCircle2Icon,
   Users,
   Warehouse
 } from "lucide-react";
@@ -22,10 +25,14 @@ import {
 } from "@/components/ui/sidebar";
 import { CONSTANTS } from "@/lib/constants";
 import { usePersistStore } from "@/lib/zustand/persist-store";
+import { useSecurityStore } from "@/lib/zustand/security-store";
 import { NavMain } from "./nav-main";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { language } = usePersistStore();
+  const { user } = useSecurityStore();
+
+  const isAdmin = user?.isAdmin;
 
   // Dynamic navigation data based on current language
   const navMainData = [
@@ -67,18 +74,62 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/transactions",
       icon: NotebookPen
     },
-    {
-      key: "reports",
-      title: CONSTANTS.SIDEBAR.reports.text[language],
-      url: "/reports",
-      icon: BarChart3
-    },
-    {
-      key: "settings",
-      title: CONSTANTS.SIDEBAR.settings.text[language],
-      url: "/settings",
-      icon: Settings
-    }
+    // Only show Users and Reports to Admin users
+    ...(isAdmin
+      ? [
+          {
+            key: "reports",
+            title: CONSTANTS.SIDEBAR.reports.text[language],
+            url: "/reports",
+            icon: BarChart3
+          },
+          {
+            key: "users",
+            title: CONSTANTS.SIDEBAR.users.text[language],
+            url: "/users",
+            icon: UserCircle2Icon
+          },
+          {
+            key: "cashflow",
+            title: CONSTANTS.SIDEBAR.cashflow.text[language],
+            url: "/cashflow",
+            icon: BanknoteIcon
+          },
+          {
+            key: "supplier_management",
+            title: CONSTANTS.SIDEBAR.supplierManagement.text[language],
+            url: "/supplier-management/vendors",
+            icon: PackageIcon,
+            items: [
+              {
+                title:
+                  CONSTANTS.SIDEBAR.supplierManagement.items.vendors[language],
+                url: "/supplier-management/vendors"
+              },
+              {
+                title:
+                  CONSTANTS.SIDEBAR.supplierManagement.items.purchases[
+                    language
+                  ],
+                url: "/supplier-management/purchases"
+              }
+              // {
+              //   title:
+              //     CONSTANTS.SIDEBAR.supplierManagement.items.newPurchase[
+              //       language
+              //     ],
+              //   url: "/supplier-management/purchases"
+              // },
+            ]
+          },
+          {
+            key: "settings",
+            title: CONSTANTS.SIDEBAR.settings.text[language],
+            url: "/settings",
+            icon: Settings
+          }
+        ]
+      : [])
   ];
 
   return (

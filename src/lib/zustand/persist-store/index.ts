@@ -2,7 +2,10 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Language, Theme } from "@/shared/types/global";
-import { applyTheme, electronStorage } from "./actions";
+
+import { PaymentMethod } from "@/lib/zod/transactions.zod";
+import { electronStorage } from "../local-storage";
+import { applyTheme } from "./actions";
 import type { PersistStoreState } from "./types";
 
 export const usePersistStore = create<PersistStoreState>()(
@@ -41,6 +44,14 @@ export const usePersistStore = create<PersistStoreState>()(
       },
       setStoreSettings: (settings) => {
         set({ storeSettings: settings });
+      },
+      availablePaymentMethods: [PaymentMethod.CASH],
+      setAvailablePaymentMethods: (methods: PaymentMethod[]) => {
+        set({ availablePaymentMethods: methods });
+      },
+      imagesEnabled: true,
+      setImagesEnabled: (enabled: boolean) => {
+        set({ imagesEnabled: enabled });
       }
     }),
     {

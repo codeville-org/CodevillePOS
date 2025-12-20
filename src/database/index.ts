@@ -5,6 +5,7 @@ import { app } from "electron";
 import fs from "fs";
 import path from "path";
 
+import { createUserController } from "@/controllers/user.controller";
 import * as schema from "./schema";
 
 export const DATABASE_NAME = "codeville-pos.db";
@@ -44,6 +45,8 @@ export class DatabaseManager {
 
       // Run migrations if available
       await this.runMigrations();
+
+      await this.initializeUsers();
 
       console.log(`Database initialized at: ${this.dbPath}`);
       return true;
@@ -105,6 +108,36 @@ export class DatabaseManager {
     } catch (error) {
       console.error("Migration failed:", error);
       throw error;
+    }
+  }
+
+  async initializeUsers() {
+    try {
+      // If database is empty, create a default admin user
+      if (!this.db) {
+        throw new Error("Database not initialized");
+      }
+
+      const userCount = await this.db
+        .select()
+        .from(schema.users)
+        .limit(1)
+        .then((rows) => rows.length);
+
+      if (userCount === 0) {
+        const userCreateRes = await createUserController({
+          username: "admin",
+          password: "admin123",
+          isAdmin: true
+        });
+
+        if (userCreateRes.error && !userCreateRes.success)
+          throw new Error(userCreateRes.error);
+
+        console.log("Default admin user created");
+      }
+    } catch (error) {
+      console.error("Failed to initialize users: ", error);
     }
   }
 

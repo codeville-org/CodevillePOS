@@ -6,6 +6,8 @@ export type SearchMode = "barcode" | "manual";
 
 export type FilterType = "featured" | "all" | SelectCategory;
 
+export type ListingMode = "grid" | "list";
+
 export type POSListingView = "listing" | "billing";
 
 export type ScannedProduct = {
@@ -18,18 +20,23 @@ export type ScannedProduct = {
 export type AmountOverview = {
   subtotal: number;
   tax: number;
+  productDiscount: number;
+  additionalDiscount: number;
   discount: number;
   total: number;
 };
+
+export interface HoldQueueItem extends BaseTransactionSchema {
+  items: UninitializedTransactionItem[];
+}
 
 export interface PosStoreInterface {
   // Listing View
   listingView: POSListingView;
   setListingView: (view: POSListingView) => void;
 
-  // POS Product Search
-  searchMode: SearchMode;
-  setSearchMode: (mode: SearchMode) => void;
+  listingMode: ListingMode;
+  setListingMode: (mode: ListingMode) => void;
 
   searchTerm: string | null;
   setSearchTerm: (term: string) => void;
@@ -48,6 +55,7 @@ export interface PosStoreInterface {
   setActiveTransaction: (transaction: BaseTransactionSchema | null) => void;
 
   transactionItems: UninitializedTransactionItem[];
+  setTransactionItems: (items: UninitializedTransactionItem[]) => void;
   addTransactionItem: (item: UninitializedTransactionItem) => void;
 
   changeTransactionItemQuantity: (id: string, quantity: number) => void;
@@ -65,4 +73,10 @@ export interface PosStoreInterface {
   clearTransactionItems: () => void;
 
   getTransactionAmountOverview: () => AmountOverview;
+
+  // Hold Queue
+  holdQueue: HoldQueueItem[];
+  setHoldQueue: (queue: HoldQueueItem[]) => void;
+  addToHoldQueue: (transaction: HoldQueueItem) => void;
+  removeFromHoldQueue: (id: string) => void;
 }

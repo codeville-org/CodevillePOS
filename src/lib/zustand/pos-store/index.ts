@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { getProductAmount } from "@/lib/utils";
+import { getProductAmount, getProductDiscountedAmount } from "@/lib/utils";
 import type { UninitializedTransactionItem } from "@/lib/zod/transactions.zod";
 import type { PosStoreInterface } from "./types";
 
@@ -12,11 +12,11 @@ function sortTransactionItems(
 }
 
 export const usePosStore = create<PosStoreInterface>()((set, get) => ({
-  searchMode: "barcode",
-  setSearchMode: (mode) => set({ searchMode: mode }),
-
-  listingView: "listing",
+  listingView: "listing" as PosStoreInterface["listingView"],
   setListingView: (view) => set({ listingView: view }),
+
+  listingMode: "grid" as PosStoreInterface["listingMode"],
+  setListingMode: (mode) => set({ listingMode: mode }),
 
   searchTerm: null,
   setSearchTerm: (term) => set({ searchTerm: term }),
@@ -26,7 +26,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
   lastScannedProduct: null,
   setLastScannedProduct: (product) => set({ lastScannedProduct: product }),
 
-  filter: "featured",
+  filter: "featured" as PosStoreInterface["filter"],
   setFilter: (filter) => set({ filter }),
 
   // Transaction Related
@@ -35,6 +35,7 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
     set({ activeTransaction: transaction }),
 
   transactionItems: [],
+  setTransactionItems: (items) => set({ transactionItems: items }),
 
   /**
    * Add new Product to Active Transaction
@@ -55,7 +56,8 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       const updatedItem: UninitializedTransactionItem = {
         ...existingItem,
         quantity: newQuantity,
-        totalAmount: getProductAmount(existingItem, newQuantity)
+        totalAmount: getProductAmount(existingItem, newQuantity),
+        discountAmount: getProductDiscountedAmount(existingItem, newQuantity)
       };
 
       const preparedArray = transactionItems.filter(
@@ -94,7 +96,8 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       const updatedItem: UninitializedTransactionItem = {
         ...existingItem,
         quantity,
-        totalAmount: getProductAmount(existingItem, quantity)
+        totalAmount: getProductAmount(existingItem, quantity),
+        discountAmount: getProductDiscountedAmount(existingItem, quantity)
       };
 
       const preparedArray = transactionItems.filter(
@@ -161,14 +164,27 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       0
     );
 
+    const discountByProducts = transactionItems.reduce(
+      (acc, item) => acc + item.discountAmount,
+      0
+    );
+
+    const totalDiscount =
+      activeTransaction.discountAmount +
+      transactionItems.reduce((acc, item) => acc + item.discountAmount, 0);
+
+    const additionalDiscount = totalDiscount - discountByProducts;
+
     const tax = activeTransaction?.taxAmount || 0;
-    const discount = activeTransaction?.discountAmount || 0;
+    const discount = totalDiscount || 0;
     const total = subtotal + tax - discount;
 
     return {
       subtotal,
       tax,
-      discount,
+      additionalDiscount,
+      productDiscount: discountByProducts,
+      discount: totalDiscount,
       total
     };
   },
@@ -193,5 +209,28 @@ export const usePosStore = create<PosStoreInterface>()((set, get) => ({
       ...activeTransaction,
       taxAmount: tax
     });
+  },
+
+  // Hold Queue
+  holdQueue: [],
+  setHoldQueue: (queue) => set({ holdQueue: queue }),
+  addToHoldQueue: (transaction) => {
+    const { holdQueue } = get();
+
+    const existingItem = holdQueue.find((item) => item.id === transaction.id);
+
+    if (existingItem) {
+      // If item with same ID exists, we can choose to update it or ignore
+      return;
+    }
+
+    set({ holdQueue: [...holdQueue, transaction] });
+  },
+  removeFromHoldQueue: (id) => {
+    const { holdQueue } = get();
+
+    const updatedQueue = holdQueue.filter((item) => item.id !== id);
+
+    set({ holdQueue: updatedQueue });
   }
 }));

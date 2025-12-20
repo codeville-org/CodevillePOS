@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn, formatDate, formatPrice } from "@/lib/utils";
 import { SelectProductSchema } from "@/lib/zod/products.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import ImageDisplay from "@/modules/image-manager/components/image-display";
 import { ListingView } from "@/shared/types/global";
+import DeleteProductButton from "./delete-product-button";
 
 type Props = {
   view?: ListingView;
@@ -21,50 +23,99 @@ export function ProductItem({
   page = "listing",
   onClick
 }: Props) {
+  const { imagesEnabled } = usePersistStore();
+
   if (page === "pos") {
+    if (view === "grid") {
+      return (
+        <Card
+          className="p-3 rounded-xl shadow-xs hover:shadow-md transition-shadow group bg-secondary dark:bg-sidebar border-sidebar-border/60"
+          onClick={onClick}
+        >
+          <div className="flex flex-col gap-3">
+            {imagesEnabled && (
+              <div className="relative">
+                <ImageDisplay
+                  alt={product.name}
+                  filename={product.imageFilename}
+                  className="w-full h-full object-cover aspect-square rounded-xl"
+                  fallbackClassName="w-full h-full object-cover aspect-square rounded-xl"
+                  isProductImage
+                />
+                <Badge
+                  variant="secondary"
+                  className="absolute top-3 left-3"
+                >{`${product.category.name}`}</Badge>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+                {product.name}
+              </h3>
+
+              <div className="my-2 flex items-center gap-2">
+                <Badge variant="destructive">{`${formatPrice(product.unitPrice)}`}</Badge>
+                <Badge
+                  className={cn(
+                    "bg-amber-500 text-white hover:bg-amber-600 hover:text-white dark:bg-amber-500/10 dark:text-amber-500 dark:hover:bg-amber-500/20",
+                    product.stockQuantity < 3 && "animate-pulse"
+                  )}
+                >
+                  {`Stock: ${product.stockQuantity}`}
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CalendarIcon className="h-3 w-3" />
+                <span>{formatDate(product.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
     return (
-      <Card
-        className="p-3 rounded-xl shadow-xs hover:shadow-md transition-shadow group bg-secondary dark:bg-sidebar border-sidebar-border/60"
+      <div
         onClick={onClick}
+        className="group flex items-center p-3 hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-b-0"
       >
-        <div className="flex flex-col gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-3 flex-1">
+          {imagesEnabled && (
             <ImageDisplay
               alt={product.name}
               filename={product.imageFilename}
-              className="w-full h-full aspect-square rounded-xl"
-              fallbackClassName="w-full h-full aspect-square rounded-xl"
+              className="w-12 h-12 object-cover rounded-md aspect-square"
+              fallbackClassName="w-12 h-12 object-cover rounded-md aspect-square"
+              isProductImage
             />
-            <Badge
-              variant="secondary"
-              className="absolute top-3 left-3"
-            >{`${product.category.name}`}</Badge>
-          </div>
+          )}
 
-          <div className="space-y-1">
-            <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+          <div className="space-y-0.5">
+            <h3 className="font-medium text-sm group-hover:text-primary transition-colors">
               {product.name}
             </h3>
-
-            <div className="my-2 flex items-center gap-2">
-              <Badge variant="destructive">{`${formatPrice(product.unitPrice)}`}</Badge>
-              <Badge
-                className={cn(
-                  "bg-amber-500 text-white hover:bg-amber-600 hover:text-white dark:bg-amber-500/10 dark:text-amber-500 dark:hover:bg-amber-500/20",
-                  product.stockQuantity < 3 && "animate-pulse"
-                )}
-              >
-                {`Stock: ${product.stockQuantity}`}
-              </Badge>
-            </div>
-
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <CalendarIcon className="h-3 w-3" />
-              <span>{formatDate(product.createdAt)}</span>
+              <BarcodeIcon className="h-3 w-3" />
+              <span>Barcode : {product.barcode}</span>
             </div>
           </div>
         </div>
-      </Card>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{`${product.category.name}`}</Badge>
+          <Badge variant="destructive">{`${formatPrice(product.unitPrice)}`}</Badge>
+          <Badge
+            className={cn(
+              "bg-amber-500 text-white hover:bg-amber-600 hover:text-white dark:bg-amber-500/10 dark:text-amber-500 dark:hover:bg-amber-500/20",
+              product.stockQuantity < 3 && "animate-pulse"
+            )}
+          >
+            {`Stock: ${product.stockQuantity}`}
+          </Badge>
+        </div>
+      </div>
     );
   }
 
@@ -73,19 +124,21 @@ export function ProductItem({
       <Link to={{ pathname: `/products/${product.id}` }}>
         <Card className="p-3 rounded-xl shadow-xs hover:shadow-md transition-shadow group bg-secondary/80 dark:bg-sidebar border-sidebar-border/60">
           <div className="flex flex-col gap-3">
-            <div className="relative">
-              <ImageDisplay
-                alt={product.name}
-                filename={product.imageFilename}
-                className="w-full h-full aspect-square rounded-xl"
-                fallbackClassName="w-full h-full aspect-square rounded-xl"
-                isProductImage
-              />
-              <Badge
-                variant="secondary"
-                className="absolute top-3 left-3"
-              >{`${product.category.name}`}</Badge>
-            </div>
+            {imagesEnabled && (
+              <div className="relative">
+                <ImageDisplay
+                  alt={product.name}
+                  filename={product.imageFilename}
+                  className="w-full h-full object-cover aspect-square rounded-xl"
+                  fallbackClassName="w-full h-full object-cover aspect-square rounded-xl"
+                  isProductImage
+                />
+                <Badge
+                  variant="secondary"
+                  className="absolute top-3 left-3"
+                >{`${product.category.name}`}</Badge>
+              </div>
+            )}
 
             <div className="space-y-1">
               <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
@@ -121,12 +174,15 @@ export function ProductItem({
       className="group flex items-center p-3 hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-b-0"
     >
       <div className="flex items-center gap-3 flex-1">
-        <ImageDisplay
-          alt={product.name}
-          filename={product.imageFilename}
-          className="w-12 h-12 rounded-md"
-          fallbackClassName="w-12 h-12 rounded-md"
-        />
+        {imagesEnabled && (
+          <ImageDisplay
+            alt={product.name}
+            filename={product.imageFilename}
+            className="w-12 h-12 object-cover rounded-md aspect-square"
+            fallbackClassName="w-12 h-12 object-cover rounded-md aspect-square"
+            isProductImage
+          />
+        )}
 
         <div className="space-y-0.5">
           <h3 className="font-medium text-sm group-hover:text-primary transition-colors">
@@ -141,7 +197,7 @@ export function ProductItem({
 
       <div className="flex items-center gap-2">
         <Badge variant="secondary">{`${product.category.name}`}</Badge>
-        <Badge variant="destructive">{`${formatPrice(product.unitPrice)}`}</Badge>
+        <Badge variant="secondary">{`${formatPrice(product.unitPrice)}`}</Badge>
         <Badge
           className={cn(
             "bg-amber-500 text-white hover:bg-amber-600 hover:text-white dark:bg-amber-500/10 dark:text-amber-500 dark:hover:bg-amber-500/20",
@@ -150,6 +206,8 @@ export function ProductItem({
         >
           {`Stock: ${product.stockQuantity}`}
         </Badge>
+
+        <DeleteProductButton product={product} size="icon" />
       </div>
     </Link>
   );

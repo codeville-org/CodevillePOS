@@ -2,12 +2,15 @@ import { ListIcon, ReceiptIcon } from "lucide-react";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { TEXTS } from "@/lib/language";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
 
 type Props = {};
 
 export function ListingViewSwitcher({}: Props) {
   const { activeTransaction, setListingView, listingView } = usePosStore();
+  const { language } = usePersistStore();
 
   useEffect(() => {
     if (!activeTransaction) {
@@ -28,8 +31,8 @@ export function ListingViewSwitcher({}: Props) {
       autoBlur
     >
       {listingView === "listing"
-        ? "Switch to Billing View"
-        : "Switch to Listing View"}
+        ? TEXTS.pos.viewSwitch.toBilling[language]
+        : TEXTS.pos.viewSwitch.toListing[language]}
     </Button>
   );
 }

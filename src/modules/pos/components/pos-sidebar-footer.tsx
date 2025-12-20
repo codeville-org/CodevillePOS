@@ -3,10 +3,12 @@ import {
   CreditCardIcon,
   EraserIcon,
   HandCoinsIcon,
+  PauseCircleIcon,
   PrinterCheckIcon,
   TrashIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -16,15 +18,19 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { TEXTS } from "@/lib/language";
 import { cn, formatPrice } from "@/lib/utils";
 import { PaymentMethod } from "@/lib/zod/transactions.zod";
+import { usePersistStore } from "@/lib/zustand/persist-store";
 import { usePosStore } from "@/lib/zustand/pos-store";
+import { addTransactionToHoldQueue } from "@/lib/zustand/pos-store/actions";
 import { useCompleteTransaction } from "../queries/use-complete-transaction";
 
 type Props = {
@@ -35,11 +41,14 @@ export function PosSidebarFooter({ className }: Props) {
   const [isClearModalOpen, setClearModalOpen] = useState<boolean>(false);
   const [isCancelModalOpen, setCancelModalOpen] = useState<boolean>(false);
 
+  const { language, availablePaymentMethods } = usePersistStore();
+
   const { mutate: completePurchase, isPending: completingPurchase } =
     useCompleteTransaction();
   const {
     getTransactionAmountOverview,
     activeTransaction,
+    transactionItems,
     clearTransactionItems,
     setActiveTransaction
   } = usePosStore();
@@ -50,6 +59,18 @@ export function PosSidebarFooter({ className }: Props) {
   );
   const [cashGiven, setCashGiven] = useState<number | null>(null);
   const [change, setChange] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (availablePaymentMethods && availablePaymentMethods.length > 0) {
+      // Set the first available payment method as default if current selection is not in the list
+      if (!availablePaymentMethods.includes(paymentMethod)) {
+        setPaymentMethod(availablePaymentMethods[0]);
+      }
+    } else {
+      // Fallback to CASH if no payment methods are available
+      setPaymentMethod(PaymentMethod.CASH);
+    }
+  }, [availablePaymentMethods, paymentMethod]);
 
   const handleCashGivenChange = (value: number | null) => {
     setCashGiven(value);
@@ -79,6 +100,20 @@ export function PosSidebarFooter({ className }: Props) {
     completePurchase();
   };
 
+  const handleHoldTransaction = () => {
+    const addedToHold = addTransactionToHoldQueue({
+      transaction: activeTransaction,
+      items: transactionItems
+    });
+
+    if (addedToHold) {
+      toast.success("Transaction put on hold successfully.");
+      // Clear current transaction
+      setActiveTransaction(null);
+      clearTransactionItems();
+    }
+  };
+
   return (
     <div>
       <div
@@ -89,17 +124,17 @@ export function PosSidebarFooter({ className }: Props) {
       >
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <small>Subtotal</small>
-            <small>{formatPrice(amountOverview.subtotal)}</small>
+            <small>{TEXTS.posSidebar.subtotal[language]}</small>
+            <small>{formatPrice(amountOverview.subtotal, language)}</small>
           </div>
           <div className="flex items-center justify-between">
-            <small>Tax</small>
-            <small>{formatPrice(amountOverview.tax)}</small>
+            <small>{TEXTS.posSidebar.tax[language]}</small>
+            <small>{formatPrice(amountOverview.tax, language)}</small>
           </div>
           <div className="flex items-center justify-between">
-            <small>Discount</small>
+            <small>{TEXTS.posSidebar.discount[language]}</small>
             <small className="text-green-600">
-              - {formatPrice(amountOverview.discount)}
+              - {formatPrice(amountOverview.discount, language)}
             </small>
           </div>
         </div>
@@ -107,69 +142,121 @@ export function PosSidebarFooter({ className }: Props) {
         <Separator />
 
         <div className="flex items-center justify-between">
-          <h4 className="text-lg font-semibold">Total</h4>
           <h4 className="text-lg font-semibold">
-            {formatPrice(amountOverview.total)}
+            {TEXTS.posSidebar.total[language]}
+          </h4>
+          <h4 className="text-lg font-semibold">
+            {formatPrice(amountOverview.total, language)}
           </h4>
         </div>
 
         {/* Payment Methods List */}
         <div className="space-y-1">
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant={
-                paymentMethod === PaymentMethod.CASH ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.CASH)}
-              icon={<BanknoteIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-green-700 text-white hover:bg-green-800":
-                  paymentMethod === PaymentMethod.CASH
+          {availablePaymentMethods && availablePaymentMethods.length > 0 ? (
+            <div
+              className={cn("flex items-center gap-2", {
+                "justify-center": availablePaymentMethods.length === 1
               })}
-              autoBlur
             >
-              Cash
-            </Button>
-            <Button
-              variant={
-                paymentMethod === PaymentMethod.CARD ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.CARD)}
-              icon={<CreditCardIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-blue-700 text-white hover:bg-blue-800":
-                  paymentMethod === PaymentMethod.CARD
-              })}
-              autoBlur
-            >
-              Card
-            </Button>
-            <Button
-              disabled={!activeTransaction.customerId}
-              variant={
-                paymentMethod === PaymentMethod.LEND ? "default" : "outline"
-              }
-              onClick={() => setPaymentMethod(PaymentMethod.LEND)}
-              icon={<HandCoinsIcon />}
-              className={cn("hover:text-foreground shadow-none", {
-                "bg-yellow-700 text-white hover:bg-yellow-800":
-                  paymentMethod === PaymentMethod.LEND
-              })}
-              autoBlur
-            >
-              Credit
-            </Button>
-          </div>
+              {availablePaymentMethods.length === 1 ? (
+                // Single payment method - show as label/indicator
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Payment Method:</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-secondary/50 rounded-md">
+                    {paymentMethod === PaymentMethod.CASH ? (
+                      <BanknoteIcon className="w-4 h-4" />
+                    ) : paymentMethod === PaymentMethod.CARD ? (
+                      <CreditCardIcon className="w-4 h-4" />
+                    ) : paymentMethod === PaymentMethod.LEND ? (
+                      <HandCoinsIcon className="w-4 h-4" />
+                    ) : null}
+                    <span className="font-medium">
+                      {(() => {
+                        switch (paymentMethod) {
+                          case PaymentMethod.CASH:
+                            return TEXTS.posSidebar.methods.cash[language];
+                          case PaymentMethod.CARD:
+                            return TEXTS.posSidebar.methods.card[language];
+                          case PaymentMethod.LEND:
+                            return TEXTS.posSidebar.methods.lend[language];
+                          default:
+                            return paymentMethod;
+                        }
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                // Multiple payment methods - show as buttons
+                availablePaymentMethods.map((method) => {
+                  const getMethodText = () => {
+                    switch (method) {
+                      case PaymentMethod.CASH:
+                        return TEXTS.posSidebar.methods.cash[language];
+                      case PaymentMethod.CARD:
+                        return TEXTS.posSidebar.methods.card[language];
+                      case PaymentMethod.LEND:
+                        return TEXTS.posSidebar.methods.lend[language];
+                      default:
+                        return method;
+                    }
+                  };
+
+                  return (
+                    <Button
+                      key={method}
+                      variant={paymentMethod === method ? "default" : "outline"}
+                      onClick={() => setPaymentMethod(method)}
+                      icon={
+                        method === PaymentMethod.CASH ? (
+                          <BanknoteIcon />
+                        ) : method === PaymentMethod.CARD ? (
+                          <CreditCardIcon />
+                        ) : method === PaymentMethod.LEND ? (
+                          <HandCoinsIcon />
+                        ) : undefined
+                      }
+                      className={cn(
+                        "hover:text-foreground flex-1 shadow-none",
+                        {
+                          "bg-green-700 text-white hover:bg-green-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.CASH,
+                          "bg-blue-700 text-white hover:bg-blue-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.CARD,
+                          "bg-yellow-700 text-white hover:bg-yellow-800":
+                            paymentMethod === method &&
+                            method === PaymentMethod.LEND
+                        }
+                      )}
+                      autoBlur
+                    >
+                      {getMethodText()}
+                    </Button>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            // Fallback for empty payment methods
+            <div className="flex items-center justify-center text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 px-2 py-1 bg-secondary/50 rounded-md">
+                <BanknoteIcon className="w-4 h-4" />
+                <span>Cash Only</span>
+              </div>
+            </div>
+          )}
 
           {paymentMethod === PaymentMethod.CASH && (
             <div className="flex items-center justify-between gap-3 mt-4 pb-1">
               <div className="space-y-0.5">
                 <Label className="text-xs font-medium text-foreground/80">
-                  Cash Given
+                  {TEXTS.posSidebar.cashGiven[language]}
                 </Label>
                 <Input
                   type="text"
-                  placeholder="Cash Given"
+                  placeholder={TEXTS.posSidebar.cashGiven[language]}
                   className="h-12 bg-white"
                   value={cashGiven ?? ""}
                   onChange={(e) => {
@@ -193,11 +280,11 @@ export function PosSidebarFooter({ className }: Props) {
               </div>
               <div className="space-y-0.5">
                 <Label className="text-xs font-medium text-foreground/80">
-                  Change
+                  {TEXTS.posSidebar.balance[language]}
                 </Label>
                 <Input
                   type="number"
-                  placeholder="Change"
+                  placeholder={TEXTS.posSidebar.balance[language]}
                   className="h-12 bg-white"
                   value={change ?? ""}
                   disabled
@@ -222,8 +309,40 @@ export function PosSidebarFooter({ className }: Props) {
             loading={completingPurchase}
             autoBlur
           >
-            Complete Purchase
+            {TEXTS.posSidebar.complete[language]}
           </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full shadow-none"
+                icon={<PauseCircleIcon />}
+                autoBlur
+                disabled={!activeTransaction || amountOverview.total <= 0}
+              >
+                {TEXTS.posSidebar.hold[language]}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {TEXTS.pos.queue.alert.title[language]}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {TEXTS.pos.queue.alert.description[language]}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>
+                  {TEXTS.pos.queue.alert.actions.cancel[language]}
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={handleHoldTransaction}>
+                  {TEXTS.pos.queue.alert.actions.hold[language]}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <div className="flex items-center gap-2">
             <Button
@@ -233,7 +352,7 @@ export function PosSidebarFooter({ className }: Props) {
               onClick={() => setClearModalOpen(true)}
               autoBlur
             >
-              Clear
+              {TEXTS.posSidebar.clear[language]}
             </Button>
             <Button
               variant="outline"
@@ -242,7 +361,7 @@ export function PosSidebarFooter({ className }: Props) {
               onClick={() => setCancelModalOpen(true)}
               autoBlur
             >
-              Cancel
+              {TEXTS.posSidebar.cancel[language]}
             </Button>
           </div>
         </div>
@@ -252,13 +371,17 @@ export function PosSidebarFooter({ className }: Props) {
       <AlertDialog open={isClearModalOpen} onOpenChange={setClearModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {TEXTS.pos.clear.alert.title[language]}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action will clear all items in the cart.
+              {TEXTS.pos.clear.alert.description[language]}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {TEXTS.pos.clear.alert.actions.cancel[language]}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 clearTransactionItems();
@@ -270,7 +393,7 @@ export function PosSidebarFooter({ className }: Props) {
                 }, 100);
               }}
             >
-              Continue
+              {TEXTS.pos.clear.alert.actions.clear[language]}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -280,13 +403,17 @@ export function PosSidebarFooter({ className }: Props) {
       <AlertDialog open={isCancelModalOpen} onOpenChange={setCancelModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {TEXTS.pos.cancel.alert.title[language]}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action will reset the current transaction.
+              {TEXTS.pos.cancel.alert.description[language]}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {TEXTS.pos.cancel.alert.actions.cancel[language]}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setActiveTransaction(null);
@@ -299,7 +426,7 @@ export function PosSidebarFooter({ className }: Props) {
                 }, 100);
               }}
             >
-              Continue
+              {TEXTS.pos.cancel.alert.actions.cancelTransaction[language]}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

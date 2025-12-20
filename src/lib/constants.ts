@@ -40,8 +40,22 @@ export const CONSTANTS = {
     transactions: {
       text: { en: "Transactions", si: "ගණුදෙනු" }
     },
+    users: {
+      text: { en: "User Management", si: "පරිශීලකයින්" }
+    },
     reports: {
       text: { en: "Reports", si: "අලෙවි වාර්තා" }
+    },
+    cashflow: {
+      text: { en: "Cash Management", si: "මුදල් කළමනාකරණය" }
+    },
+    supplierManagement: {
+      text: { en: "Supplier Management", si: "සැපයුම් කළමනාකරණය" },
+      items: {
+        vendors: { en: "Vendors", si: "සැපයුම්කරුවන්" },
+        purchases: { en: "Purchases", si: "මිලදී ගැනීම්" },
+        newPurchase: { en: "New Purchase", si: "නව ගැණුමක් අරඹන්න" }
+      }
     },
     settings: {
       text: { en: "Settings", si: "සැකසුම්" }

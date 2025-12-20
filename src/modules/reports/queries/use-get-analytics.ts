@@ -16,7 +16,8 @@ export const useGetReportsAnalytics = (params?: AnalyticsQueryParamsSchema) => {
 
       return response.data;
     },
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes for more frequent updates
+    refetchOnWindowFocus: true
   });
 
   return query;

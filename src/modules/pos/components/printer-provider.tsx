@@ -232,7 +232,11 @@ export function PrinterProvider({}: Props) {
                           <Calendar className="size-5" />
                           {TEXTS.bill.invoiceData[language]}:{" "}
                           <span className="font-normal">
-                            {formatDate(new Date(transactionData.createdAt))}
+                            {formatDate(new Date(transactionData.createdAt))}{" "}
+                            {` - `}{" "}
+                            {new Date(
+                              transactionData.createdAt
+                            ).toLocaleTimeString()}
                           </span>
                         </p>
 

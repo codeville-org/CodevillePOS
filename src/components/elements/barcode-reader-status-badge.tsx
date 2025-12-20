@@ -64,10 +64,11 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
         productId: scannedProduct.id,
         productName: scannedProduct.name,
         productBarcode: scannedProduct.barcode || "",
-        unitPrice:
-          scannedProduct.discountedPrice > 0
-            ? scannedProduct.discountedPrice
-            : scannedProduct.unitPrice,
+        unitPrice: scannedProduct.unitPrice,
+        ourPrice:
+          scannedProduct.discountedPrice > scannedProduct?.unitPrice
+            ? scannedProduct.unitPrice
+            : scannedProduct.discountedPrice,
         quantity: scannedProduct.unitAmount,
         unit: scannedProduct.unit,
         unitAmount: scannedProduct.unitAmount,
@@ -75,7 +76,10 @@ export function BarcodeReaderStatusBadge({ minimal = false }: Props) {
           scannedProduct.discountedPrice > 0
             ? scannedProduct.discountedPrice
             : scannedProduct.unitPrice,
-        discountAmount: 0
+        discountAmount:
+          scannedProduct.unitPrice > scannedProduct.discountedPrice
+            ? scannedProduct.unitPrice - scannedProduct.discountedPrice
+            : 0
       };
 
       addTransactionItem(item);
